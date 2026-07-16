@@ -1,0 +1,46 @@
+# XcrowHub
+
+> XcrowHub is a non-custodial escrow platform for peer-to-peer crypto deals. Money is locked in a protected hold until the buyer confirms delivery. Zero fees on private deals, 1% seller-side fee on marketplace listings. Built on Nimiq (NIM) and Polygon (USDT).
+
+XcrowHub protects buyers and sellers during P2P crypto transactions — freelance work, digital goods, services, one-time deals, and recurring marketplace listings. Both parties can see the deal status at every step. Disputes are decided by a human admin reviewing evidence, never by automatic payout.
+
+## Key facts
+
+- Domain: https://www.xcrowhub.com
+- Category: Escrow / P2P payments / Freelance protection
+- Chains: Nimiq (NIM) mainnet, Polygon (USDT ERC-20)
+- Wallet: Nimiq Pay Mini App (also usable in browser)
+- Private deals: 0% fee
+- Marketplace deals: 1% seller-side fee
+- Beta cap: 10 active deals per seller
+- Custody: Hot wallet held by a hardened signer service; keys never in the browser
+- Dispute resolution: Both sides submit proof; a human admin decides release / refund / split
+- Referral: Referrer earns 10% of the platform fee on every marketplace sale of anyone they refer, forever
+
+## How it works
+
+1. Seller creates a deal — sets item, price (NIM or USDT), and delivery terms. Gets a private link or publishes it on the marketplace.
+2. Buyer pays into the escrow hold — funds are locked, visible to both parties, and do not go directly to the seller.
+3. Seller delivers and marks it as delivered, optionally attaching proof.
+4. Buyer confirms receipt → funds are released to the seller. If contested, a proof window opens for both, and an admin decides.
+
+## Two ways to deal
+
+- **Private deal** — direct link between one seller and one buyer, not listed publicly. 0% fee. Best for freelance work, one-time custom orders, and repeat clients.
+- **Marketplace listing** — publish a service or digital product, buyers can pay the listed price or send a bid. 1% seller-side fee. Best for reusable offers with multiple buyers.
+
+## Docs
+
+- [Landing page](https://www.xcrowhub.com/): Product overview, hero, how-it-works, marketplace teaser, referral program
+- [How it works](https://www.xcrowhub.com/how-it-works): Detailed 4-step escrow flow with screenshots
+- [Marketplace](https://www.xcrowhub.com/marketplace): Live public listings
+- [Docs](https://www.xcrowhub.com/docs): Developer + integration docs
+- [Privacy](https://www.xcrowhub.com/privacy): Privacy policy
+- [Terms](https://www.xcrowhub.com/terms): Terms of service — fee schedule, dispute policy
+- [Support](https://www.xcrowhub.com/support): Contact and help
+- [Full LLM context](https://www.xcrowhub.com/llms-full.txt): Long-form structured version of this file for retrieval
+
+## Optional
+
+- [Sitemap](https://www.xcrowhub.com/sitemap.xml)
+- [robots.txt](https://www.xcrowhub.com/robots.txt)

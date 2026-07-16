@@ -1,0 +1,40 @@
+project_id = "cylficyjlxfkobeqakse"
+
+# This project enforces the new Supabase API-key system, whose Edge gateway
+# rejects legacy `eyJ…` JWTs with UNAUTHORIZED_LEGACY_JWT. Our service-to-service
+# callers (pg_cron sweeps) and wallet-JWT clients both present such tokens, so the
+# platform gate can't authorize them. We therefore run these functions with
+# verify_jwt = false and authorize inside each handler (CRON_SECRET, WATCHER_SECRET,
+# the wallet JWT via JWT_SECRET, or app_role=admin). This is Supabase's documented
+# pattern for the new keys: https://supabase.com/docs/guides/functions/auth
+
+# Wallet-signature LOGIN endpoint — called before the user has a JWT; verifies the
+# signature itself.
+[functions.auth]
+verify_jwt = false
+
+# Invoked by the admin client (wallet JWT, app_role=admin), the pg_cron auto-settle
+# sweep (CRON_SECRET), or the internal secret. All checked in isAuthorized().
+[functions.payout]
+verify_jwt = false
+
+# Called by the buyer's client (wallet JWT) and the cron sweep (CRON_SECRET);
+# authorized in isAuthorized(). Never trusts the caller — re-verifies on-chain.
+[functions.verify-payment]
+verify_jwt = false
+
+# On-chain watcher; called by the pg_cron tick (CRON_SECRET / WATCHER_SECRET).
+[functions.watcher]
+verify_jwt = false
+
+# Notification delivery; called by the pg_cron flush (CRON_SECRET).
+[functions.notify]
+verify_jwt = false
+
+# Telegram webhook; called by Telegram (validates X-Telegram-Bot-Api-Secret-Token).
+[functions.telegram-webhook]
+verify_jwt = false
+
+# Public beta bug-report endpoint; validates payload and sends email via Resend.
+[functions.bug-report]
+verify_jwt = false

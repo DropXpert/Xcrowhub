@@ -1,0 +1,205 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, type LucideIcon } from "lucide-react";
+import { BorderGlow } from "@/components/BorderGlow";
+import { nimiqPayDeeplink, NIMIQ_PAY_SITE, openNimiqPayOrStore } from "@/lib/host";
+
+/* Shared building blocks for the public marketing surface (Landing + Marketplace).
+   Kept standalone: no app stores, wallet, or router guards. */
+
+export const deeplink = nimiqPayDeeplink();
+
+// Scroll-reveal: adds .is-visible when an element scrolls into view.
+export function useReveal() {
+  useEffect(() => {
+    const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
+    if (!("IntersectionObserver" in window) || els.length === 0) {
+      els.forEach((el) => el.classList.add("is-visible"));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-visible");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
+export function useParallax() {
+  const [y, setY] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => setY(window.scrollY));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+  return y;
+}
+
+export function Nav({ scrolled }: { scrolled: boolean }) {
+  return (
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        scrolled ? "py-1.5" : "py-2"
+      }`}
+    >
+     <div className="mx-auto max-w-[1000px] px-5">
+  <div
+    className={`flex items-center justify-between rounded-pill px-3 py-1.5 transition-all duration-300 ${
+      scrolled ? "glass" : ""
+    }`}
+  >
+          <Link to="/" className="flex items-center pl-1">
+            <img src="/logo-wordmark.png" alt="XcrowHub" className="w-40 h-auto" />
+          </Link>
+
+          <nav className="hidden items-center gap-7 text-[15.5px] text-[#B9B1A2] md:flex">
+            <a href="/#how" className="transition hover:text-[#EDE7DA]">How it works</a>
+            <Link to="/marketplace" className="transition hover:text-[#EDE7DA]">Marketplace</Link>
+            <a href="/#referral" className="transition hover:text-[#EDE7DA]">Refer &amp; earn</a>
+            <Link to="/docs" className="transition hover:text-[#EDE7DA]">Docs</Link>
+            <a href={NIMIQ_PAY_SITE} target="_blank" rel="noopener noreferrer" className="transition hover:text-[#EDE7DA]">Nimiq Pay</a>
+          </nav>
+
+          <a
+            href={deeplink}
+            onClick={openNimiqPayOrStore(deeplink)}
+            className="btn-gold !px-4 !py-2 !text-[14.5px]"
+          >
+            Launch app
+            <ArrowRight className="h-3.5 w-3.5" />
+          </a>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export function Footer() {
+  return (
+    <footer className="border-t border-white/5 py-12">
+      <div className="mx-auto flex max-w-site flex-col items-center justify-between gap-6 px-5 md:flex-row">
+        <div className="flex items-center gap-3">
+          <img src="/logo-icon.png" alt="XcrowHub" className="h-9 w-9 rounded-xl" />
+          <div className="leading-tight">
+            <p className="text-[16px] font-bold">XcrowHub</p>
+            <p className="text-[13.5px] text-[#6F695C]">Protected payments for crypto deals</p>
+          </div>
+        </div>
+
+        <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[15px] text-[#928B7D]">
+          <a href="/#how" className="transition hover:text-[#EDE7DA]">How it works</a>
+          <a href="/#private-deals" className="transition hover:text-[#EDE7DA]">Private deals</a>
+          <Link to="/marketplace" className="transition hover:text-[#EDE7DA]">Marketplace</Link>
+          <a href="/#referral" className="transition hover:text-[#EDE7DA]">Refer &amp; earn</a>
+          <Link to="/docs" className="transition hover:text-[#EDE7DA]">Docs</Link>
+          <Link to="/terms" className="transition hover:text-[#EDE7DA]">Terms</Link>
+          <Link to="/privacy" className="transition hover:text-[#EDE7DA]">Privacy</Link>
+          <a href={NIMIQ_PAY_SITE} target="_blank" rel="noopener noreferrer" className="transition hover:text-[#EDE7DA]">Nimiq Pay</a>
+        </nav>
+
+        <p className="text-[14px] text-[#6F695C]">
+          © {new Date().getFullYear()} XcrowHub · Built on Nimiq Pay
+        </p>
+      </div>
+    </footer>
+  );
+}
+
+export function SectionHeading({
+  chip,
+  title,
+  sub,
+}: {
+  chip: string;
+  title: React.ReactNode;
+  sub: string;
+}) {
+  return (
+    <div className="reveal mx-auto max-w-2xl text-center">
+      <span className="lp-chip mx-auto">{chip}</span>
+      <h2 className="mt-4 text-[25px] font-extrabold leading-[1.14] tracking-tight sm:mt-5 sm:text-[32px] sm:leading-[1.1] md:text-[44px]">
+        {title}
+      </h2>
+      <p className="mx-auto mt-3.5 max-w-xl text-[16px] leading-relaxed text-[#B9B1A2] sm:mt-4 sm:text-[17px] md:text-[18px]">
+        {sub}
+      </p>
+    </div>
+  );
+}
+
+export function GlowCard({
+  children,
+  className = "",
+  innerClassName = "",
+  borderRadius = 16,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  innerClassName?: string;
+  borderRadius?: number;
+}) {
+  return (
+    <BorderGlow
+      className={`h-full ${className}`}
+      borderRadius={borderRadius}
+      backgroundColor="#121A16"
+      colors={["#E8B964", "#4FD1A5", "#F5D89B"]}
+      glowColor="160 65% 62%"
+      glowIntensity={0.85}
+      edgeSensitivity={25}
+      fillOpacity={0.35}
+    >
+      <div className={`glass group h-full !border-0 ${innerClassName}`}>{children}</div>
+    </BorderGlow>
+  );
+}
+
+export function BentoCard({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  return (
+    <div className={`reveal ${className}`} style={{ transitionDelay: `${delay}ms` }}>
+      <GlowCard innerClassName="p-6 sm:p-7">{children}</GlowCard>
+    </div>
+  );
+}
+
+export function FeatureIcon({
+  icon: Icon,
+  accent = "gold",
+}: {
+  icon: LucideIcon;
+  accent?: "gold" | "jade" | "warn";
+}) {
+  const map = {
+    gold: "from-gold-soft/25 to-gold/10 text-gold",
+    jade: "from-jade/25 to-jade/10 text-jade",
+    warn: "from-[#E5B567]/25 to-[#E5B567]/10 text-[#E5B567]",
+  };
+  return (
+    <span className={`grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br ${map[accent]} ring-1 ring-white/10`}>
+      <Icon className="h-5 w-5" strokeWidth={2} />
+    </span>
+  );
+}

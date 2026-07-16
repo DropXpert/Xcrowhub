@@ -1,0 +1,502 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ── Light mode tokens (default) ──────────────────────────────── */
+  :root {
+    color-scheme: light;
+    /* RGB channels — used as rgb(var(--c-x) / alpha) in Tailwind */
+    --c-bg:          248 243 234;
+    --c-surface:     255 253 248;
+    --c-ink:         23 20 17;
+    --c-muted:       113 105 95;
+    --c-edge:        228 216 199;
+    --c-accent:      47 111 94;
+    --c-accent-soft: 221 235 229;
+    --c-accent-ink:  31 74 63;
+    --c-warning:     183 121 31;
+    --c-danger:      185 74 72;
+    /* Shadows */
+    --shadow-receipt: 0 1px 0 rgba(23,20,17,0.04), 0 1px 2px rgba(23,20,17,0.06);
+    --shadow-lift:    0 8px 24px -8px rgba(23,20,17,0.18);
+    --shadow-glow:    0 0 0 1px rgba(232,185,100,0.18), 0 24px 60px -20px rgba(232,185,100,0.35);
+  }
+
+  /* ── Dark mode tokens ─────────────────────────────────────────── */
+  .dark {
+    color-scheme: dark;
+    --c-bg:          11 22 18;
+    --c-surface:     17 32 24;
+    --c-ink:         237 231 218;
+    --c-muted:       122 154 140;
+    --c-edge:        27 46 36;
+    --c-accent:      79 209 165;
+    --c-accent-soft: 13 42 28;
+    --c-accent-ink:  160 232 204;
+    --c-warning:     232 185 100;
+    --c-danger:      224 90 88;
+    --shadow-receipt: 0 1px 0 rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.45);
+    --shadow-lift:    0 8px 28px -8px rgba(0,0,0,0.65);
+    --shadow-glow:    0 0 0 1px rgba(79,209,165,0.2), 0 24px 60px -20px rgba(79,209,165,0.3);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  html {
+    @apply bg-bg;
+  }
+
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+    font-feature-settings: "cv11", "ss01", "ss03";
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Paper grain — warm dots in light, barely-visible in dark */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(rgba(23,20,17,0.025) 1px, transparent 1px);
+    background-size: 3px 3px;
+    z-index: 0;
+  }
+  .dark body::before {
+    background-image: radial-gradient(rgba(255,255,255,0.012) 1px, transparent 1px);
+  }
+
+  #root {
+    position: relative;
+    z-index: 1;
+    background: rgb(var(--c-bg));
+  }
+
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-bg rounded;
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply mx-auto min-h-full w-full max-w-app px-5 pb-32 pt-6;
+  }
+
+  .input-focused [data-bottom-nav] {
+    display: none !important;
+  }
+
+  /* Safe-area utilities for full-screen overlays (chat, scanners) that
+     bypass the app-shell padding. Uses max() with a floor so short devices
+     without a home indicator still get a comfortable minimum. */
+  .safe-top {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+  .safe-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    @apply rounded-card border border-edge bg-surface shadow-receipt;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Marketplace tiles keep a visible outer accent and depth at rest. The
+     content layer stays fluid so narrow two-column layouts can wrap metadata
+     instead of pushing timing text outside the card. */
+  .marketplace-card {
+    position: relative;
+    isolation: isolate;
+    min-width: 0;
+    border: 1px solid rgb(var(--c-edge) / 0.9);
+    border-radius: 18px;
+    background: rgb(var(--c-surface));
+    box-shadow: 0 10px 22px -18px rgb(var(--c-ink) / 0.5),
+      0 0 0 1px rgb(var(--c-accent) / 0.08);
+  }
+
+  .marketplace-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(145deg, rgb(var(--c-accent) / 0.55), rgb(var(--c-edge) / 0.75) 50%, rgb(var(--c-warning) / 0.28));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .marketplace-card::after {
+    content: "";
+    position: absolute;
+    inset: 7px -3px -5px;
+    z-index: -2;
+    border-radius: inherit;
+    background: rgb(var(--c-accent) / 0.14);
+    filter: blur(12px);
+    pointer-events: none;
+  }
+
+  .marketplace-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .form-tabs {
+    @apply flex gap-1 rounded-xl border border-edge bg-bg p-1;
+  }
+
+  .form-tab {
+    @apply min-w-0 flex-1 rounded-lg px-3 py-2 text-[12.5px] font-medium text-muted transition;
+  }
+
+  .form-tab[aria-selected="true"] {
+    @apply bg-surface text-ink shadow-receipt;
+  }
+
+  .form-tab-panel {
+    @apply card space-y-4 px-4 py-4 sm:px-5 sm:py-5;
+  }
+
+  .field-label {
+    @apply text-[14px] font-medium uppercase tracking-wider text-muted;
+  }
+
+  .input,
+  .textarea,
+  .select {
+    @apply min-w-0 max-w-full w-full rounded-lg border border-edge bg-surface px-3.5 py-2.5
+           text-[15px] text-ink placeholder:text-muted/70
+           focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none
+           transition;
+  }
+
+  .textarea {
+    @apply min-h-[88px] resize-y leading-relaxed;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5
+           text-[14px] font-medium transition active:scale-[0.99]
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply btn bg-accent text-white hover:bg-accent-ink shadow-receipt;
+  }
+
+  .btn-secondary {
+    @apply btn border border-edge bg-surface text-ink hover:bg-bg;
+  }
+
+  .btn-ghost {
+    @apply btn text-muted hover:text-ink hover:bg-edge/40;
+  }
+
+  .btn-danger {
+    @apply btn bg-danger text-white hover:opacity-90;
+  }
+
+  /* Squared tag — deliberately not a pill. Used for category, trust, filters,
+     counts, wallet/connect controls. Same footprint as before (tap-safe),
+     just crisp corners instead of a bubble. */
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1
+           text-xs font-medium;
+  }
+
+  .divider-dashed {
+    border-top: 1px dashed theme("colors.edge");
+  }
+
+  /* Receipt-style perforated divider */
+  .perforation {
+    height: 14px;
+    background-image: radial-gradient(
+      circle at 7px 7px,
+      theme("colors.bg") 5px,
+      transparent 5.5px
+    );
+    background-size: 14px 14px;
+    background-position: -7px center;
+    background-repeat: repeat-x;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Landing page — premium marketing surface (dark canvas, glass, gradients).
+   Scoped under .lp so none of it leaks into the receipt-style app UI.
+─────────────────────────────────────────────────────────────────────────── */
+@layer components {
+  .lp {
+    @apply text-[#EDE7DA] antialiased;
+    background: #0E1512;
+  }
+
+  /* Animated aurora blobs that sit behind the hero */
+  .lp-aurora {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(70px);
+    will-change: transform, opacity;
+    pointer-events: none;
+  }
+
+  /* Fine dot-grid + soft radial vignette layered behind sections */
+  .lp-grid {
+    background-image:
+      linear-gradient(rgba(232, 185, 100, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232, 185, 100, 0.05) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+  }
+
+  /* Frosted glass capsule — the core building block */
+  .glass {
+    background: linear-gradient(
+      155deg,
+      rgba(255, 255, 255, 0.07) 0%,
+      rgba(255, 255, 255, 0.025) 100%
+    );
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 20px 50px -24px rgba(0, 0, 0, 0.7);
+  }
+
+  .glass-soft {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Gradient-stroked card via mask trick — a true 1px gradient border */
+  .gradient-border {
+    position: relative;
+    border-radius: 20px;
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      140deg,
+      rgba(232, 185, 100, 0.7),
+      rgba(79, 209, 165, 0.35) 40%,
+      rgba(255, 255, 255, 0.04) 75%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Warm gold→jade gradient text */
+  .text-gradient {
+    background: linear-gradient(100deg, #F5D89B 0%, #E8B964 35%, #4FD1A5 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-warm {
+    background: linear-gradient(100deg, #FBE8C0 0%, #E8B964 60%, #C98F3E 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Gold primary button with sheen */
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3.5
+           text-[12px] font-semibold transition active:scale-[0.98];
+    color: #1A1208;
+    background: linear-gradient(180deg, #F5D89B 0%, #E8B964 100%);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.4) inset,
+      0 14px 30px -10px rgba(232, 185, 100, 0.55);
+  }
+  .btn-gold:hover {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.5) inset,
+      0 18px 40px -10px rgba(232, 185, 100, 0.7);
+    transform: translateY(-1px);
+  }
+
+  .btn-glass {
+    @apply inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3.5
+           text-[12px] font-semibold text-[#EDE7DA] transition active:scale-[0.98];
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .btn-glass:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(232, 185, 100, 0.4);
+  }
+
+  /* Pill chip on the dark canvas */
+  .lp-chip {
+    @apply inline-flex items-center gap-2 rounded-pill px-3.5 py-1.5 text-[12px] font-medium;
+    background: rgba(232, 185, 100, 0.1);
+    border: 1px solid rgba(232, 185, 100, 0.25);
+    color: #F5D89B;
+  }
+
+  /* Receipt perforation on the dark canvas */
+  .perforation-dark {
+    height: 14px;
+    background-image: radial-gradient(
+      circle at 7px 7px,
+      #0E1512 5px,
+      transparent 5.5px
+    );
+    background-size: 14px 14px;
+    background-position: -7px center;
+    background-repeat: repeat-x;
+  }
+
+  /* Shimmering skeleton sweep used on the "live" badge */
+  .shimmer-text {
+    background: linear-gradient(
+      90deg,
+      rgba(237, 231, 218, 0.5) 0%,
+      #FFFFFF 50%,
+      rgba(237, 231, 218, 0.5) 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* Scroll-reveal: hidden until .is-visible toggled by IntersectionObserver */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes alert-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes welcome-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes welcome-character-in {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes welcome-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcome-card {
+  animation: welcome-card-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.welcome-icon {
+  animation: welcome-card-in 550ms 150ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.welcome-split-char {
+  opacity: 0;
+  will-change: transform, opacity, filter;
+  animation: welcome-character-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.welcome-fade {
+  opacity: 0;
+  animation: welcome-fade-in 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .lp-aurora,
+  .animate-float-y,
+  .animate-aurora,
+  .animate-spin-slow,
+  .animate-marquee,
+  .animate-pulse-ring {
+    animation: none !important;
+  }
+  .welcome-card,
+  .welcome-icon,
+  .welcome-split-char,
+  .welcome-fade {
+    animation: none !important;
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
