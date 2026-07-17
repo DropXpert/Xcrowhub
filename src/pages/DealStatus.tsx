@@ -26,6 +26,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { isTerminal } from "@/lib/stateMachine";
 import { DealChat } from "@/components/DealChat";
 import { DealPushCta } from "@/components/DealPushCta";
+import { SkeletonDots } from "@/components/LoadingStates";
 import { DisputeBanner } from "@/components/DisputeBanner";
 import { DealLoader } from "@/components/PageLoader";
 import { useAuthStore } from "@/store/authStore";
@@ -143,8 +144,12 @@ export default function DealStatus() {
           disabled={refreshing}
           className="btn-secondary shrink-0 px-3 py-2 text-[13px]"
         >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-          Update status
+          {refreshing ? (
+            <SkeletonDots label="Updating deal status" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+          {refreshing ? "Updating…" : "Update status"}
         </button>
       </section>
 

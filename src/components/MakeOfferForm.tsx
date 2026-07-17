@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Tag, X, Loader2 } from "lucide-react";
+import { Tag, X } from "lucide-react";
+import { SkeletonDots } from "@/components/LoadingStates";
 import type { Currency } from "@/types/deal";
 
 const MAX_AMOUNT = 1e9;
@@ -83,7 +84,7 @@ export function MakeOfferForm({
       {error && <p className="text-[12.5px] text-danger">{error}</p>}
 
       <button type="submit" disabled={!valid || submitting} className="btn-primary w-full">
-        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Tag className="h-4 w-4" />}
+        {submitting ? <SkeletonDots label="Sending offer" /> : <Tag className="h-4 w-4" />}
         {submitting ? "Sending offer…" : "Send offer"}
       </button>
     </form>

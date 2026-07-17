@@ -1,5 +1,6 @@
-import { ChevronRight, Check, Loader2 } from "lucide-react";
+import { ChevronRight, Check } from "lucide-react";
 import { useTelegramLink } from "@/lib/useTelegramLink";
+import { SkeletonBlock, SkeletonDots } from "@/components/LoadingStates";
 
 function TelegramIcon() {
   return (
@@ -32,8 +33,21 @@ export function TelegramConnectCard() {
           disabled={busy}
           className="shrink-0 text-[13px] font-medium text-muted transition hover:text-ink disabled:opacity-50"
         >
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Unlink"}
+          {busy ? <SkeletonDots label="Unlinking Telegram" /> : "Unlink"}
         </button>
+      </div>
+    );
+  }
+
+  if (state === "loading") {
+    return (
+      <div className="card flex items-center gap-3 px-5 py-4" aria-busy="true">
+        <SkeletonBlock className="h-9 w-9 shrink-0 rounded-xl" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <SkeletonBlock className="h-3.5 w-32" />
+          <SkeletonBlock className="h-3 w-full" />
+        </div>
+        <SkeletonBlock className="h-5 w-5 shrink-0 rounded-full" />
       </div>
     );
   }
@@ -43,7 +57,7 @@ export function TelegramConnectCard() {
       <button
         type="button"
         onClick={connect}
-        disabled={busy || state === "loading"}
+        disabled={busy}
         className="card flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-bg disabled:opacity-60"
       >
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
@@ -56,7 +70,7 @@ export function TelegramConnectCard() {
           </p>
         </div>
         {busy ? (
-          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted" />
+          <SkeletonDots label="Connecting Telegram" className="text-muted" />
         ) : (
           <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
         )}

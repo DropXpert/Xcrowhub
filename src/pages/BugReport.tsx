@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { AlertCircle, Bug, CheckCircle2, Loader2, Send } from "lucide-react";
+import { AlertCircle, Bug, CheckCircle2, Send } from "lucide-react";
+import { SkeletonDots } from "@/components/LoadingStates";
 import { PageHeader } from "@/components/PageHeader";
 import { getSupabaseClient, isSupabaseConfiguredForClient } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
@@ -193,7 +194,7 @@ export default function BugReport() {
         ) : null}
 
         <button type="submit" className="btn-primary w-full" disabled={submitting}>
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          {submitting ? <SkeletonDots label="Sending bug report" /> : <Send className="h-4 w-4" />}
           {submitting ? "Sending..." : "Send report"}
         </button>
       </form>

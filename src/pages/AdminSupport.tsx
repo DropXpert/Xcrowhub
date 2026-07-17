@@ -3,6 +3,7 @@ import { Send, Inbox, CheckCircle2, Clock, ChevronRight, ArrowLeft, RotateCcw } 
 import { useSupportStore } from "@/store/supportStore";
 import type { SupportTicket } from "@/store/supportStore";
 import { PageHeader } from "@/components/PageHeader";
+import { ChatSkeleton, ListSkeleton, SkeletonDots } from "@/components/LoadingStates";
 
 function TicketStatusPill({ status }: { status: "open" | "resolved" }) {
   return status === "resolved" ? (
@@ -141,9 +142,7 @@ function AdminChatOverlay({
 
       {/* Messages — min-h-0 lets flex-1 actually shrink on short viewports. */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3">
-        {threads[ticket.id]?.loading && (
-          <p className="text-center text-[13px] text-muted py-8">Loading...</p>
-        )}
+        {threads[ticket.id]?.loading && <ChatSkeleton />}
         {msgs.map((msg) => {
           const isAdmin = msg.sender === "admin";
           return (
@@ -210,7 +209,7 @@ function AdminChatOverlay({
               autoFocus
             />
             <button type="submit" className="btn-primary px-3 py-2.5" disabled={!draft.trim() || sending}>
-              <Send className="h-4 w-4" />
+              {sending ? <SkeletonDots label="Sending support message" /> : <Send className="h-4 w-4" />}
             </button>
           </form>
         )}
@@ -289,7 +288,7 @@ export default function AdminSupport() {
       </div>
 
       {loadingList ? (
-        <p className="text-center text-[13px] text-muted py-10">Loading...</p>
+        <ListSkeleton rows={4} />
       ) : filtered.length === 0 ? (
         <div className="card px-5 py-10 flex flex-col items-center gap-3 text-center">
           <Inbox className="h-7 w-7 text-muted/50" />

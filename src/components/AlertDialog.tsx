@@ -8,6 +8,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/cn";
+import { SkeletonDots } from "@/components/LoadingStates";
 
 interface AlertDialogProps {
   open: boolean;
@@ -59,6 +60,7 @@ export function AlertDialog({
             disabled={busy}
             className={cn(destructive ? "btn-danger" : "btn-primary")}
           >
+            {busy && <SkeletonDots label={actionLabel} />}
             {actionLabel}
           </button>
         </AlertDialogFooter>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, X, Reply, CreditCard, Loader2, Clock } from "lucide-react";
+import { Check, X, Reply, CreditCard, Clock } from "lucide-react";
+import { SkeletonDots } from "@/components/LoadingStates";
 import { cn } from "@/lib/cn";
 import { formatCountdown, msUntil } from "@/lib/time";
 import { WalletAddressBadge } from "@/components/WalletAddressBadge";
@@ -140,7 +141,7 @@ export function OfferCard({
       {sellerActs && !countering && (
         <div className="grid grid-cols-3 gap-2">
           <button type="button" onClick={onAccept} disabled={busy} className="btn-primary text-[13px]">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            {busy ? <SkeletonDots label="Accepting offer" /> : <Check className="h-4 w-4" />}
             Accept
           </button>
           <button
@@ -183,7 +184,7 @@ export function OfferCard({
               disabled={busy || !counterValid}
               className="btn-primary text-[13px]"
             >
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Reply className="h-4 w-4" />}
+              {busy ? <SkeletonDots label="Sending counter offer" /> : <Reply className="h-4 w-4" />}
               Send counter
             </button>
             <button
@@ -202,7 +203,7 @@ export function OfferCard({
       {buyerActs && (
         <div className="grid grid-cols-2 gap-2">
           <button type="button" onClick={onAccept} disabled={busy} className="btn-primary text-[13px]">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            {busy ? <SkeletonDots label="Accepting counter offer" /> : <Check className="h-4 w-4" />}
             Accept counter
           </button>
           <button type="button" onClick={onDecline} disabled={busy} className="btn-danger text-[13px]">

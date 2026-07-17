@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Wallet, Loader2, Bell, LogOut, Zap } from "lucide-react";
+import { Wallet, Bell, LogOut, Zap } from "lucide-react";
+import { SkeletonDots } from "@/components/LoadingStates";
 import { cn } from "@/lib/cn";
 import { useAuthStore, useIsAdmin } from "@/store/authStore";
 import { useNotificationStore } from "@/store/notificationStore";
@@ -212,7 +213,7 @@ export function AppHeader() {
             disabled={loading}
             className="pill border-accent/40 bg-accent-soft text-accent-ink transition hover:bg-accent/10"
           >
-            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wallet className="h-3.5 w-3.5" />}
+            {loading ? <SkeletonDots label="Connecting wallet" /> : <Wallet className="h-3.5 w-3.5" />}
             <span>{loading ? "Connecting…" : "Connect"}</span>
           </button>
         ) : null}

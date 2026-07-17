@@ -3,6 +3,7 @@ import { MessageCircle, Send, ArrowLeft } from "lucide-react";
 import { useDealChatStore } from "@/store/dealChatStore";
 import { useAuthStore } from "@/store/authStore";
 import type { Deal } from "@/types/deal";
+import { ChatSkeleton, SkeletonDots } from "@/components/LoadingStates";
 
 function shortenAddr(addr: string) {
   const c = addr.replace(/\s+/g, "");
@@ -155,9 +156,7 @@ function ChatOverlay({
 
       {/* Messages — min-h-0 lets flex-1 actually shrink on short viewports. */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3">
-        {thread?.loading && (
-          <p className="text-center text-[13px] text-muted py-8">Loading messages...</p>
-        )}
+        {thread?.loading && <ChatSkeleton />}
 
         {!thread?.loading && msgs.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
@@ -240,7 +239,7 @@ function ChatOverlay({
             className="btn-primary px-3 py-2.5"
             disabled={!draft.trim() || sending}
           >
-            <Send className="h-4 w-4" />
+            {sending ? <SkeletonDots label="Sending deal message" /> : <Send className="h-4 w-4" />}
           </button>
         </form>
         {error && <p className="text-[12.5px] text-danger mt-1">{error}</p>}

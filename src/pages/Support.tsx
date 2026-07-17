@@ -5,6 +5,7 @@ import type { SupportTicket } from "@/store/supportStore";
 import { useDealStore } from "@/store/dealStore";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/PageHeader";
+import { ChatSkeleton, SkeletonDots } from "@/components/LoadingStates";
 
 type View = "list" | "new" | "chat";
 
@@ -99,9 +100,7 @@ function ChatOverlay({
       {/* Messages — flex-1 + min-h-0 lets the flex child shrink so the
           input bar stays in view on short viewports. */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3">
-        {chatThread?.loading && (
-          <p className="text-center text-[13px] text-muted py-8">Loading...</p>
-        )}
+        {chatThread?.loading && <ChatSkeleton />}
         {!chatThread?.loading && msgs.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
             <MessageCircle className="h-7 w-7 text-muted/40" />
@@ -173,7 +172,7 @@ function ChatOverlay({
               className="btn-primary px-3 py-2.5"
               disabled={!draft.trim() || sending}
             >
-              <Send className="h-4 w-4" />
+              {sending ? <SkeletonDots label="Sending support message" /> : <Send className="h-4 w-4" />}
             </button>
           </form>
         )}
@@ -288,6 +287,7 @@ export default function Support() {
           </div>
           {formError && <p className="text-[12.5px] text-danger">{formError}</p>}
           <button type="submit" className="btn-primary w-full" disabled={creating}>
+            {creating && <SkeletonDots label="Creating support ticket" />}
             {creating ? "Creating..." : "Open ticket"}
           </button>
         </form>

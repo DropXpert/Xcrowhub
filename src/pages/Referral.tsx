@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/authStore";
 import { buildReferralLink } from "@/lib/referral";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { SkeletonBlock, SkeletonDots } from "@/components/LoadingStates";
 
 export default function Referral() {
   const session = useAuthStore((s) => s.session);
@@ -89,7 +90,7 @@ export default function Referral() {
           <p className="field-label">Your referral code</p>
           <div className="flex items-center gap-2">
             <code className="flex-1 rounded-lg border border-edge bg-bg px-3 py-2.5 font-mono text-[17px] font-semibold tracking-[0.2em] text-ink">
-              {summary?.code ?? (loading ? "······" : "—")}
+              {summary?.code ?? (loading ? <SkeletonBlock className="h-6 w-28" /> : "—")}
             </code>
             <button
               type="button"
@@ -188,6 +189,7 @@ export default function Referral() {
                   disabled={claiming === b.currency || Number(b.accrued) <= 0}
                   className="btn-primary px-4 py-2 text-[13px]"
                 >
+                  {claiming === b.currency && <SkeletonDots label={`Claiming ${b.currency}`} />}
                   {claiming === b.currency ? "Claiming…" : "Claim"}
                 </button>
               </li>

@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Field } from "@/components/Field";
 import { ConsentCheck } from "@/components/ConsentCheck";
 import { AlertDialog } from "@/components/AlertDialog";
+import { SkeletonDots } from "@/components/LoadingStates";
 import { isCustodyAddress } from "@/lib/config";
 import { getWallet } from "@/wallet";
 import type { Currency, DealCategory } from "@/types/deal";
@@ -391,6 +392,7 @@ export default function CreateListing() {
         {error && <p className="text-sm text-danger">{error}</p>}
 
         <button type="submit" className="btn-primary w-full" disabled={submitting || authLoading || !agreed} data-tour="listing-submit">
+          {submitting && <SkeletonDots label="Publishing listing" />}
           {submitting ? "Publishing..." : "Publish listing"}
         </button>
       </form>

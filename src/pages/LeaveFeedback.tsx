@@ -11,6 +11,7 @@ import { FileQuestion } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useDealWithRemoteLoad } from "@/hooks/useDealWithRemoteLoad";
 import { resolveDealRole } from "@/lib/dealRole";
+import { SkeletonDots } from "@/components/LoadingStates";
 
 export default function LeaveFeedback() {
   const { id } = useParams<{ id: string }>();
@@ -177,7 +178,7 @@ export default function LeaveFeedback() {
         ) : null}
 
         <button type="submit" disabled={busy || rating === 0} className="btn-primary w-full">
-          <Star className="h-4 w-4" />
+          {busy ? <SkeletonDots label="Submitting feedback" /> : <Star className="h-4 w-4" />}
           {busy ? "Submitting…" : "Submit feedback"}
         </button>
       </form>

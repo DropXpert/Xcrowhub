@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Lock, Loader2, ShieldCheck } from "lucide-react";
+import { Lock, ShieldCheck } from "lucide-react";
 import type { Deal } from "@/types/deal";
 import { useDealStore } from "@/store/dealStore";
 import { useAuthStore } from "@/store/authStore";
 import { getWallet } from "@/wallet";
 import { isCustodyConfigured, custodyAddressFor } from "@/lib/config";
 import { AlertDialog } from "@/components/AlertDialog";
+import { SkeletonBlock, SkeletonDots } from "@/components/LoadingStates";
 
 const POLL_INTERVAL_MS = 5000;
 const POLL_MAX_TRIES = 30; // ~2.5 min of automatic checking
@@ -175,9 +176,7 @@ export function PaymentBox({ deal }: { deal: Deal }) {
     return (
       <section className="card space-y-4 px-5 py-5">
         <div className="flex items-start gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
-            <Loader2 className="h-4 w-4 animate-spin" />
-          </span>
+          <SkeletonBlock className="h-9 w-9 shrink-0 rounded-full" />
           <div className="space-y-1">
             <h3 className="text-[15px] font-semibold text-ink">
               Confirming your payment
@@ -213,7 +212,7 @@ export function PaymentBox({ deal }: { deal: Deal }) {
         >
           {checking ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <SkeletonDots label="Checking payment" />
               Checking…
             </>
           ) : (
@@ -271,7 +270,7 @@ export function PaymentBox({ deal }: { deal: Deal }) {
       >
         {busy ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <SkeletonDots label="Opening wallet" />
             Opening wallet…
           </>
         ) : (

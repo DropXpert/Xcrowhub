@@ -13,6 +13,7 @@ import { OnboardingCoordinator } from "@/components/OnboardingCoordinator";
 import { AdminGuard } from "@/components/AdminGuard";
 import { AuthGuard } from "@/components/AuthGuard";
 import { PageLoader } from "@/components/PageLoader";
+import { LandingLoader } from "@/components/LoadingStates";
 import { OpenInNimiqPay } from "@/components/OpenInNimiqPay";
 import { StarsBackground } from "@/components/StarsBackground";
 
@@ -63,7 +64,11 @@ function PublicRouteFallback() {
   // stays visible until <SplashHider /> mounts inside the resolved route.
   // Rendering a second loader here caused a visible double-loader flash on
   // the landing page (green splash → dark wordmark loader → landing).
-  return null;
+  return (
+    <div className="fixed inset-0 grid place-items-center bg-night">
+      <LandingLoader />
+    </div>
+  );
 }
 
 function SplashHider() {

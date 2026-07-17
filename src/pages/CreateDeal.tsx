@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, Loader2 } from "lucide-react";
+import { Lock } from "lucide-react";
+import { SkeletonDots } from "@/components/LoadingStates";
 import { useDealStore } from "@/store/dealStore";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/PageHeader";
@@ -333,7 +334,10 @@ export default function CreateDeal() {
           {sellerAddress ? (
             <WalletAddressBadge address={sellerAddress} />
           ) : authLoading ? (
-            <span className="text-[12.5px] text-muted">Connecting...</span>
+            <span className="inline-flex items-center gap-2 text-[12.5px] text-muted">
+              <SkeletonDots label="Connecting payout wallet" />
+              Connecting...
+            </span>
           ) : (
             <button
               type="button"
@@ -372,7 +376,7 @@ export default function CreateDeal() {
           disabled={submitting || authLoading || activeDealLimitReached || !agreed}
         >
           {submitting
-            ? <Loader2 className="h-4 w-4 animate-spin" />
+            ? <SkeletonDots label="Creating payment link" />
             : <Lock className="h-4 w-4" />}
           {submitting ? "Creating…" : "Create payment link"}
         </button>

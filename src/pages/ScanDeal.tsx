@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, ArrowLeft, Loader2, RotateCcw } from "lucide-react";
+import { AlertTriangle, ArrowLeft, RotateCcw } from "lucide-react";
 import { QrScanner } from "@/components/QrScanner";
+import { SkeletonBlock, SkeletonDots } from "@/components/LoadingStates";
 import { dealPayPath, extractDealId } from "@/lib/dealLinks";
 
 export default function ScanDeal() {
@@ -33,14 +34,13 @@ export default function ScanDeal() {
     return (
       <div className="fixed inset-0 z-50 grid place-items-center bg-ink/95 px-6 text-center text-white">
         <div className="flex max-w-xs flex-col items-center gap-4">
-          <span className="grid h-12 w-12 place-items-center rounded-xl bg-white/10 text-white">
-            <Loader2 className="h-5 w-5 animate-spin" />
-          </span>
+          <SkeletonBlock className="h-12 w-12 rounded-xl bg-white/15" />
           <div className="space-y-1">
             <h1 className="text-[17px] font-semibold">Opening payment</h1>
             <p className="text-[13px] leading-relaxed text-white/70">
               Loading deal {openingId}.
             </p>
+            <SkeletonDots label="Opening payment" className="mt-3 text-white" />
           </div>
         </div>
       </div>

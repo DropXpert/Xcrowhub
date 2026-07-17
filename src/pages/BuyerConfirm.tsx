@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { CheckCircle2, Loader2, ShieldAlert, FileQuestion } from "lucide-react";
+import { CheckCircle2, ShieldAlert, FileQuestion } from "lucide-react";
+import { SkeletonDots } from "@/components/LoadingStates";
 import { useDealStore } from "@/store/dealStore";
 import { PageHeader } from "@/components/PageHeader";
 import { ReceiptSummary } from "@/components/ReceiptSummary";
@@ -103,7 +104,7 @@ export default function BuyerConfirm() {
               className="btn-primary w-full"
             >
               {busy ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <SkeletonDots label="Confirming delivery" />
               ) : (
                 <CheckCircle2 className="h-4 w-4" />
               )}

@@ -8,6 +8,7 @@ import type { DealCategory } from "@/types/deal";
 import { CATEGORY_LABELS } from "@/types/deal";
 import { useListingStore } from "@/store/listingStore";
 import type { Listing } from "@/store/listingStore";
+import { ListingCardSkeleton } from "@/components/LoadingStates";
 
 const ICON_MAP: Record<DealCategory, LucideIcon> = {
   digital_goods: Package,
@@ -54,10 +55,7 @@ export function PopularServices() {
       <div className="-mx-5 flex gap-3 overflow-x-auto scrollbar-hide px-5 pb-1 snap-x">
         {loading && listings.length === 0
           ? [0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="h-[132px] w-[190px] shrink-0 animate-pulse rounded-card bg-edge/25"
-              />
+              <ListingCardSkeleton key={i} className="h-[132px] w-[190px] shrink-0" />
             ))
           : top.map((l) => <ServiceCard key={l.id} listing={l} />)}
       </div>

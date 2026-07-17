@@ -14,6 +14,7 @@ import { DealLoader } from "@/components/PageLoader";
 import { cn } from "@/lib/cn";
 import { useDealWithRemoteLoad } from "@/hooks/useDealWithRemoteLoad";
 import type { AdminDecisionType, Proof } from "@/types/deal";
+import { SkeletonDots } from "@/components/LoadingStates";
 
 type ChoiceState =
   | { kind: "none" }
@@ -258,6 +259,7 @@ export default function AdminReview() {
           ) : null}
 
           <button type="submit" className="btn-primary w-full" disabled={submitting}>
+            {submitting && <SkeletonDots label="Applying admin decision" />}
             {submitting ? "Applying..." : "Apply decision"}
           </button>
         </form>

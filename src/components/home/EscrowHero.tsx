@@ -3,6 +3,7 @@ import {
   ShieldCheck, FilePlus2, ArrowRight, Lock, CheckCircle2, QrCode,
 } from "lucide-react";
 import type { Currency } from "@/types/deal";
+import { SkeletonDots } from "@/components/LoadingStates";
 
 type Snapshot = Record<Currency, number>;
 
@@ -152,9 +153,9 @@ function ValueProp({
           disabled={connecting}
           className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-white text-[14px] font-semibold text-[#1F4A3F] shadow-receipt transition active:scale-[0.98] disabled:opacity-70"
         >
-          <FilePlus2 className="h-4 w-4" />
+          {connecting ? <SkeletonDots label="Connecting wallet" /> : <FilePlus2 className="h-4 w-4" />}
           {connecting ? "Connecting…" : "Create a deal"}
-          <ArrowRight className="h-4 w-4 opacity-70" />
+          {!connecting && <ArrowRight className="h-4 w-4 opacity-70" />}
         </button>
       )}
 

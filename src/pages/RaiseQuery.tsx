@@ -12,6 +12,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useDealWithRemoteLoad } from "@/hooks/useDealWithRemoteLoad";
 import { resolveDealRole } from "@/lib/dealRole";
 import type { QueryReason } from "@/types/deal";
+import { SkeletonDots } from "@/components/LoadingStates";
 
 const buyerReasons: { value: QueryReason; label: string }[] = [
   { value: "product_not_received", label: "Product not received" },
@@ -158,6 +159,7 @@ export default function RaiseQuery() {
           ) : null}
 
           <button type="submit" className="btn-primary w-full" disabled={submitting}>
+            {submitting && <SkeletonDots label="Opening proof window" />}
             {submitting ? "Opening..." : "Open proof window"}
           </button>
         </form>

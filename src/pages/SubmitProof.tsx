@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { FilePlus, Loader2 } from "lucide-react";
+import { FilePlus } from "lucide-react";
+import { SkeletonDots } from "@/components/LoadingStates";
 import { useDealStore } from "@/store/dealStore";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusPill } from "@/components/StatusPill";
@@ -144,7 +145,7 @@ export default function SubmitProof() {
           ) : null}
           <button type="submit" className="btn-primary w-full" disabled={submitting}>
             {submitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <SkeletonDots label="Submitting proof" />
             ) : (
               <FilePlus className="h-4 w-4" />
             )}

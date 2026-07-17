@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { X, Camera, Loader2 } from "lucide-react";
+import { X, Camera } from "lucide-react";
+import { SkeletonDots } from "@/components/LoadingStates";
 
 /**
  * Full-screen camera QR scanner. Opens the rear camera, decodes a QR, and
@@ -99,12 +100,12 @@ export function QrScanner({
             <div className="absolute inset-0 grid place-items-center text-center text-[13px] text-white/80">
               {status === "starting" ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <SkeletonDots label="Starting camera" />
                   Starting camera…
                 </span>
               ) : status === "opening" ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <SkeletonDots label="Opening payment" />
                   Opening payment...
                 </span>
               ) : (

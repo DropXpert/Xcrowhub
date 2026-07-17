@@ -170,14 +170,74 @@
     </script>
   </head>
   <body>
+    <script>
+      document.documentElement.classList.add(
+        location.hostname === 'app.xcrowhub.com' ? 'mini-app-host' : 'public-site-host'
+      );
+    </script>
     <!-- Inline splash: visible immediately, hidden once React mounts -->
-    <div id="splash" style="position:fixed;inset:0;background:#F8F3EA;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999;transition:opacity 0.3s;color-scheme:only light;">
-      <img src="/logo-icon.png" alt="XcrowHub" style="width:72px;height:72px;border-radius:18px;background:#FFFDF8;box-shadow:0 1px 0 rgba(23,20,17,0.04),0 10px 28px -18px rgba(23,20,17,0.35);" />
-      <div style="width:32px;height:3px;border-radius:99px;background:#E4D8C7;overflow:hidden;margin-top:4px;">
-        <div style="height:100%;width:40%;background:#2F6F5E;border-radius:99px;animation:sl 1.2s ease-in-out infinite;"></div>
+    <div id="splash">
+      <div class="splash-public" role="status" aria-label="Loading XcrowHub">
+        <img src="/logo-icon.png" alt="XcrowHub" />
+        <div class="three-body" aria-hidden="true">
+          <div class="three-body__dot"></div>
+          <div class="three-body__dot"></div>
+          <div class="three-body__dot"></div>
+        </div>
+      </div>
+      <div class="splash-app" role="status" aria-label="Preparing XcrowHub">
+        <div class="splash-app-head">
+          <div class="splash-skeleton splash-logo"></div>
+          <div class="splash-app-title">
+            <div class="splash-skeleton splash-line splash-line-short"></div>
+            <div class="splash-skeleton splash-line"></div>
+          </div>
+          <div class="splash-skeleton splash-action"></div>
+        </div>
+        <div class="splash-skeleton splash-hero"></div>
+        <div class="splash-app-grid">
+          <div class="splash-skeleton splash-card"></div>
+          <div class="splash-skeleton splash-card"></div>
+        </div>
       </div>
     </div>
-    <style>html,body{background:#F8F3EA;color-scheme:only light}#splash.done{opacity:0;pointer-events:none}@keyframes sl{0%{transform:translateX(-100%)}50%{transform:translateX(150%)}100%{transform:translateX(150%)}}</style>
+    <style>
+      html,body{background:#F8F3EA;color-scheme:only light}
+      #splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#F8F3EA;transition:opacity .3s;color-scheme:only light}
+      #splash.done{opacity:0;pointer-events:none}
+      .splash-public{display:flex;flex-direction:column;align-items:center;gap:22px}
+      .splash-public>img{width:72px;height:72px;border-radius:18px;background:#fffdf8;box-shadow:0 1px 0 rgba(23,20,17,.04),0 10px 28px -18px rgba(23,20,17,.35)}
+      .public-site-host body,.public-site-host #splash{background:#0e1512}
+      .public-site-host .splash-public>img{background:#17231e;box-shadow:0 0 0 1px rgba(232,185,100,.18),0 16px 44px -18px rgba(0,0,0,.8)}
+      .splash-app{display:none;width:min(100% - 32px,440px);gap:16px}
+      .mini-app-host .splash-public{display:none}
+      .mini-app-host .splash-app{display:flex;flex-direction:column}
+      .splash-app-head{display:flex;align-items:center;gap:12px}
+      .splash-app-title{display:flex;min-width:0;flex:1;flex-direction:column;gap:8px}
+      .splash-app-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+      .splash-skeleton{position:relative;overflow:hidden;border-radius:12px;background:#e4d8c7}
+      .splash-skeleton:after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,253,248,.8),transparent);animation:splash-sweep 1.45s ease-in-out infinite}
+      .splash-logo{width:48px;height:48px;flex:none}
+      .splash-action{width:40px;height:40px;flex:none}
+      .splash-line{width:70%;height:10px;border-radius:99px}
+      .splash-line-short{width:38%;height:8px}
+      .splash-hero{height:174px;margin-top:8px}
+      .splash-card{height:92px}
+      .three-body{--uib-size:35px;--uib-speed:.8s;--uib-color:#e8b964;position:relative;display:inline-block;width:var(--uib-size);height:var(--uib-size);animation:three-body-spin calc(var(--uib-speed)*2.5) infinite linear}
+      .three-body__dot{position:absolute;width:30%;height:100%}
+      .three-body__dot:after{content:"";position:absolute;width:100%;height:0;padding-bottom:100%;border-radius:50%;background:var(--uib-color)}
+      .three-body__dot:nth-child(1){bottom:5%;left:0;transform:rotate(60deg);transform-origin:50% 85%}
+      .three-body__dot:nth-child(1):after{bottom:0;left:0;animation:three-body-wobble-1 var(--uib-speed) infinite ease-in-out;animation-delay:calc(var(--uib-speed)*-.3)}
+      .three-body__dot:nth-child(2){right:0;bottom:5%;transform:rotate(-60deg);transform-origin:50% 85%}
+      .three-body__dot:nth-child(2):after{bottom:0;left:0;animation:three-body-wobble-1 var(--uib-speed) infinite calc(var(--uib-speed)*-.15) ease-in-out}
+      .three-body__dot:nth-child(3){bottom:-5%;left:0;transform:translateX(116.666%)}
+      .three-body__dot:nth-child(3):after{top:0;left:0;animation:three-body-wobble-2 var(--uib-speed) infinite ease-in-out}
+      @keyframes splash-sweep{to{transform:translateX(100%)}}
+      @keyframes three-body-spin{to{transform:rotate(360deg)}}
+      @keyframes three-body-wobble-1{0%,100%{opacity:1;transform:translateY(0) scale(1)}50%{opacity:.8;transform:translateY(-66%) scale(.65)}}
+      @keyframes three-body-wobble-2{0%,100%{opacity:1;transform:translateY(0) scale(1)}50%{opacity:.8;transform:translateY(66%) scale(.65)}}
+      @media(prefers-reduced-motion:reduce){.splash-skeleton:after,.three-body,.three-body__dot:after{animation:none!important}}
+    </style>
     <script>
       window.__hideSplash=function(){var s=document.getElementById('splash');if(s){s.classList.add('done');setTimeout(function(){s.remove()},350);}};
       // Safety net: hide the splash after 4s no matter what. If React

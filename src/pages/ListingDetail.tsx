@@ -12,6 +12,7 @@ import { WalletAddressBadge } from "@/components/WalletAddressBadge";
 import { MakeOfferForm } from "@/components/MakeOfferForm";
 import { OfferCard } from "@/components/OfferCard";
 import { AlertDialog } from "@/components/AlertDialog";
+import { SkeletonDots } from "@/components/LoadingStates";
 import {
   ACTIVE_DEAL_LIMIT,
   ACTIVE_DEAL_LIMIT_MESSAGE,
@@ -475,7 +476,7 @@ export default function ListingDetail() {
                 disabled={buying || l.status !== "active" || l.quantityAvailable <= 0 || sellerDealLimitReached}
                 className="btn-primary w-full"
               >
-                <ShieldCheck className="h-4 w-4" />
+                {buying ? <SkeletonDots label="Creating marketplace deal" /> : <ShieldCheck className="h-4 w-4" />}
                 {buying
                   ? "Creating deal..."
                   : l.status !== "active"

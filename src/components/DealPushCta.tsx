@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Bell, ArrowRight, Loader2, X } from "lucide-react";
+import { Bell, ArrowRight, X } from "lucide-react";
+import { SkeletonDots } from "@/components/LoadingStates";
 import { useTelegramLink } from "@/lib/useTelegramLink";
 
 /* Inline Telegram-push CTA shown on the Deal Status / Timeline page for
@@ -57,7 +58,7 @@ export function DealPushCta() {
         className="shrink-0 inline-flex items-center gap-1 rounded-md bg-accent px-2.5 py-1.5 text-[12px] font-semibold text-white transition active:scale-[0.98] disabled:opacity-60"
       >
         {busy ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <SkeletonDots label="Connecting Telegram" />
         ) : (
           <>
             Connect

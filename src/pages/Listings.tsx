@@ -7,6 +7,7 @@ import { CategoryTag } from "@/components/CategoryTag";
 import type { DealCategory } from "@/types/deal";
 import { DEAL_CATEGORIES, CATEGORY_LABELS } from "@/types/deal";
 import { CATEGORY_ICON } from "@/lib/categoryIcons";
+import { ListingCardSkeleton } from "@/components/LoadingStates";
 
 export default function Listings() {
   const navigate = useNavigate();
@@ -107,7 +108,7 @@ export default function Listings() {
       {loading ? (
         <div className="grid grid-cols-2 gap-2.5">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="card h-32 animate-pulse bg-edge/20 px-3 py-3" />
+            <ListingCardSkeleton key={i} />
           ))}
         </div>
       ) : listings.length === 0 ? (

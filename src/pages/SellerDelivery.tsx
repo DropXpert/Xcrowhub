@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Loader2, Send } from "lucide-react";
+import { Send } from "lucide-react";
+import { SkeletonDots } from "@/components/LoadingStates";
 import { useDealStore } from "@/store/dealStore";
 import { PageHeader } from "@/components/PageHeader";
 import { ReceiptSummary } from "@/components/ReceiptSummary";
@@ -96,7 +97,7 @@ export default function SellerDelivery() {
 
           <button type="submit" className="btn-primary w-full" disabled={submitting}>
             {submitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <SkeletonDots label="Marking deal delivered" />
             ) : (
               <Send className="h-4 w-4" />
             )}
