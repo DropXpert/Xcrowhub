@@ -92,31 +92,81 @@ export function Nav({ scrolled }: { scrolled: boolean }) {
 export function Footer() {
   return (
     <footer className="border-t border-white/5 py-12">
-      <div className="mx-auto flex max-w-site flex-col items-center justify-between gap-6 px-5 md:flex-row">
-        <div className="flex items-center gap-3">
-          <img src="/logo-icon.png" alt="XcrowHub" className="h-9 w-9 rounded-xl" />
-          <div className="leading-tight">
-            <p className="text-[16px] font-bold">XcrowHub</p>
-            <p className="text-[13.5px] text-[#6F695C]">Protected payments for crypto deals</p>
+      <div className="mx-auto max-w-site px-5">
+        <div className="flex flex-col items-center justify-between gap-6 lg:flex-row">
+          <div className="flex items-center gap-3">
+            <img src="/logo-icon.png" alt="XcrowHub" className="h-9 w-9 rounded-xl" />
+            <div className="leading-tight">
+              <p className="text-[16px] font-bold">XcrowHub</p>
+              <p className="text-[13.5px] text-[#6F695C]">Protected payments for crypto deals</p>
+            </div>
           </div>
+
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[15px] text-[#928B7D]">
+            <a href="/#how" className="transition hover:text-[#EDE7DA]">How it works</a>
+            <a href="/#private-deals" className="transition hover:text-[#EDE7DA]">Private deals</a>
+            <Link to="/marketplace" className="transition hover:text-[#EDE7DA]">Marketplace</Link>
+            <a href="/#referral" className="transition hover:text-[#EDE7DA]">Refer &amp; earn</a>
+            <Link to="/docs" className="transition hover:text-[#EDE7DA]">Docs</Link>
+            <Link to="/terms" className="transition hover:text-[#EDE7DA]">Terms</Link>
+            <Link to="/privacy" className="transition hover:text-[#EDE7DA]">Privacy</Link>
+            <a href={NIMIQ_PAY_SITE} target="_blank" rel="noopener noreferrer" className="transition hover:text-[#EDE7DA]">Nimiq Pay</a>
+          </nav>
         </div>
 
-        <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[15px] text-[#928B7D]">
-          <a href="/#how" className="transition hover:text-[#EDE7DA]">How it works</a>
-          <a href="/#private-deals" className="transition hover:text-[#EDE7DA]">Private deals</a>
-          <Link to="/marketplace" className="transition hover:text-[#EDE7DA]">Marketplace</Link>
-          <a href="/#referral" className="transition hover:text-[#EDE7DA]">Refer &amp; earn</a>
-          <Link to="/docs" className="transition hover:text-[#EDE7DA]">Docs</Link>
-          <Link to="/terms" className="transition hover:text-[#EDE7DA]">Terms</Link>
-          <Link to="/privacy" className="transition hover:text-[#EDE7DA]">Privacy</Link>
-          <a href={NIMIQ_PAY_SITE} target="_blank" rel="noopener noreferrer" className="transition hover:text-[#EDE7DA]">Nimiq Pay</a>
-        </nav>
-
-        <p className="text-[14px] text-[#6F695C]">
-          © {new Date().getFullYear()} XcrowHub · Built on Nimiq Pay
-        </p>
+        <div className="mt-8 flex flex-col items-center justify-between gap-5 border-t border-white/5 pt-6 sm:flex-row">
+          <SocialDock />
+          <p className="text-center text-[14px] text-[#6F695C] sm:text-right">
+            © {new Date().getFullYear()} XcrowHub · Built on Nimiq Pay
+          </p>
+        </div>
       </div>
     </footer>
+  );
+}
+
+function SocialDock() {
+  return (
+    <div className="relative" aria-label="XcrowHub social links">
+      <svg width="0" height="0" className="absolute" aria-hidden="true" focusable="false">
+        <defs>
+          <clipPath id="landing-social-squircle" clipPathUnits="objectBoundingBox">
+            <path d="M 0,0.5 C 0,0 0,0 0.5,0 S 1,0 1,0.5 1,1 0.5,1 0,1 0,0.5" />
+          </clipPath>
+        </defs>
+      </svg>
+
+      <div aria-hidden="true" className="absolute inset-0 rounded-2xl border border-white/10 bg-black/20 shadow-2xl backdrop-blur-xl" />
+      <div className="relative flex items-end gap-2 p-2">
+        <a
+          href="https://x.com/xcrowhub"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Follow XcrowHub on X"
+          title="X · @xcrowhub"
+          style={{ clipPath: "url(#landing-social-squircle)" }}
+          className="grid h-12 w-12 place-items-center rounded-xl border border-white/15 bg-gradient-to-br from-[#303030] to-[#080808] text-white shadow-lg transition duration-300 ease-out hover:-translate-y-1 hover:scale-110 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6" aria-hidden="true">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
+          </svg>
+        </a>
+
+        <a
+          href="https://t.me/xcrowhubtelegram"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Join XcrowHub on Telegram"
+          title="Telegram · xcrowhubtelegram"
+          style={{ clipPath: "url(#landing-social-squircle)" }}
+          className="grid h-12 w-12 place-items-center rounded-xl border border-sky-400/40 bg-gradient-to-br from-[#38BDF8] to-[#1677B8] text-white shadow-lg transition duration-300 ease-out hover:-translate-y-1 hover:scale-110 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" className="h-7 w-7" aria-hidden="true">
+            <path d="M21.944 2.506a1.5 1.5 0 0 0-1.535-.204L2.744 9.117c-1.21.466-1.193 1.18-.218 1.478l4.532 1.414 1.759 5.455c.213.588.108.822.728.822.479 0 .69-.218.956-.478l2.186-2.126 4.55 3.36c.838.462 1.443.224 1.65-.777l2.986-14.073c.306-1.224-.468-1.78-1.229-1.686ZM8.87 11.684l8.84-5.58c.441-.267.846-.123.514.172l-7.274 6.562-.283 3.017-1.797-4.171Z" />
+          </svg>
+        </a>
+      </div>
+    </div>
   );
 }
 
