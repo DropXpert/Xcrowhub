@@ -68,7 +68,7 @@ export function Nav({ scrolled }: { scrolled: boolean }) {
           </Link>
 
           <nav className="hidden items-center gap-7 text-[15.5px] text-[#B9B1A2] md:flex">
-            <a href="/#how" className="transition hover:text-[#EDE7DA]">How it works</a>
+            <Link to="/how-it-works" className="transition hover:text-[#EDE7DA]">How it works</Link>
             <Link to="/marketplace" className="transition hover:text-[#EDE7DA]">Marketplace</Link>
             <a href="/#referral" className="transition hover:text-[#EDE7DA]">Refer &amp; earn</a>
             <Link to="/docs" className="transition hover:text-[#EDE7DA]">Docs</Link>
@@ -139,11 +139,13 @@ export function Footer() {
               <p className="text-[13px] font-bold text-gold">Site map</p>
               <div className="mt-6 flex flex-col items-start gap-4 text-[13px] text-[#B9B1A2]">
                 <Link to="/" className="underline decoration-gold/70 underline-offset-2 transition hover:text-gold-soft">Homepage</Link>
-                <a href="/#how" className="transition hover:text-gold-soft">How it works</a>
+                <Link to="/how-it-works" className="transition hover:text-gold-soft">How it works</Link>
                 <a href="/#private-deals" className="transition hover:text-gold-soft">Private deals</a>
                 <Link to="/marketplace" className="transition hover:text-gold-soft">Marketplace</Link>
                 <a href="/#referral" className="transition hover:text-gold-soft">Refer &amp; earn</a>
                 <Link to="/docs" className="transition hover:text-gold-soft">Docs</Link>
+                <Link to="/find" className="transition hover:text-gold-soft">Find a deal</Link>
+                <Link to="/support" className="transition hover:text-gold-soft">Support</Link>
               </div>
             </nav>
 

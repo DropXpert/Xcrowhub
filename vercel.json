@@ -1,6 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "trailingSlash": false,
   "rewrites": [
+    { "source": "/marketplace", "destination": "/_seo/marketplace.html" },
+    { "source": "/how-it-works", "destination": "/_seo/how-it-works.html" },
+    { "source": "/docs", "destination": "/_seo/docs.html" },
+    { "source": "/privacy", "destination": "/_seo/privacy.html" },
+    { "source": "/terms", "destination": "/_seo/terms.html" },
+    { "source": "/support", "destination": "/_seo/support.html" },
+    { "source": "/find", "destination": "/_seo/find.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

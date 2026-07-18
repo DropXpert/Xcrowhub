@@ -1,0 +1,92 @@
+{
+  "/": {
+    "title": "XcrowHub | Protected escrow for crypto P2P deals (NIM + USDT)",
+    "description": "XcrowHub locks buyer funds in escrow until delivery is confirmed. Private deals have 0% fees and marketplace sales support bidding.",
+    "eyebrow": "Protected crypto payments",
+    "heading": "Protected escrow for crypto P2P deals",
+    "summary": "Create private deals or marketplace sales in NIM and USDT. Buyer funds stay protected until delivery is confirmed."
+  },
+  "/marketplace": {
+    "title": "Crypto Escrow Marketplace with Bidding | XcrowHub",
+    "description": "Browse XcrowHub marketplace listings, buy at the listed price or make an offer, and complete every sale through protected crypto escrow.",
+    "eyebrow": "Marketplace",
+    "heading": "Buy, sell and bid with escrow protection",
+    "summary": "Public listings support buy-now payments and buyer offers. Each accepted sale becomes a protected escrow deal.",
+    "sections": [
+      { "heading": "Buy now or make an offer", "body": "A buyer can pay the listed price or submit a bid for the seller to accept, reject or counter." },
+      { "heading": "Escrow on every sale", "body": "Payment stays in a protected hold until the buyer confirms delivery or a dispute is resolved." },
+      { "heading": "Clear marketplace fee", "body": "Creating a listing is free. A 1% seller-side fee applies only when a marketplace sale completes." }
+    ]
+  },
+  "/how-it-works": {
+    "title": "How XcrowHub Escrow Works | Protected Crypto Deals",
+    "description": "Learn how XcrowHub protects a crypto deal from creation and escrow payment through delivery, confirmation, payout and dispute resolution.",
+    "eyebrow": "How it works",
+    "heading": "A protected deal from payment to payout",
+    "summary": "XcrowHub keeps the buyer's payment in escrow while the seller completes delivery. Both sides can track every stage.",
+    "sections": [
+      { "heading": "1. Create the deal", "body": "Set the item, currency, price and delivery terms, then share a private link or publish a marketplace listing." },
+      { "heading": "2. Buyer funds escrow", "body": "The buyer pays in NIM or USDT and both parties can see that the funds are protected." },
+      { "heading": "3. Seller delivers", "body": "The seller completes the order, marks it delivered and can attach supporting proof." },
+      { "heading": "4. Confirm and release", "body": "The buyer confirms delivery and the payout is released. A contested deal enters proof-based human review." }
+    ]
+  },
+  "/docs": {
+    "title": "XcrowHub Documentation | Escrow, Payments & Disputes",
+    "description": "Read the complete XcrowHub guide covering private deals, marketplace bidding, escrow payments, delivery, disputes, fees and referrals.",
+    "eyebrow": "Documentation",
+    "heading": "The complete XcrowHub guide",
+    "summary": "Understand private deals, marketplace orders, supported currencies, payment verification, disputes, fees and referrals.",
+    "sections": [
+      { "heading": "Private and marketplace deals", "body": "Choose a private shareable deal or a public reusable listing with buy-now and bidding options." },
+      { "heading": "Payments and delivery", "body": "Learn how NIM and USDT payments are verified and when escrowed funds can be released." },
+      { "heading": "Disputes and security", "body": "Review evidence windows, human dispute decisions, wallet authentication and account safety." }
+    ]
+  },
+  "/privacy": {
+    "title": "Privacy Policy | XcrowHub",
+    "description": "Read how XcrowHub handles wallet identifiers, deal records, support messages, technical data and privacy choices.",
+    "eyebrow": "Legal",
+    "heading": "XcrowHub privacy policy",
+    "summary": "This policy explains what information XcrowHub processes, why it is needed and the choices available to users.",
+    "sections": [
+      { "heading": "Information used", "body": "XcrowHub processes wallet identifiers, deal activity and information a user chooses to provide for support or disputes." },
+      { "heading": "Why it is used", "body": "Information is used to operate escrow, prevent abuse, resolve disputes and maintain service security." }
+    ]
+  },
+  "/terms": {
+    "title": "Terms of Service | XcrowHub",
+    "description": "Read the XcrowHub terms for escrow deals, marketplace listings, payments, delivery, disputes, fees and acceptable use.",
+    "eyebrow": "Legal",
+    "heading": "XcrowHub terms of service",
+    "summary": "These terms describe the responsibilities of buyers and sellers when using XcrowHub protected deals.",
+    "sections": [
+      { "heading": "Deal responsibilities", "body": "Users must provide accurate terms, pay agreed amounts, deliver as promised and submit truthful evidence." },
+      { "heading": "Escrow and disputes", "body": "Funds follow the deal state and may be released, refunded or split after an evidence-based dispute decision." }
+    ]
+  },
+  "/support": {
+    "title": "XcrowHub Support | Help with Escrow Deals",
+    "description": "Get XcrowHub help for deal payments, delivery, marketplace orders, disputes, wallet access and technical issues.",
+    "eyebrow": "Support",
+    "heading": "Help with your XcrowHub deal",
+    "summary": "Open the support area inside XcrowHub for account-specific help, or use the public guidance to prepare the details the team needs.",
+    "sections": [
+      { "heading": "Deal and payment help", "body": "Include the deal ID, payment transaction and a clear description of the issue." },
+      { "heading": "Dispute evidence", "body": "Keep delivery files, screenshots, messages and transaction hashes ready for the proof window." },
+      { "heading": "Technical support", "body": "Report the device, Nimiq Pay version, page and exact action that caused the problem." }
+    ]
+  },
+  "/find": {
+    "title": "Find an XcrowHub Deal | Open Deal ID or Link",
+    "description": "Open an existing XcrowHub escrow deal using its deal ID, shared payment link or QR code inside Nimiq Pay.",
+    "eyebrow": "Find a deal",
+    "heading": "Open an existing protected deal",
+    "summary": "Use the deal ID or shared XcrowHub link to open the correct escrow status and payment screen.",
+    "sections": [
+      { "heading": "Use a deal ID", "body": "Paste the XcrowHub deal ID exactly as it appears on the receipt or shared link." },
+      { "heading": "Open a shared link", "body": "A seller can share a private deal link that opens the correct deal inside Nimiq Pay." },
+      { "heading": "Scan the QR code", "body": "The XcrowHub scanner can read a deal QR code and take the buyer to the protected payment flow." }
+    ]
+  }
+}

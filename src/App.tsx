@@ -16,12 +16,16 @@ import { PageLoader } from "@/components/PageLoader";
 import { LandingLoader } from "@/components/LoadingStates";
 import { OpenInNimiqPay } from "@/components/OpenInNimiqPay";
 import { StarsBackground } from "@/components/StarsBackground";
+import { PublicSeo } from "@/components/PublicSeo";
 
 const Landing = lazy(() => import("@/pages/Landing"));
 const Marketplace = lazy(() => import("@/pages/Marketplace"));
 const Terms = lazy(() => import("@/pages/Terms"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 const Docs = lazy(() => import("@/pages/Docs"));
+const PublicHowItWorks = lazy(() => import("@/pages/PublicHowItWorks"));
+const PublicSupport = lazy(() => import("@/pages/PublicSupport"));
+const PublicFindDeal = lazy(() => import("@/pages/PublicFindDeal"));
 const OpenInApp = lazy(() => import("@/pages/OpenInApp"));
 const Home = lazy(() => import("@/pages/Home"));
 const CreateDeal = lazy(() => import("@/pages/CreateDeal"));
@@ -203,12 +207,16 @@ export default function App() {
     return (
       <Suspense fallback={<PublicRouteFallback />}>
         <SplashHider />
+        <PublicSeo />
         <Routes>
           <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/how-it-works" element={<PublicHowItWorks />} />
           <Route path="/open" element={<OpenInApp />} />
           <Route path="/docs" element={<Docs />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/support" element={<PublicSupport />} />
+          <Route path="/find" element={<PublicFindDeal />} />
           <Route path="*" element={<Landing />} />
         </Routes>
       </Suspense>
