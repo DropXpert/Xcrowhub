@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Search, Plus, Package, Star, ShieldCheck, Tag, Clock } from "lucide-react";
-import { useListingStore } from "@/store/listingStore";
+import { listingStockLabel, useListingStore } from "@/store/listingStore";
 import { useAuthStore } from "@/store/authStore";
 import { CategoryTag } from "@/components/CategoryTag";
 import type { DealCategory } from "@/types/deal";
 import { DEAL_CATEGORIES, CATEGORY_LABELS } from "@/types/deal";
 import { CATEGORY_ICON } from "@/lib/categoryIcons";
 import { ListingCardSkeleton } from "@/components/LoadingStates";
+import { ListingImage } from "@/components/ListingImage";
 
 export default function Listings() {
   const navigate = useNavigate();
@@ -133,13 +134,18 @@ export default function Listings() {
             // in USDT from a NIM login still owns the listing on their NIM
             // wallet.
             const isOwner = !!myAddr && myAddr === l.sellerAddr.toLowerCase();
-            const canAct = !!session && !isOwner;
+            const canAct = !!session && !isOwner && l.status === "active" && l.quantityAvailable > 0;
             return (
               <div key={l.id} className="marketplace-card flex min-w-0 flex-col">
                 <Link
                   to={`/listings/${l.id}`}
                   className="flex min-w-0 flex-1 flex-col gap-1.5 px-3 py-3"
                 >
+                  <ListingImage
+                    imagePath={l.imagePath}
+                    title={l.title}
+                    className="mb-1 aspect-[16/9] w-full rounded-lg border border-edge/60"
+                  />
                   {/* Title stays on its own row so long titles don't fight the
                       price for width in the 2-col mobile layout (~220px). */}
                   <p className="text-[12.5px] font-semibold leading-snug text-ink line-clamp-2 break-words">
@@ -173,7 +179,7 @@ export default function Listings() {
                       <span className="truncate">{l.deliveryHours}h</span>
                     </span>
                     <span className="min-w-0 max-w-full truncate text-[10.5px] leading-tight text-muted">
-                      {l.quantityAvailable} left
+                      {listingStockLabel(l)}
                     </span>
                     {l.ordersCount > 0 && (
                       <span className="inline-flex items-center gap-0.5 text-[10.5px] text-muted">

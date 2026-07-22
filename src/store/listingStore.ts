@@ -2,6 +2,12 @@ import { create } from "zustand";
 import { getSupabaseClient, isSupabaseConfiguredForClient } from "@/lib/supabase";
 import type { Currency, DealCategory } from "@/types/deal";
 import { clampNumber, INPUT_LIMITS, limitText, VALUE_LIMITS } from "@/lib/inputLimits";
+import {
+  fileToDataUrl,
+  LISTING_IMAGE_BUCKET,
+  listingImagePath,
+  prepareListingImage,
+} from "@/lib/listingImages";
 
 export interface Listing {
   id: string;
@@ -24,6 +30,7 @@ export interface Listing {
   requiredDeliveryProof: string;
   refundTerms: string;
   tags: string[];
+  imagePath: string | null;
   status: "active" | "paused" | "sold_out" | "deleted";
   quantityTotal: number;
   quantityAvailable: number;
@@ -46,9 +53,15 @@ export interface CreateListingInput {
   refundTerms: string;
   tags: string[];
   quantityTotal: number;
+  imageFile?: File | null;
 }
 
 function mapRow(row: any): Listing {
+  const quantityTotal = Math.max(1, Number(row.quantity_total ?? 1));
+  const quantityAvailable = Math.min(
+    quantityTotal,
+    Math.max(0, Number(row.quantity_available ?? quantityTotal)),
+  );
   return {
     id: row.id,
     sellerAddr: row.seller_addr,
@@ -65,13 +78,24 @@ function mapRow(row: any): Listing {
     requiredDeliveryProof: row.required_delivery_proof ?? "",
     refundTerms: row.refund_terms ?? "",
     tags: row.tags ?? [],
+    imagePath: row.image_path ?? null,
     status: row.status,
-    quantityTotal: Number(row.quantity_total ?? 1),
-    quantityAvailable: Number(row.quantity_available ?? 1),
+    quantityTotal,
+    quantityAvailable,
     ordersCount: row.orders_count ?? 0,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+export function listingStockLabel(
+  listing: Pick<Listing, "status" | "quantityAvailable" | "quantityTotal">,
+  detailed = false,
+): string {
+  if (listing.status === "sold_out" || listing.quantityAvailable <= 0) return "Sold out";
+  return detailed
+    ? `${listing.quantityAvailable} of ${listing.quantityTotal} left`
+    : `${listing.quantityAvailable} left`;
 }
 
 interface ListingState {
@@ -114,6 +138,7 @@ export const useListingStore = create<ListingState>((set, get) => ({
         .from("listings")
         .select("*")
         .eq("status", "active")
+        .gt("quantity_available", 0)
         .order("orders_count", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(50);
@@ -145,6 +170,7 @@ export const useListingStore = create<ListingState>((set, get) => ({
         .from("listings")
         .select("*")
         .eq("status", "active")
+        .gt("quantity_available", 0)
         .order("orders_count", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(12);
@@ -170,8 +196,9 @@ export const useListingStore = create<ListingState>((set, get) => ({
   },
 
   createListing: async (input) => {
-    const cleanInput: CreateListingInput = {
-      ...input,
+    const { imageFile, ...fields } = input;
+    const cleanInput: Omit<CreateListingInput, "imageFile"> = {
+      ...fields,
       title: limitText(input.title, INPUT_LIMITS.listingTitle),
       description: limitText(input.description, INPUT_LIMITS.description),
       priceAmount: String(clampNumber(Number(input.priceAmount), 0, VALUE_LIMITS.amount)),
@@ -183,10 +210,12 @@ export const useListingStore = create<ListingState>((set, get) => ({
       quantityTotal: clampNumber(Math.round(input.quantityTotal), 1, VALUE_LIMITS.quantity),
     };
     if (!isSupabaseConfiguredForClient()) {
+      const preparedImage = imageFile ? await prepareListingImage(imageFile) : null;
       const local: Listing = {
         id: `LS-${Math.random().toString(36).slice(2,6).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`,
         ...cleanInput,
         payoutAddr: cleanInput.payoutAddr || cleanInput.sellerAddr,
+        imagePath: preparedImage ? await fileToDataUrl(preparedImage) : null,
         status: "active",
         quantityTotal: cleanInput.quantityTotal,
         quantityAvailable: cleanInput.quantityTotal,
@@ -199,6 +228,20 @@ export const useListingStore = create<ListingState>((set, get) => ({
     }
 
     const sb = getSupabaseClient();
+    let imagePath: string | null = null;
+    if (imageFile) {
+      const preparedImage = await prepareListingImage(imageFile);
+      imagePath = listingImagePath(cleanInput.sellerAddr);
+      const { error: uploadError } = await sb.storage
+        .from(LISTING_IMAGE_BUCKET)
+        .upload(imagePath, preparedImage, {
+          cacheControl: "31536000",
+          contentType: preparedImage.type,
+          upsert: false,
+        });
+      if (uploadError) throw new Error(`Could not upload product image: ${uploadError.message}`);
+    }
+
     const { data, error } = await sb
       .from("listings")
       .insert({
@@ -215,11 +258,18 @@ export const useListingStore = create<ListingState>((set, get) => ({
         refund_terms: cleanInput.refundTerms,
         tags: cleanInput.tags,
         quantity_total: cleanInput.quantityTotal,
+        quantity_available: cleanInput.quantityTotal,
+        image_path: imagePath,
       })
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (imagePath) {
+        await sb.storage.from(LISTING_IMAGE_BUCKET).remove([imagePath]).catch(() => undefined);
+      }
+      throw new Error(error.message);
+    }
     const listing = mapRow(data);
     set((s) => ({ myListings: [listing, ...s.myListings] }));
     return listing;

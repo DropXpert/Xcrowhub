@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Tag, X, Wallet, Check } from "lucide-react";
+import { Tag, X, Wallet, Check, ImagePlus, Trash2 } from "lucide-react";
 import { useListingStore } from "@/store/listingStore";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/PageHeader";
@@ -12,6 +12,7 @@ import { isCustodyAddress } from "@/lib/config";
 import { getWallet } from "@/wallet";
 import type { Currency, DealCategory } from "@/types/deal";
 import { DEAL_CATEGORIES, CATEGORY_LABELS } from "@/types/deal";
+import { LISTING_IMAGE_MAX_SOURCE_BYTES, validateListingImage } from "@/lib/listingImages";
 
 function shortAddr(addr: string) {
   const c = addr.replace(/\s+/g, "");
@@ -27,6 +28,8 @@ export default function CreateListing() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [priceAmount, setPriceAmount] = useState("");
   const [priceCurrency, setPriceCurrency] = useState<Currency>("USDT");
   const [quantityTotal, setQuantityTotal] = useState("1");
@@ -45,6 +48,17 @@ export default function CreateListing() {
   const [confirmingPublish, setConfirmingPublish] = useState(false);
   const [formTab, setFormTab] = useState<"details" | "delivery">("details");
   const submitLock = useRef(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview(null);
+      return;
+    }
+    const preview = URL.createObjectURL(imageFile);
+    setImagePreview(preview);
+    return () => URL.revokeObjectURL(preview);
+  }, [imageFile]);
 
   // The payout address is a currency-matched wallet used ONLY at release-time
   // to receive funds. It is separate from the login session so linking an
@@ -91,6 +105,20 @@ export default function CreateListing() {
     if (!t || tags.includes(t) || tags.length >= 5) return;
     setTags([...tags, t]);
     setTagInput("");
+  }
+
+  function chooseImage(file: File | undefined) {
+    if (!file) return;
+    setError(null);
+    try {
+      validateListingImage(file);
+      setImageFile(file);
+    } catch (err: any) {
+      setImageFile(null);
+      setError(err.message ?? "Choose a valid product image.");
+    } finally {
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
   }
 
   function submit(e: React.FormEvent) {
@@ -152,6 +180,7 @@ export default function CreateListing() {
         requiredDeliveryProof: requiredDeliveryProof.trim(),
         refundTerms: refundTerms.trim(),
         tags,
+        imageFile,
       });
       setConfirmingPublish(false);
       navigate(`/listings/${listing.id}`);
@@ -265,6 +294,48 @@ export default function CreateListing() {
               value={quantityTotal}
               onChange={(e) => setQuantityTotal(e.target.value)}
             />
+          </Field>
+
+          <Field label="Product image" hint={`Optional JPG, PNG, or WebP up to ${LISTING_IMAGE_MAX_SOURCE_BYTES / 1024 / 1024} MB.`}>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={(event) => chooseImage(event.target.files?.[0])}
+            />
+            {imagePreview ? (
+              <div className="overflow-hidden rounded-xl border border-edge bg-bg">
+                <div className="aspect-[16/9] w-full overflow-hidden">
+                  <img src={imagePreview} alt="Product preview" className="h-full w-full object-cover" />
+                </div>
+                <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                  <p className="min-w-0 truncate text-[12px] text-muted">{imageFile?.name}</p>
+                  <div className="flex shrink-0 gap-2">
+                    <button type="button" className="btn-secondary px-2.5 py-1.5 text-[11.5px]" onClick={() => imageInputRef.current?.click()}>
+                      Change
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-secondary px-2.5 py-1.5 text-[11.5px] text-danger"
+                      onClick={() => setImageFile(null)}
+                      aria-label="Remove product image"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-edge bg-bg px-4 py-6 text-[13px] font-medium text-muted transition hover:border-accent/50 hover:text-ink"
+              >
+                <ImagePlus className="h-5 w-5 text-accent" />
+                Select product image
+              </button>
+            )}
           </Field>
           </div>
 

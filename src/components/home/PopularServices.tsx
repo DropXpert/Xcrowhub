@@ -6,9 +6,10 @@ import {
 import type { LucideIcon } from "lucide-react";
 import type { DealCategory } from "@/types/deal";
 import { CATEGORY_LABELS } from "@/types/deal";
-import { useListingStore } from "@/store/listingStore";
+import { listingStockLabel, useListingStore } from "@/store/listingStore";
 import type { Listing } from "@/store/listingStore";
 import { ListingCardSkeleton } from "@/components/LoadingStates";
+import { ListingImage } from "@/components/ListingImage";
 
 const ICON_MAP: Record<DealCategory, LucideIcon> = {
   digital_goods: Package,
@@ -70,6 +71,11 @@ function ServiceCard({ listing }: { listing: Listing }) {
       to={`/listings/${listing.id}`}
       className="snap-start flex w-[190px] shrink-0 flex-col gap-2.5 rounded-card border border-edge bg-surface p-4 shadow-receipt transition hover:border-accent/30 hover:shadow-lift active:scale-[0.99]"
     >
+      <ListingImage
+        imagePath={listing.imagePath}
+        title={listing.title}
+        className="aspect-[16/9] w-full rounded-lg border border-edge/60"
+      />
       <div className="flex items-center gap-2">
         <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent">
           <Icon className="h-3.5 w-3.5" />
@@ -90,7 +96,7 @@ function ServiceCard({ listing }: { listing: Listing }) {
         </span>
       </p>
 
-      <div className="mt-auto flex items-center gap-2 text-[11px] text-muted">
+      <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted">
         {listing.ordersCount > 0 && (
           <>
             <span>{listing.ordersCount} orders</span>
@@ -98,6 +104,8 @@ function ServiceCard({ listing }: { listing: Listing }) {
           </>
         )}
         <span>{listing.deliveryHours}h delivery</span>
+        <span className="text-edge">·</span>
+        <span>{listingStockLabel(listing)}</span>
       </div>
     </Link>
   );

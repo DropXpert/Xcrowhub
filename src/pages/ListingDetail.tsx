@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ShieldCheck, Clock, Star, Pause, Play, Trash2, Tag, Inbox } from "lucide-react";
-import { useListingStore } from "@/store/listingStore";
+import { listingStockLabel, useListingStore } from "@/store/listingStore";
 import { useDealStore } from "@/store/dealStore";
 import { useAuthStore, useIsAdmin } from "@/store/authStore";
 import { useOfferStore, isActiveOffer, isExpiredOffer, type Offer, type OfferStatus } from "@/store/offerStore";
@@ -13,6 +13,7 @@ import { MakeOfferForm } from "@/components/MakeOfferForm";
 import { OfferCard } from "@/components/OfferCard";
 import { AlertDialog } from "@/components/AlertDialog";
 import { SkeletonDots } from "@/components/LoadingStates";
+import { ListingImage } from "@/components/ListingImage";
 import {
   ACTIVE_DEAL_LIMIT,
   ACTIVE_DEAL_LIMIT_MESSAGE,
@@ -188,6 +189,11 @@ export default function ListingDetail() {
   async function handlePlaceOffer(amount: string, message: string) {
     if (!session || isOwner) return;
     if (offerSubmitLock.current || offerSubmitting) return;
+    if (l.status !== "active" || l.quantityAvailable <= 0) {
+      setShowOfferForm(false);
+      setOfferError("This listing is sold out or unavailable.");
+      return;
+    }
     offerSubmitLock.current = true;
     setOfferSubmitting(true);
     setOfferError(null);
@@ -329,7 +335,7 @@ export default function ListingDetail() {
     if (autoActionFiredRef.current) return;
     const action = searchParams.get("action");
     if (action !== "buy" && action !== "offer") return;
-    if (!listing || listing.status !== "active") return;
+    if (!listing || listing.status !== "active" || listing.quantityAvailable <= 0) return;
     if (!session || isOwner) return;
 
     autoActionFiredRef.current = true;
@@ -356,6 +362,12 @@ export default function ListingDetail() {
 
       {/* Main card */}
       <section className="card px-5 py-5 space-y-4">
+        <ListingImage
+          imagePath={l.imagePath}
+          title={l.title}
+          className="aspect-[16/9] w-full rounded-xl border border-edge/60"
+          eager
+        />
         <div className="flex items-start justify-between gap-3">
           <h1 className="min-w-0 break-words [overflow-wrap:anywhere] text-[18px] font-bold leading-snug text-ink flex-1">{l.title}</h1>
           <div className="shrink-0 text-right">
@@ -402,7 +414,7 @@ export default function ListingDetail() {
           <div className="min-w-0 space-y-0.5">
             <p className="field-label">Availability</p>
             <p className="text-[13px] font-medium text-ink">
-              {l.quantityAvailable > 0 ? `${l.quantityAvailable} of ${l.quantityTotal} left` : "Sold out"}
+              {listingStockLabel(l, true)}
             </p>
           </div>
         </div>
@@ -488,7 +500,7 @@ export default function ListingDetail() {
                   : `Buy now for ${l.priceAmount} ${l.priceCurrency}`}
               </button>
 
-              {!myOffer && session && l.status === "active" && (
+              {!myOffer && session && l.status === "active" && l.quantityAvailable > 0 && (
                 <button
                   type="button"
                   onClick={() => { setShowOfferForm(true); setOfferError(null); }}
@@ -565,8 +577,8 @@ export default function ListingDetail() {
           <p className="text-[13px] font-semibold text-ink">
             {isOwner ? "Manage listing" : "Admin actions"}
           </p>
-          <div className={`grid gap-2 ${isOwner ? "grid-cols-2" : "grid-cols-1"}`}>
-            {isOwner && (
+          <div className={`grid gap-2 ${isOwner && l.status !== "sold_out" ? "grid-cols-2" : "grid-cols-1"}`}>
+            {isOwner && l.status !== "sold_out" && (
               <button
                 type="button"
                 onClick={handleToggleStatus}
