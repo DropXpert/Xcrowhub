@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Tag, X, Wallet, Check, ImagePlus, Trash2 } from "lucide-react";
+import { Tag, X, Wallet, Check, ImagePlus, Trash2, ExternalLink } from "lucide-react";
 import { useListingStore } from "@/store/listingStore";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/PageHeader";
@@ -9,6 +9,11 @@ import { ConsentCheck } from "@/components/ConsentCheck";
 import { AlertDialog } from "@/components/AlertDialog";
 import { SkeletonDots } from "@/components/LoadingStates";
 import { isCustodyAddress } from "@/lib/config";
+import {
+  isNimiqPayHost,
+  nimiqPayDeeplink,
+  openNimiqPayOrStore,
+} from "@/lib/host";
 import { getWallet } from "@/wallet";
 import type { Currency, DealCategory } from "@/types/deal";
 import { DEAL_CATEGORIES, CATEGORY_LABELS } from "@/types/deal";
@@ -25,6 +30,7 @@ export default function CreateListing() {
   const session = useAuthStore((s) => s.session);
   const connect = useAuthStore((s) => s.connect);
   const authLoading = useAuthStore((s) => s.loading);
+  const inNimiqPay = isNimiqPayHost();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -70,18 +76,29 @@ export default function CreateListing() {
   // Auto-populate the payout address when the currency matches the login
   // wallet, so single-currency users don't see an extra "link wallet" step.
   useEffect(() => {
-    if (session?.address && session.currency === priceCurrency) {
+    const canUseSessionAddress =
+      priceCurrency !== "USDT" || inNimiqPay;
+    if (
+      canUseSessionAddress &&
+      session?.address &&
+      session.currency === priceCurrency
+    ) {
       setPayoutAddr(session.address);
       return;
     }
     setPayoutAddr("");
-  }, [session?.address, session?.currency, priceCurrency]);
+  }, [inNimiqPay, session?.address, session?.currency, priceCurrency]);
 
   async function linkPayoutWallet() {
     if (linking) return;
     setError(null);
     setLinking(true);
     try {
+      if (priceCurrency === "USDT" && !inNimiqPay) {
+        throw new Error(
+          "Open this listing inside Nimiq Pay to use its USDT payout wallet."
+        );
+      }
       // Read the address from the currency-specific provider WITHOUT going
       // through authStore.connect() -- that would sign a new JWT and reset
       // the session's address, effectively making the user look like a
@@ -348,12 +365,35 @@ export default function CreateListing() {
               match the login wallet. Reads the address from the currency's
               provider without touching the auth session, so linking a USDT
               wallet does NOT log the user out of their NIM identity. */}
-          {session?.address && session.currency !== priceCurrency && (
+          {session?.address &&
+            (session.currency !== priceCurrency ||
+              (priceCurrency === "USDT" && !inNimiqPay)) && (
             <div className="rounded-lg border border-edge bg-bg px-3 py-3 space-y-2">
               <div className="flex items-start gap-2">
                 <Wallet className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                 <div className="min-w-0 flex-1 text-[12.5px] leading-relaxed text-muted">
-                  You're signed in with your <span className="font-semibold text-ink">{session.currency}</span> wallet, but this listing pays out in <span className="font-semibold text-ink">{priceCurrency}</span>. Link your {priceCurrency} wallet to receive payouts — your XcrowHub identity stays on your {session.currency} wallet.
+                  {priceCurrency === "USDT" && !inNimiqPay ? (
+                    <>
+                      USDT payouts must use your{" "}
+                      <span className="font-semibold text-ink">
+                        Nimiq Pay Polygon wallet
+                      </span>
+                      . A browser extension wallet will not be selected.
+                    </>
+                  ) : (
+                    <>
+                      You're signed in with your{" "}
+                      <span className="font-semibold text-ink">
+                        {session.currency}
+                      </span>{" "}
+                      wallet, but this listing pays out in{" "}
+                      <span className="font-semibold text-ink">
+                        {priceCurrency}
+                      </span>
+                      . Link your {priceCurrency} wallet to receive payouts —
+                      your XcrowHub identity stays on your {session.currency} wallet.
+                    </>
+                  )}
                 </div>
               </div>
               {payoutAddr ? (
@@ -369,6 +409,24 @@ export default function CreateListing() {
                   >
                     Change
                   </button>
+                </div>
+              ) : priceCurrency === "USDT" && !inNimiqPay ? (
+                <div className="space-y-2">
+                  <p className="text-[12px] leading-relaxed text-muted">
+                    Your Nimiq Pay USDT address is available only inside the
+                    app. Opening this screen there prevents a browser extension
+                    wallet from being selected by mistake.
+                  </p>
+                  <a
+                    href={nimiqPayDeeplink("/listings/new")}
+                    onClick={openNimiqPayOrStore(
+                      nimiqPayDeeplink("/listings/new")
+                    )}
+                    className="btn-secondary w-full text-[12.5px]"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Open in Nimiq Pay
+                  </a>
                 </div>
               ) : (
                 <button
