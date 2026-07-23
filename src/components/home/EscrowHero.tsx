@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import {
-  ShieldCheck, FilePlus2, ArrowRight, Lock, CheckCircle2, QrCode,
+  ShieldCheck, FilePlus2, ArrowRight, Lock, QrCode,
 } from "lucide-react";
 import type { Currency } from "@/types/deal";
 import { SkeletonDots } from "@/components/LoadingStates";
@@ -134,10 +134,6 @@ function ValueProp({
   return (
     <div className="lg:grid lg:min-h-[226px] lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:items-center lg:gap-12">
       <div>
-        <span className="mb-4 hidden w-fit items-center gap-2 rounded-pill border border-white/15 bg-white/[0.07] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/75 lg:inline-flex">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          Payment protection
-        </span>
       <h1 className="text-[24px] font-bold leading-[1.15] tracking-tight lg:max-w-[520px] lg:text-[44px] lg:leading-[1.05]">
         Get paid safely.
         <br />
@@ -187,15 +183,6 @@ function ValueProp({
         <QrCode className="h-4 w-4" />
         Scan to pay
       </Link>
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-white/80 lg:mt-4 lg:justify-center">
-        <span className="inline-flex items-center gap-1">
-          <Lock className="h-3 w-3" /> Funds held on-chain
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <CheckCircle2 className="h-3 w-3" /> Released on confirm
-        </span>
       </div>
       </div>
     </div>
