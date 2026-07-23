@@ -486,7 +486,7 @@ export default function Profile() {
       {editing &&
         createPortal(
           <div
-            className="fixed inset-0 z-[120] flex min-h-0 items-center justify-center overflow-y-auto px-4 py-3 focus-within:items-start focus-within:py-2"
+            className="username-editor-overlay fixed inset-0 z-[120] flex min-h-0 items-center justify-center overflow-y-auto px-4 py-3"
           >
             <button
               type="button"

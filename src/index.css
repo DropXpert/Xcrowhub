@@ -332,6 +332,15 @@
     .input-focused [data-bottom-nav] {
       display: none !important;
     }
+
+    /* Keep the username dialog centered unless the software keyboard is
+       actively serving its text input. Buttons in the confirmation step must
+       not move the dialog to the top. */
+    .username-editor-overlay:has(input:focus) {
+      align-items: flex-start;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
   }
 
   /* Safe-area utilities for full-screen overlays (chat, scanners) that
