@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ExternalLink, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { SkeletonDots } from "@/components/LoadingStates";
 import { useDealStore } from "@/store/dealStore";
 import { useAuthStore } from "@/store/authStore";
@@ -12,11 +12,6 @@ import { AlertDialog } from "@/components/AlertDialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { isCustodyAddress } from "@/lib/config";
 import {
-  isNimiqPayHost,
-  nimiqPayDeeplink,
-  openNimiqPayOrStore,
-} from "@/lib/host";
-import {
   ACTIVE_DEAL_LIMIT,
   ACTIVE_DEAL_LIMIT_MESSAGE,
   countActiveSellerDeals,
@@ -24,6 +19,7 @@ import {
 import type { Currency, DealCategory } from "@/types/deal";
 import { DEAL_CATEGORIES, CATEGORY_LABELS } from "@/types/deal";
 import { CATEGORY_ICON } from "@/lib/categoryIcons";
+import { NimUsdtEstimate } from "@/components/NimUsdtEstimate";
 
 interface FormState {
   title: string;
@@ -41,7 +37,7 @@ const initialState: FormState = {
   title: "",
   description: "",
   priceAmount: "",
-  priceCurrency: "USDT",
+  priceCurrency: "NIM",
   category: "other",
   deliveryDeadlineHours: "48",
   confirmationWindowHours: "24",
@@ -57,7 +53,6 @@ export default function CreateDeal() {
   const session = useAuthStore((s) => s.session);
   const connect = useAuthStore((s) => s.connect);
   const authLoading = useAuthStore((s) => s.loading);
-  const inNimiqPay = isNimiqPayHost();
   const [form, setForm] = useState<FormState>(initialState);
   const [sellerAddress, setSellerAddress] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -74,18 +69,12 @@ export default function CreateDeal() {
 
   useEffect(() => {
     // Use already-connected session address — avoids re-prompting the wallet
-    const canUseSessionAddress =
-      form.priceCurrency !== "USDT" || inNimiqPay;
-    if (
-      canUseSessionAddress &&
-      session?.address &&
-      session.currency === form.priceCurrency
-    ) {
+    if (session?.address && session.currency === form.priceCurrency) {
       setSellerAddress(session.address);
       return;
     }
     setSellerAddress("");
-  }, [form.priceCurrency, inNimiqPay, session?.address, session?.currency]);
+  }, [form.priceCurrency, session?.address, session?.currency]);
 
   const activeDealCount = useMemo(
     () => countActiveSellerDeals(Object.values(dealsMap), sellerAddress),
@@ -125,11 +114,6 @@ export default function CreateDeal() {
     setSubmitting(true);
     setError(null);
     try {
-      if (form.priceCurrency === "USDT" && !inNimiqPay) {
-        throw new Error(
-          "Open this deal inside Nimiq Pay to use its USDT payout wallet."
-        );
-      }
       let nextSellerAddress = sellerAddress;
       if (!nextSellerAddress) {
         await connect(form.priceCurrency);
@@ -211,17 +195,22 @@ export default function CreateDeal() {
           </Field>
 
           <Field label="Price" required>
-            <input
-              className="input tabular-nums"
-              type="number"
-              inputMode="decimal"
-              min="0"
-              max="1000000000"
-              step="0.01"
-              placeholder="20"
-              value={form.priceAmount}
-              onChange={(e) => update("priceAmount", e.target.value)}
-            />
+            <div className="space-y-2">
+              <input
+                className="input tabular-nums"
+                type="number"
+                inputMode="decimal"
+                min="0"
+                max="1000000000"
+                step="0.01"
+                placeholder="20"
+                value={form.priceAmount}
+                onChange={(e) => update("priceAmount", e.target.value)}
+              />
+              {form.priceCurrency === "NIM" && (
+                <NimUsdtEstimate nimAmount={form.priceAmount} />
+              )}
+            </div>
           </Field>
 
           <Field label="Currency">
@@ -230,7 +219,7 @@ export default function CreateDeal() {
               onValueChange={(v) => update("priceCurrency", v as Currency)}
               className="grid grid-cols-2 gap-2"
             >
-              {(["USDT", "NIM"] as Currency[]).map((c) => {
+              {(["NIM", "USDT"] as Currency[]).map((c) => {
                 const checked = form.priceCurrency === c;
                 return (
                   <label
@@ -355,17 +344,6 @@ export default function CreateDeal() {
               <SkeletonDots label="Connecting payout wallet" />
               Connecting...
             </span>
-          ) : form.priceCurrency === "USDT" && !inNimiqPay ? (
-            <a
-              href={nimiqPayDeeplink("/create/new")}
-              onClick={openNimiqPayOrStore(
-                nimiqPayDeeplink("/create/new")
-              )}
-              className="btn-secondary shrink-0 px-3 py-2 text-[12.5px]"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Open Nimiq Pay
-            </a>
           ) : (
             <button
               type="button"
@@ -376,14 +354,6 @@ export default function CreateDeal() {
             </button>
           )}
         </section>
-
-        {form.priceCurrency === "USDT" && !inNimiqPay && !sellerAddress ? (
-          <p className="text-[12.5px] leading-relaxed text-muted">
-            A normal browser cannot read your Nimiq Pay USDT address. Open this
-            screen in Nimiq Pay so payouts use its Polygon wallet instead of a
-            browser extension.
-          </p>
-        ) : null}
 
         {sellerAddress ? (
           <p

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Tag, X } from "lucide-react";
 import { SkeletonDots } from "@/components/LoadingStates";
+import { NimUsdtEstimate } from "@/components/NimUsdtEstimate";
 import type { Currency } from "@/types/deal";
 
 const MAX_AMOUNT = 1e9;
@@ -65,6 +66,7 @@ export function MakeOfferForm({
             {currency}
           </span>
         </div>
+        {currency === "NIM" && <NimUsdtEstimate nimAmount={amount} />}
         <p className="text-[12px] text-muted">
           List price is {listPrice} {currency}. The seller can accept, decline, or counter.
         </p>

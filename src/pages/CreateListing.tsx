@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Tag, X, Wallet, Check, ImagePlus, Trash2, ExternalLink } from "lucide-react";
+import { Tag, X, Wallet, Check, ImagePlus, Trash2 } from "lucide-react";
 import { useListingStore } from "@/store/listingStore";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/PageHeader";
@@ -9,15 +9,11 @@ import { ConsentCheck } from "@/components/ConsentCheck";
 import { AlertDialog } from "@/components/AlertDialog";
 import { SkeletonDots } from "@/components/LoadingStates";
 import { isCustodyAddress } from "@/lib/config";
-import {
-  isNimiqPayHost,
-  nimiqPayDeeplink,
-  openNimiqPayOrStore,
-} from "@/lib/host";
 import { getWallet } from "@/wallet";
 import type { Currency, DealCategory } from "@/types/deal";
 import { DEAL_CATEGORIES, CATEGORY_LABELS } from "@/types/deal";
 import { LISTING_IMAGE_MAX_SOURCE_BYTES, validateListingImage } from "@/lib/listingImages";
+import { NimUsdtEstimate } from "@/components/NimUsdtEstimate";
 
 function shortAddr(addr: string) {
   const c = addr.replace(/\s+/g, "");
@@ -30,14 +26,13 @@ export default function CreateListing() {
   const session = useAuthStore((s) => s.session);
   const connect = useAuthStore((s) => s.connect);
   const authLoading = useAuthStore((s) => s.loading);
-  const inNimiqPay = isNimiqPayHost();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [priceAmount, setPriceAmount] = useState("");
-  const [priceCurrency, setPriceCurrency] = useState<Currency>("USDT");
+  const [priceCurrency, setPriceCurrency] = useState<Currency>("NIM");
   const [quantityTotal, setQuantityTotal] = useState("1");
   const [category, setCategory] = useState<DealCategory>("other");
   const [deliveryHours, setDeliveryHours] = useState("48");
@@ -76,29 +71,18 @@ export default function CreateListing() {
   // Auto-populate the payout address when the currency matches the login
   // wallet, so single-currency users don't see an extra "link wallet" step.
   useEffect(() => {
-    const canUseSessionAddress =
-      priceCurrency !== "USDT" || inNimiqPay;
-    if (
-      canUseSessionAddress &&
-      session?.address &&
-      session.currency === priceCurrency
-    ) {
+    if (session?.address && session.currency === priceCurrency) {
       setPayoutAddr(session.address);
       return;
     }
     setPayoutAddr("");
-  }, [inNimiqPay, session?.address, session?.currency, priceCurrency]);
+  }, [session?.address, session?.currency, priceCurrency]);
 
   async function linkPayoutWallet() {
     if (linking) return;
     setError(null);
     setLinking(true);
     try {
-      if (priceCurrency === "USDT" && !inNimiqPay) {
-        throw new Error(
-          "Open this listing inside Nimiq Pay to use its USDT payout wallet."
-        );
-      }
       // Read the address from the currency-specific provider WITHOUT going
       // through authStore.connect() -- that would sign a new JWT and reset
       // the session's address, effectively making the user look like a
@@ -279,22 +263,27 @@ export default function CreateListing() {
 
           <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,7rem)] gap-3">
             <Field label="Price" required className="min-w-0">
-              <input
-                className="input tabular-nums"
-                type="number"
-                inputMode="decimal"
-                min="0"
-                max="1000000000"
-                step="0.01"
-                placeholder="50"
-                value={priceAmount}
-                onChange={(e) => setPriceAmount(e.target.value)}
-              />
+              <div className="space-y-2">
+                <input
+                  className="input tabular-nums"
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  max="1000000000"
+                  step="0.01"
+                  placeholder="50"
+                  value={priceAmount}
+                  onChange={(e) => setPriceAmount(e.target.value)}
+                />
+                {priceCurrency === "NIM" && (
+                  <NimUsdtEstimate nimAmount={priceAmount} />
+                )}
+              </div>
             </Field>
             <Field label="Currency" className="min-w-0">
               <select className="select" value={priceCurrency} onChange={(e) => setPriceCurrency(e.target.value as Currency)}>
-                <option value="USDT">USDT</option>
                 <option value="NIM">NIM</option>
+                <option value="USDT">USDT</option>
               </select>
             </Field>
           </div>
@@ -365,22 +354,11 @@ export default function CreateListing() {
               match the login wallet. Reads the address from the currency's
               provider without touching the auth session, so linking a USDT
               wallet does NOT log the user out of their NIM identity. */}
-          {session?.address &&
-            (session.currency !== priceCurrency ||
-              (priceCurrency === "USDT" && !inNimiqPay)) && (
+          {session?.address && session.currency !== priceCurrency && (
             <div className="rounded-lg border border-edge bg-bg px-3 py-3 space-y-2">
               <div className="flex items-start gap-2">
                 <Wallet className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                 <div className="min-w-0 flex-1 text-[12.5px] leading-relaxed text-muted">
-                  {priceCurrency === "USDT" && !inNimiqPay ? (
-                    <>
-                      USDT payouts must use your{" "}
-                      <span className="font-semibold text-ink">
-                        Nimiq Pay Polygon wallet
-                      </span>
-                      . A browser extension wallet will not be selected.
-                    </>
-                  ) : (
                     <>
                       You're signed in with your{" "}
                       <span className="font-semibold text-ink">
@@ -393,7 +371,6 @@ export default function CreateListing() {
                       . Link your {priceCurrency} wallet to receive payouts —
                       your XcrowHub identity stays on your {session.currency} wallet.
                     </>
-                  )}
                 </div>
               </div>
               {payoutAddr ? (
@@ -409,24 +386,6 @@ export default function CreateListing() {
                   >
                     Change
                   </button>
-                </div>
-              ) : priceCurrency === "USDT" && !inNimiqPay ? (
-                <div className="space-y-2">
-                  <p className="text-[12px] leading-relaxed text-muted">
-                    Your Nimiq Pay USDT address is available only inside the
-                    app. Opening this screen there prevents a browser extension
-                    wallet from being selected by mistake.
-                  </p>
-                  <a
-                    href={nimiqPayDeeplink("/listings/new")}
-                    onClick={openNimiqPayOrStore(
-                      nimiqPayDeeplink("/listings/new")
-                    )}
-                    className="btn-secondary w-full text-[12.5px]"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Open in Nimiq Pay
-                  </a>
                 </div>
               ) : (
                 <button
