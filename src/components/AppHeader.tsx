@@ -196,8 +196,7 @@ export function AppHeader() {
         </span>
       </Link>
       <div className="hidden min-w-0 lg:block">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">XcrowHub workspace</p>
-        <p className="mt-0.5 truncate text-[18px] font-bold tracking-tight text-ink">{desktopSection(pathname)}</p>
+        <p className="truncate text-[18px] font-bold tracking-tight text-ink">{desktopSection(pathname)}</p>
       </div>
 
       <div className="flex shrink-0 items-center gap-2 lg:ml-auto">

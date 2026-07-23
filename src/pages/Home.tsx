@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Store, ArrowRight, Bug } from "lucide-react";
+import { Search, Store, ArrowRight, Bug, FilePlus2, Lock, CheckCircle2 } from "lucide-react";
 import { useDealStore } from "@/store/dealStore";
 import { useAuthStore } from "@/store/authStore";
 import { useProfileStore } from "@/store/profileStore";
@@ -117,6 +117,38 @@ export default function Home() {
         />
       </div>
 
+      <Link
+        to="/how-it-works"
+        className="group hidden rounded-[22px] border border-edge bg-surface px-5 py-5 shadow-receipt transition hover:border-accent/30 hover:shadow-lift lg:block"
+      >
+        <div className="flex items-center justify-between gap-6">
+          <div className="shrink-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">How it works</p>
+            <p className="mt-1 text-[16px] font-bold tracking-tight text-ink">Escrow in three clear steps</p>
+          </div>
+          <div className="grid min-w-0 flex-1 grid-cols-3 divide-x divide-edge">
+            {[
+              { icon: FilePlus2, step: "01", label: "Set the deal terms" },
+              { icon: Lock, step: "02", label: "Buyer locks payment" },
+              { icon: CheckCircle2, step: "03", label: "Confirm and release" },
+            ].map(({ icon: Icon, step, label }) => (
+              <div key={step} className="flex items-center gap-3 px-5">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[10px] font-semibold tracking-widest text-muted">{step}</span>
+                  <span className="block truncate text-[12.5px] font-semibold text-ink">{label}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-edge text-accent transition group-hover:border-accent/30 group-hover:bg-accent-soft">
+            <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+          </span>
+        </div>
+      </Link>
+
       {/* Seller CTA — was on the marketplace page previously. Moved here so
           connected users see it right below the hero (highest-attention
           slot on Home) and the marketplace itself stays a clean browse
@@ -193,7 +225,7 @@ export default function Home() {
       <div className="flex flex-col items-center gap-2 border-t border-dashed border-edge pt-4 text-center">
         <Link
           to="/how-it-works"
-          className="text-[12px] font-medium text-accent underline-offset-2 hover:underline"
+          className="text-[12px] font-medium text-accent underline-offset-2 hover:underline lg:hidden"
         >
           New here? How escrow works ›
         </Link>

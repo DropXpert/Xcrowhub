@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom";
-import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { tourUserKey, useTourStore } from "@/store/tourStore";
 
@@ -7,7 +7,7 @@ function SplitWelcomeText({ text }: { text: string }) {
   return (
     <h1
       aria-label={text}
-      className="max-w-[18rem] text-center text-[30px] font-black leading-[1.05] tracking-[-0.04em] text-white"
+      className="w-full whitespace-nowrap text-center text-[clamp(22px,7vw,30px)] font-black leading-[1.05] tracking-[-0.04em] text-white"
     >
       <span aria-hidden="true">
         {Array.from(text).map((character, index) => (
@@ -65,23 +65,15 @@ export function NewUserWelcome() {
           className="welcome-fade mt-4 max-w-[17rem] text-[13.5px] leading-relaxed text-white/70"
           style={{ animationDelay: "900ms" }}
         >
-          Create protected deals, sell services, and get help—all with escrow
-          keeping the payment safe.
+          Create protected deals, sell services, and get help with escrow
+          keeping every payment safe.
         </p>
-
-        <div
-          className="welcome-fade mt-5 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11.5px] font-medium text-white/75"
-          style={{ animationDelay: "1050ms" }}
-        >
-          <ShieldCheck className="h-3.5 w-3.5 text-[#71e8bd]" />
-          Your wallet keys always stay in your wallet
-        </div>
 
         <button
           type="button"
           onClick={() => finishWelcome(session.address)}
           className="welcome-fade mt-7 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-[14px] font-bold text-[#10211b] shadow-lg transition active:scale-[0.98]"
-          style={{ animationDelay: "1150ms" }}
+          style={{ animationDelay: "1050ms" }}
         >
           Show me around
           <ArrowRight className="h-4 w-4" />

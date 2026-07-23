@@ -73,7 +73,6 @@ export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [confirmingUsername, setConfirmingUsername] = useState(false);
   const [draftUsername, setDraftUsername] = useState("");
-  const [editorInputFocused, setEditorInputFocused] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const usernameInputRef = useRef<HTMLInputElement>(null);
 
@@ -145,7 +144,6 @@ export default function Profile() {
     if (!isAdmin && (profile.usernameLocked || profile.username.trim())) return;
     setDraftUsername(isAdmin ? profile.username : "");
     setConfirmingUsername(false);
-    setEditorInputFocused(false);
     setEditing(true);
   }
 
@@ -488,15 +486,11 @@ export default function Profile() {
       {editing &&
         createPortal(
           <div
-            className={`fixed inset-0 z-[120] flex min-h-0 justify-center overflow-y-auto px-4 ${
-              editorInputFocused ? "items-start py-2" : "items-center py-3"
-            }`}
+            className="fixed inset-0 z-[120] flex min-h-0 items-center justify-center overflow-y-auto px-4 py-3 focus-within:items-start focus-within:py-2"
           >
             <button
               type="button"
-              className={`absolute inset-0 cursor-default transition-colors ${
-                editorInputFocused ? "bg-bg/90" : "bg-black/55 backdrop-blur-[2px]"
-              }`}
+              className="absolute inset-0 cursor-default bg-black/55 backdrop-blur-[2px]"
               aria-label="Close username editor"
               onClick={() => setEditing(false)}
             />
@@ -505,13 +499,12 @@ export default function Profile() {
               aria-modal="true"
               aria-labelledby="username-editor-title"
               className="relative z-10 w-full max-w-sm space-y-4 overflow-y-auto rounded-2xl border border-edge bg-surface p-5 shadow-lift"
-              style={{ maxHeight: "calc(100vh - 1rem)" }}
+              style={{ maxHeight: "calc(100dvh - 1rem)" }}
               onSubmit={(e) => {
                 e.preventDefault();
                 if (confirmingUsername) saveEdit();
                 else if (draftUsername.trim()) {
                   usernameInputRef.current?.blur();
-                  setEditorInputFocused(false);
                   setConfirmingUsername(true);
                 }
               }}
@@ -588,12 +581,11 @@ export default function Profile() {
                       placeholder="Username (max 32 chars)"
                       value={draftUsername}
                       maxLength={32}
-                      autoComplete="nickname"
+                      autoComplete="off"
                       autoCapitalize="none"
                       spellCheck={false}
+                      inputMode="text"
                       enterKeyHint="done"
-                      onFocus={() => setEditorInputFocused(true)}
-                      onBlur={() => setEditorInputFocused(false)}
                       onChange={(e) => setDraftUsername(e.target.value)}
                     />
                   </label>

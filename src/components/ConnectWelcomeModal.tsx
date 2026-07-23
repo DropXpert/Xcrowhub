@@ -92,10 +92,6 @@ export function ConnectWelcomeModal() {
               {error}
             </p>
           )}
-          <p className="mt-2 text-center text-[11px] text-muted">
-            Your keys stay in Nimiq Pay or Nimiq Keyguard. XcrowHub never
-            receives them.
-          </p>
           {!inNimiqPay && (
             <div className="mt-4 grid gap-2 border-t border-edge pt-4">
               <p className="text-center text-[11.5px] text-muted">
