@@ -89,16 +89,192 @@
 @layer components {
   .app-shell {
     @apply mx-auto min-h-full w-full max-w-app px-5 pb-32 pt-6
-           lg:max-w-site lg:pb-12 lg:pl-[16.5rem] lg:pr-6 lg:pt-8;
+           lg:max-w-site lg:pb-12 lg:pl-[17rem] lg:pr-6 lg:pt-8;
   }
 
   /* The installed app keeps its compact 480px presentation on phones. At the
      desktop breakpoint it becomes a proper workspace with a persistent left
      rail and a wider content canvas. */
   @media (min-width: 1024px) {
+    .app-shell,
+    .desktop-app-header {
+      transition: padding-left 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .desktop-app-header {
+      padding-left: 17rem;
+    }
+
+    .desktop-sidebar-collapsed .app-shell,
+    .desktop-sidebar-collapsed .desktop-app-header {
+      padding-left: 7.5rem;
+    }
+
     .desktop-navigation {
-      inset: 5.75rem auto auto max(1.5rem, calc((100vw - 1200px) / 2));
-      width: 13.5rem;
+      position: fixed;
+      inset: 1.5rem auto 1.5rem max(1.5rem, calc((100vw - 1200px) / 2));
+      width: 14.5rem;
+      overflow: hidden;
+      overscroll-behavior: none;
+      transition: width 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .desktop-navigation[data-collapsed="true"] {
+      width: 4.75rem;
+    }
+
+    .desktop-navigation-panel {
+      position: relative;
+      isolation: isolate;
+      height: 100%;
+      overflow: hidden;
+      border: 1px solid rgb(255 255 255 / 0.14);
+      border-radius: 1.75rem;
+      background:
+        radial-gradient(circle at 18% 0%, rgb(79 209 165 / 0.34), transparent 27%),
+        linear-gradient(180deg, #0f7058 0%, #0a493b 39%, #082b24 68%, #061d19 100%);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.14),
+        0 28px 70px -30px rgb(0 34 26 / 0.85);
+      backdrop-filter: blur(24px);
+    }
+
+    .desktop-navigation-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.16;
+      background-image: radial-gradient(rgb(255 255 255 / 0.8) 0.75px, transparent 0.75px);
+      background-size: 22px 22px;
+      mask-image: linear-gradient(to bottom, black, transparent 55%);
+    }
+
+    .desktop-sidebar-header {
+      min-height: 5.25rem;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.9rem 0.8rem 0.7rem;
+    }
+
+    .desktop-sidebar-brand {
+      display: flex;
+      min-width: 0;
+      flex: 1;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .desktop-sidebar-logo {
+      display: grid;
+      height: 2.75rem;
+      width: 2.75rem;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid rgb(255 255 255 / 0.18);
+      border-radius: 1rem;
+      background: linear-gradient(145deg, rgb(255 255 255 / 0.23), rgb(255 255 255 / 0.08));
+      box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 10px 28px -14px rgb(0 0 0 / 0.8);
+    }
+
+    .desktop-sidebar-toggle {
+      display: grid;
+      height: 2rem;
+      width: 2rem;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid rgb(255 255 255 / 0.1);
+      border-radius: 999px;
+      background: rgb(255 255 255 / 0.09);
+      color: rgb(255 255 255 / 0.7);
+      transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .desktop-sidebar-toggle:hover {
+      background: rgb(255 255 255 / 0.16);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .desktop-sidebar-label {
+      padding: 0.4rem 1.1rem 0.35rem;
+      color: rgb(255 255 255 / 0.38);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .desktop-nav-link {
+      position: relative;
+      color: rgb(255 255 255 / 0.7) !important;
+    }
+
+    .desktop-nav-link:hover {
+      background: rgb(255 255 255 / 0.09);
+      color: white !important;
+    }
+
+    .desktop-nav-link[data-active="true"] {
+      background: linear-gradient(135deg, #ffffff, #eaf7f2);
+      color: #0a3027 !important;
+      box-shadow: 0 12px 25px -15px rgb(0 0 0 / 0.75), inset 0 0 0 1px rgb(255 255 255 / 0.8);
+    }
+
+    .desktop-nav-link[data-locked="true"] {
+      color: rgb(255 255 255 / 0.36) !important;
+    }
+
+    .desktop-nav-icon {
+      background: rgb(255 255 255 / 0.08);
+      color: inherit;
+    }
+
+    .desktop-nav-link[data-active="true"] .desktop-nav-icon {
+      background: rgb(10 112 88 / 0.1);
+    }
+
+    .desktop-sidebar-footer {
+      align-items: center;
+      gap: 0.65rem;
+      margin: auto 0.75rem 0.75rem;
+      padding: 0.75rem;
+      border: 1px solid rgb(255 255 255 / 0.09);
+      border-radius: 1rem;
+      background: rgb(255 255 255 / 0.055);
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-header {
+      min-height: auto;
+      flex-direction: column;
+      padding: 0.85rem 0.5rem 0.65rem;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-brand {
+      flex: 0 0 auto;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-brand-copy,
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-label,
+    .desktop-navigation[data-collapsed="true"] .desktop-nav-label,
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-footer-copy {
+      display: none;
+    }
+
+    .desktop-navigation[data-collapsed="true"] ul {
+      padding-inline: 0.55rem;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-nav-link {
+      justify-content: center;
+      padding-inline: 0;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-footer {
+      justify-content: center;
+      margin-inline: 0.55rem;
+      padding-inline: 0;
     }
   }
 
