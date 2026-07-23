@@ -196,7 +196,7 @@ export default function CreateListing() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 lg:mx-auto lg:max-w-3xl">
       <PageHeader eyebrow="Marketplace" title="Create listing" back="/listings" />
 
       <form onSubmit={submit} className="space-y-5">

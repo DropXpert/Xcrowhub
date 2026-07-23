@@ -38,9 +38,13 @@ export function BottomNav() {
   ];
 
   return (
-    <nav data-bottom-nav className="fixed inset-x-0 bottom-0 z-50 flex justify-center">
-      <div className="w-full max-w-app border-t border-edge bg-surface/95 backdrop-blur-sm">
-        <ul className="flex items-stretch">
+    <nav data-bottom-nav className="desktop-navigation fixed inset-x-0 bottom-0 z-50 flex justify-center lg:block">
+      <div className="w-full max-w-app border-t border-edge bg-surface/95 backdrop-blur-sm lg:max-w-none lg:overflow-hidden lg:rounded-2xl lg:border lg:shadow-lift">
+        <div className="hidden border-b border-edge px-4 py-3 lg:block">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">Workspace</p>
+          <p className="mt-0.5 text-[13px] font-semibold text-ink">XcrowHub account</p>
+        </div>
+        <ul className="flex items-stretch lg:flex-col lg:gap-1 lg:p-2">
           {tabs.map(({ to, icon: Icon, label, public: isPublic, tour }) => {
             const isProfile = to === "/profile";
             const isHome = to === "/";
@@ -53,13 +57,13 @@ export function BottomNav() {
                 <Link
                   to={isProfile && session ? `/profile/${encodeURIComponent(session.address)}` : to}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 py-2.5 w-full transition",
+                    "flex w-full flex-col items-center justify-center gap-1 py-2.5 transition lg:flex-row lg:justify-start lg:gap-3 lg:rounded-xl lg:px-3 lg:py-3",
                     active ? "text-accent" : locked ? "text-muted/50" : "text-muted hover:text-ink"
                   )}
                 >
                   <span
                     className={cn(
-                      "relative grid h-7 w-7 place-items-center rounded-lg transition",
+                      "relative grid h-7 w-7 place-items-center rounded-lg transition lg:h-8 lg:w-8",
                       active && !locked && "bg-accent-soft"
                     )}
                   >
@@ -82,7 +86,7 @@ export function BottomNav() {
                       </span>
                     )}
                   </span>
-                  <span className={cn("text-[11px] font-medium tracking-wide", active && !locked && "text-accent")}>
+                  <span className={cn("text-[11px] font-medium tracking-wide lg:text-[13px]", active && !locked && "text-accent")}>
                     {label}
                   </span>
                 </Link>

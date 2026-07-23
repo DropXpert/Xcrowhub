@@ -68,7 +68,7 @@ export default function Referral() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 lg:mx-auto lg:max-w-4xl">
       <PageHeader eyebrow="Rewards" title="Refer & earn" />
 
       {/* How it works */}

@@ -107,7 +107,7 @@ export default function Listings() {
           full horizontal budget instead of dropping to a single tall column. */}
       <div data-tour="market-results">
       {loading ? (
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3 lg:gap-4">
           {[1, 2, 3, 4].map((i) => (
             <ListingCardSkeleton key={i} />
           ))}
@@ -127,7 +127,7 @@ export default function Listings() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3 lg:gap-4">
           {listings.map((l) => {
             // Card owner check drives whether the quick-action buttons render.
             // Compare identity (seller_addr) not payout — a seller who listed
@@ -139,7 +139,7 @@ export default function Listings() {
               <div key={l.id} className="marketplace-card flex min-w-0 flex-col">
                 <Link
                   to={`/listings/${l.id}`}
-                  className="flex min-w-0 flex-1 flex-col gap-1.5 px-3 py-3"
+                  className="flex min-w-0 flex-1 flex-col gap-1.5 px-3 py-3 lg:gap-2 lg:px-4 lg:py-4"
                 >
                   <ListingImage
                     imagePath={l.imagePath}
@@ -148,7 +148,7 @@ export default function Listings() {
                   />
                   {/* Title stays on its own row so long titles don't fight the
                       price for width in the 2-col mobile layout (~220px). */}
-                  <p className="text-[12.5px] font-semibold leading-snug text-ink line-clamp-2 break-words">
+                  <p className="text-[12.5px] font-semibold leading-snug text-ink line-clamp-2 break-words lg:text-[14px]">
                     {l.title}
                   </p>
 
@@ -156,7 +156,7 @@ export default function Listings() {
                       currency suffix truncates rather than wrapping when the
                       tile is unusually narrow. */}
                   <p className="flex min-w-0 items-baseline gap-1 tabular-nums">
-                    <span className="truncate text-[14px] font-bold text-ink">
+                    <span className="truncate text-[14px] font-bold text-ink lg:text-[16px]">
                       {l.priceAmount}
                     </span>
                     <span className="shrink-0 text-[11px] font-medium text-muted">
@@ -165,7 +165,7 @@ export default function Listings() {
                   </p>
 
                   {l.description && (
-                    <p className="text-[11.5px] leading-relaxed text-muted line-clamp-2">
+                    <p className="text-[11.5px] leading-relaxed text-muted line-clamp-2 lg:text-[12.5px]">
                       {l.description}
                     </p>
                   )}
@@ -197,11 +197,11 @@ export default function Listings() {
                     feel one-shot. Hidden for owners and disconnected users
                     (nothing to buy on your own listing). */}
                 {canAct && (
-                  <div className="flex gap-1 border-t border-edge/60 px-3 py-1.5">
+                  <div className="flex gap-1 border-t border-edge/60 px-3 py-1.5 lg:gap-2 lg:px-4 lg:py-2.5">
                     <button
                       type="button"
                       onClick={() => navigate(`/listings/${l.id}?action=buy`)}
-                      className="flex flex-1 items-center justify-center gap-0.5 rounded-md bg-accent px-1.5 py-1 text-[10.5px] font-semibold leading-none text-white transition active:scale-[0.98]"
+                      className="flex flex-1 items-center justify-center gap-0.5 rounded-md bg-accent px-1.5 py-1 text-[10.5px] font-semibold leading-none text-white transition active:scale-[0.98] lg:py-2 lg:text-[12px]"
                     >
                       <ShieldCheck className="h-2.5 w-2.5" />
                       Buy now
@@ -209,7 +209,7 @@ export default function Listings() {
                     <button
                       type="button"
                       onClick={() => navigate(`/listings/${l.id}?action=offer`)}
-                      className="flex flex-1 items-center justify-center gap-0.5 rounded-md border border-edge bg-bg px-1.5 py-1 text-[10.5px] font-semibold leading-none text-ink transition active:scale-[0.98]"
+                      className="flex flex-1 items-center justify-center gap-0.5 rounded-md border border-edge bg-bg px-1.5 py-1 text-[10.5px] font-semibold leading-none text-ink transition active:scale-[0.98] lg:py-2 lg:text-[12px]"
                     >
                       <Tag className="h-2.5 w-2.5" />
                       Make offer

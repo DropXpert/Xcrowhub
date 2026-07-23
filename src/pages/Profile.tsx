@@ -182,7 +182,7 @@ export default function Profile() {
   const historyList = tab === "seller" ? asSeller : asBuyer;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:mx-auto lg:max-w-4xl">
       <PageHeader eyebrow="Profile" title="Trader profile" />
 
       {/* Profile header — identity + at-a-glance stats in one card */}

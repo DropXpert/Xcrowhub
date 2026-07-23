@@ -83,7 +83,7 @@ export default function Home() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 lg:space-y-6">
       {/* Greeting (connected only) */}
       {session && addr && (
         <div className="flex items-center justify-between gap-3 pt-1">
@@ -176,7 +176,7 @@ export default function Home() {
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          <ul className="space-y-2">
+          <ul className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
             {recentDeals.map((d) => (
               <li key={d.id}>
                 <DealCard deal={d} showProgress />

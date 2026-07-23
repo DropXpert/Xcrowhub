@@ -164,7 +164,7 @@ export default function CreateDeal() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 lg:mx-auto lg:max-w-3xl">
       <PageHeader
         eyebrow="New deal"
         title="Create payment link"

@@ -53,10 +53,10 @@ export function PopularServices() {
         </Link>
       </div>
 
-      <div className="-mx-5 flex gap-3 overflow-x-auto scrollbar-hide px-5 pb-1 snap-x">
+      <div className="-mx-5 flex gap-3 overflow-x-auto scrollbar-hide px-5 pb-1 snap-x lg:mx-0 lg:grid lg:grid-cols-2 lg:overflow-visible lg:px-0 xl:grid-cols-3">
         {loading && listings.length === 0
           ? [0, 1, 2].map((i) => (
-              <ListingCardSkeleton key={i} className="h-[132px] w-[190px] shrink-0" />
+              <ListingCardSkeleton key={i} className="h-[132px] w-[190px] shrink-0 lg:w-auto" />
             ))
           : top.map((l) => <ServiceCard key={l.id} listing={l} />)}
       </div>
@@ -69,7 +69,7 @@ function ServiceCard({ listing }: { listing: Listing }) {
   return (
     <Link
       to={`/listings/${listing.id}`}
-      className="snap-start flex w-[190px] shrink-0 flex-col gap-2.5 rounded-card border border-edge bg-surface p-4 shadow-receipt transition hover:border-accent/30 hover:shadow-lift active:scale-[0.99]"
+      className="snap-start flex w-[190px] shrink-0 flex-col gap-2.5 rounded-card border border-edge bg-surface p-4 shadow-receipt transition hover:border-accent/30 hover:shadow-lift active:scale-[0.99] lg:w-auto"
     >
       <ListingImage
         imagePath={listing.imagePath}

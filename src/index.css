@@ -88,11 +88,24 @@
 
 @layer components {
   .app-shell {
-    @apply mx-auto min-h-full w-full max-w-app px-5 pb-32 pt-6;
+    @apply mx-auto min-h-full w-full max-w-app px-5 pb-32 pt-6
+           lg:max-w-site lg:pb-12 lg:pl-[16.5rem] lg:pr-6 lg:pt-8;
   }
 
-  .input-focused [data-bottom-nav] {
-    display: none !important;
+  /* The installed app keeps its compact 480px presentation on phones. At the
+     desktop breakpoint it becomes a proper workspace with a persistent left
+     rail and a wider content canvas. */
+  @media (min-width: 1024px) {
+    .desktop-navigation {
+      inset: 5.75rem auto auto max(1.5rem, calc((100vw - 1200px) / 2));
+      width: 13.5rem;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .input-focused [data-bottom-nav] {
+      display: none !important;
+    }
   }
 
   /* Safe-area utilities for full-screen overlays (chat, scanners) that

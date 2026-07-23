@@ -357,7 +357,7 @@ export default function ListingDetail() {
   }, [listing, session, isOwner, searchParams, setSearchParams]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 lg:mx-auto lg:max-w-4xl">
       <PageHeader eyebrow="Listing" title="" back="/listings" />
 
       {/* Main card */}

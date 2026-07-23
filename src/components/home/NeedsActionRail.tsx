@@ -25,12 +25,12 @@ export function NeedsActionRail({ items }: { items: ActionItem[] }) {
         <span className="text-[13px] text-muted">({items.length})</span>
       </div>
 
-      <div className="-mx-5 flex gap-2.5 overflow-x-auto scrollbar-hide px-5 pb-0.5 snap-x">
+      <div className="-mx-5 flex gap-2.5 overflow-x-auto scrollbar-hide px-5 pb-0.5 snap-x lg:mx-0 lg:grid lg:grid-cols-2 lg:overflow-visible lg:px-0">
         {items.map(({ deal, verb, to }) => (
           <Link
             key={deal.id}
             to={to}
-            className="snap-start flex w-[170px] shrink-0 flex-col gap-2 rounded-card border border-warning/30 bg-surface px-3.5 py-3 shadow-receipt transition hover:shadow-lift active:scale-[0.99]"
+            className="snap-start flex w-[170px] shrink-0 flex-col gap-2 rounded-card border border-warning/30 bg-surface px-3.5 py-3 shadow-receipt transition hover:shadow-lift active:scale-[0.99] lg:w-auto"
           >
             <p className="truncate text-[13.5px] font-semibold text-ink">
               {deal.title || "Untitled deal"}

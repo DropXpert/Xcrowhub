@@ -101,7 +101,7 @@ export default function YourDeals() {
               {liveOffers.length}
             </span>
           </div>
-          <ul className="space-y-2">
+          <ul className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
             {liveOffers.map((o) => {
               const accepted = o.status === "accepted";
               const to = accepted && o.dealId ? `/deal/${o.dealId}/pay` : `/listings/${o.listingId}`;
@@ -147,7 +147,7 @@ export default function YourDeals() {
               {actionDeals.length}
             </span>
           </div>
-          <ul className="space-y-2">
+          <ul className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
             {actionDeals.map((d) => (
               <li key={d.id}><DealCard deal={d} /></li>
             ))}
@@ -217,7 +217,7 @@ export default function YourDeals() {
             No deals match your search.
           </div>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
             {filteredDeals.map((d) => (
               <li key={d.id}><DealCard deal={d} /></li>
             ))}

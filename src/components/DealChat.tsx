@@ -135,7 +135,7 @@ function ChatOverlay({
     // aligns with the 480px mini-app frame on wide viewports instead of
     // stretching edge-to-edge.
     <div className="fixed inset-0 z-[60] flex flex-col bg-bg">
-      <div className="mx-auto flex w-full max-w-app flex-1 min-h-0 flex-col">
+      <div className="mx-auto flex w-full max-w-app flex-1 min-h-0 flex-col lg:max-w-4xl lg:border-x lg:border-edge lg:bg-bg/60">
       {/* Header */}
       <div className="safe-top flex shrink-0 items-center gap-3 border-b border-edge bg-surface px-4 py-3">
         <button type="button" onClick={onClose} className="text-muted hover:text-ink transition">

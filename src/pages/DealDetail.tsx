@@ -18,7 +18,7 @@ export default function DealDetail() {
   if (!deal) return <DealNotFound id={id} />;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 lg:mx-auto lg:max-w-4xl">
       <PageHeader
         eyebrow={`Deal · ${deal.id}`}
         title={deal.title}
@@ -46,7 +46,7 @@ export default function DealDetail() {
 
 function DealNotFound({ id }: { id?: string }) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 lg:mx-auto lg:max-w-4xl">
       <PageHeader eyebrow="Deal" title="Not found" />
       <EmptyState
         icon={<FileQuestion className="h-5 w-5" />}
