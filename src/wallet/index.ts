@@ -1,10 +1,13 @@
 import { NimiqWalletProvider } from "./NimiqWalletProvider";
+import { NimiqHubWalletProvider } from "./NimiqHubWalletProvider";
 import type { EvmWalletProvider } from "./EvmWalletProvider";
 import type { WalletProvider } from "./WalletProvider";
 import type { Currency } from "@/types/deal";
 import { isCustodyConfigured } from "@/lib/config";
+import { isNimiqPayHost } from "@/lib/host";
 
-const nimiq = new NimiqWalletProvider();
+const nimiqPay = new NimiqWalletProvider();
+const nimiqHub = new NimiqHubWalletProvider();
 let devInstance: WalletProvider | null = null;
 
 // ethers.js (268KB) is only needed for USDT/EVM — load it on demand so NIM-only
@@ -29,8 +32,8 @@ async function getDevProvider(): Promise<WalletProvider> {
 /**
  * Pick the right wallet provider for a given currency.
  *
- * NIM → NimiqWalletProvider (uses @nimiq/mini-app-sdk, only works inside
- *   Nimiq Pay).
+ * NIM uses the injected Mini App provider inside Nimiq Pay and Nimiq Hub in
+ * standard browsers.
  * USDT → EvmWalletProvider (uses window.ethereum, works inside Nimiq Pay's
  *   EVM bridge or any normal Web3 wallet).
  *
@@ -45,16 +48,21 @@ export async function getWallet(
     throw new Error("Payments are temporarily unavailable.");
   }
 
-  const real = currency === "NIM" ? nimiq : await getEvmProvider();
+  const real = currency === "NIM" ? getNimWallet() : await getEvmProvider();
   if (await real.isAvailable()) {
     return real;
   }
   if (import.meta.env.DEV) return getDevProvider();
   throw new Error(
     currency === "NIM"
-      ? "Open this inside Nimiq Pay to pay with NIM."
+      ? "Could not open the Nimiq wallet. Check your connection and try again."
       : "Open this inside Nimiq Pay or connect an EVM wallet."
   );
+}
+
+/** Synchronous so Hub can open its approval window during the user's click. */
+export function getNimWallet(): WalletProvider {
+  return isNimiqPayHost() ? nimiqPay : nimiqHub;
 }
 
 export type { WalletProvider } from "./WalletProvider";

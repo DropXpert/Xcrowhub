@@ -3,7 +3,7 @@ import { Lock, ShieldCheck } from "lucide-react";
 import type { Deal } from "@/types/deal";
 import { useDealStore } from "@/store/dealStore";
 import { useAuthStore } from "@/store/authStore";
-import { getWallet } from "@/wallet";
+import { getNimWallet, getWallet } from "@/wallet";
 import { isCustodyConfigured, custodyAddressFor } from "@/lib/config";
 import { AlertDialog } from "@/components/AlertDialog";
 import { SkeletonBlock, SkeletonDots } from "@/components/LoadingStates";
@@ -69,7 +69,6 @@ export function PaymentBox({ deal }: { deal: Deal }) {
     setBusy(true);
     setError(null);
     try {
-      const wallet = await getWallet(deal.priceCurrency);
       let buyer =
         session?.currency === deal.priceCurrency ? session.address : "";
       if (!buyer) {
@@ -79,23 +78,37 @@ export function PaymentBox({ deal }: { deal: Deal }) {
           nextSession?.currency === deal.priceCurrency
             ? nextSession.address
             : "";
+        if (buyer) {
+          setError(`${deal.priceCurrency} wallet connected. Tap Pay again to approve the escrow payment.`);
+          return;
+        }
       }
       if (!buyer) {
         throw new Error(`Connect a ${deal.priceCurrency} wallet first.`);
       }
+      const wallet = deal.priceCurrency === "NIM"
+        ? getNimWallet()
+        : await getWallet(deal.priceCurrency);
+
       // Bind the buyer and create a short, non-extendable reservation before
-      // opening the wallet. A seller can no longer cancel in the gap between
-      // chain broadcast and submission of the returned transaction hash.
-      await beginPayment({
-        dealId: deal.id,
-        buyerWalletAddress: buyer,
-      });
-      const result = await wallet.sendPayment({
-        to: custodyAddressFor(deal.priceCurrency),
-        amount: deal.priceAmount,
-        currency: deal.priceCurrency,
-        memo: `XcrowHub ${deal.id}`,
-      });
+      // broadcast. Browser Hub receives this promised request immediately, so
+      // its approval window opens during the click while reservation completes.
+      const paymentRequest = (async () => {
+        await beginPayment({
+          dealId: deal.id,
+          buyerWalletAddress: buyer,
+        });
+        return {
+          from: buyer,
+          to: custodyAddressFor(deal.priceCurrency),
+          amount: deal.priceAmount,
+          currency: deal.priceCurrency,
+          memo: `XcrowHub ${deal.id}`,
+        };
+      })();
+      const result = wallet.sendPaymentWhenReady
+        ? await wallet.sendPaymentWhenReady(paymentRequest)
+        : await wallet.sendPayment(await paymentRequest);
       // Records the tx hash; the deal stays awaiting_payment until the chain
       // confirms. The `verifying` effect above then polls to completion — we do
       // NOT navigate away or re-show the Pay button.
@@ -291,7 +304,7 @@ export function PaymentBox({ deal }: { deal: Deal }) {
         {!paymentsReady
           ? "Payments are temporarily unavailable."
           : deal.priceCurrency === "NIM"
-            ? "Open this page inside Nimiq Pay to pay with NIM. Funds go to XcrowHub custody and release when the deal confirms."
+            ? "Pay with Nimiq Pay or your browser wallet. Funds go to XcrowHub custody and release when the deal confirms."
             : "Pay with USDT via your connected wallet. Funds go to XcrowHub custody and release when the deal confirms."}
       </p>
 

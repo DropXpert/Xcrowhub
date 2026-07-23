@@ -52,16 +52,15 @@ serve(async (req: Request) => {
 
     // ── GET: request a fresh nonce for an address ──────────────────────────
     if (req.method === "GET") {
-      const address = url.searchParams.get("address");
-      if (!address) return json({ error: "address param required" }, 400, corsHeaders);
+      const address = url.searchParams.get("address")?.trim() || "*";
 
       const nonce = crypto.randomUUID();
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-      const message = buildChallengeMessage(address.trim(), nonce);
+      const message = buildChallengeMessage(address === "*" ? null : address, nonce);
 
       const { error } = await supabase.from("auth_nonces").insert({
         nonce,
-        address: address.trim().toLowerCase(),
+        address: address.toLowerCase(),
         expires_at: expiresAt,
         consumed: false,
       });
@@ -76,11 +75,12 @@ serve(async (req: Request) => {
     if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
 
     const body = await req.json();
-    const { address, signature, publicKey, message, network } = body as {
+    const { address, signature, publicKey, message, nonce, network } = body as {
       address: string;
       signature: string;
       publicKey?: string;
       message: string;
+      nonce?: string;
       network?: string;
     };
 
@@ -92,15 +92,16 @@ serve(async (req: Request) => {
     const lowerAddr = normalizedAddr.toLowerCase();
 
     // 1. Find & consume a valid nonce
-    const { data: nonceRow, error: nonceErr } = await supabase
+    let nonceQuery = supabase
       .from("auth_nonces")
       .select("*")
-      .eq("address", lowerAddr)
       .eq("consumed", false)
       .gt("expires_at", new Date().toISOString())
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order("created_at", { ascending: false });
+    nonceQuery = nonce
+      ? nonceQuery.eq("nonce", nonce)
+      : nonceQuery.eq("address", lowerAddr).limit(1);
+    const { data: nonceRow, error: nonceErr } = await nonceQuery.maybeSingle();
 
     if (nonceErr) throw nonceErr;
 
@@ -232,8 +233,9 @@ serve(async (req: Request) => {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function buildChallengeMessage(address: string, nonce: string): string {
-  return `Xcrow authentication\nAddress: ${address}\nNonce: ${nonce}\nTime: ${new Date().toISOString()}`;
+function buildChallengeMessage(address: string | null, nonce: string): string {
+  const addressLine = address ? `\nAddress: ${address}` : "";
+  return `Xcrow authentication${addressLine}\nNonce: ${nonce}\nTime: ${new Date().toISOString()}`;
 }
 
 async function verifyNimiqSignature(

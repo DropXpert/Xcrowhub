@@ -16,7 +16,7 @@ import {
   Apple,
   Play,
 } from "lucide-react";
-import { NIMIQ_PAY_IOS, NIMIQ_PAY_ANDROID, nimiqPayDeeplink } from "@/lib/host";
+import { APP_URL, NIMIQ_PAY_IOS, NIMIQ_PAY_ANDROID } from "@/lib/host";
 import {
   Nav,
   Footer,
@@ -27,7 +27,7 @@ import {
 } from "@/pages/landing/shared";
 
 /* Marketplace: public marketing page for the optional listings feature.
-   Standalone like Landing; renders in any browser, routes people into Nimiq Pay. */
+   Standalone like Landing; renders in any browser and opens the web app. */
 
 const CATEGORIES = [
   { icon: Package, label: "Digital goods" },
@@ -37,8 +37,6 @@ const CATEGORIES = [
   { icon: MessageSquare, label: "Consulting" },
   { icon: Gamepad2, label: "Gaming" },
 ];
-
-const marketplaceDeeplink = nimiqPayDeeplink("/listings");
 
 export default function Marketplace() {
   useReveal();
@@ -83,7 +81,7 @@ export default function Marketplace() {
             only when a marketplace sale completes.
           </p>
           <div className="reveal mt-7 flex flex-col items-center justify-center gap-3 sm:mt-9 sm:flex-row">
-            <a href={marketplaceDeeplink} className="btn-gold w-full justify-center sm:w-auto">
+            <a href={`${APP_URL}/listings`} className="btn-gold w-full justify-center sm:w-auto">
               <Store className="h-[18px] w-[18px]" />
               Open live marketplace
             </a>
@@ -125,17 +123,17 @@ export default function Marketplace() {
           <SectionHeading
             chip="Live marketplace"
             title={<>Browse real listings <span className="text-gradient">inside the app.</span></>}
-            sub="Current listings, offers, and purchases are shown in XcrowHub inside Nimiq Pay. When a sale starts, escrow takes over."
+            sub="Current listings, offers, and purchases are available in the XcrowHub web app and Nimiq Pay. When a sale starts, escrow takes over."
           />
 
           <div className="reveal mx-auto mt-10 max-w-2xl glass rounded-2xl p-6 text-center sm:mt-14 sm:p-8">
             <FeatureIcon icon={Store} accent="jade" />
             <h3 className="mt-5 text-[20px] font-bold">Open current listings</h3>
             <p className="mx-auto mt-2 max-w-md text-[14px] leading-relaxed text-[#B9B1A2]">
-              Browse active listings, buy at list price, or make an offer from the mini app.
+              Browse active listings, buy at list price, or make an offer from the app.
               Every purchase becomes a protected escrow deal.
             </p>
-            <a href={marketplaceDeeplink} className="btn-gold mt-6 w-full justify-center sm:w-auto">
+            <a href={`${APP_URL}/listings`} className="btn-gold mt-6 w-full justify-center sm:w-auto">
               <Store className="h-[18px] w-[18px]" />
               Open marketplace
             </a>
@@ -217,12 +215,12 @@ export default function Marketplace() {
               />
               <div className="relative">
                 <span className="lp-chip mx-auto">
-                  <Sparkles className="h-3.5 w-3.5" /> Open in Nimiq Pay
+                  <Sparkles className="h-3.5 w-3.5" /> Open XcrowHub
                 </span>
                 <h2 className="mx-auto mt-5 max-w-2xl text-[26px] font-extrabold leading-[1.12] tracking-tight sm:mt-6 sm:text-[34px] sm:leading-[1.08] md:text-[48px]">
                   Publish your first listing
                   <br />
-                  <span className="text-gradient">in Nimiq Pay.</span>
+                  <span className="text-gradient">from any browser.</span>
                 </h2>
                 <p className="mx-auto mt-4 max-w-xl text-[14.5px] leading-relaxed text-[#B9B1A2] sm:mt-5 sm:text-[16px]">
                   Open XcrowHub, create a listing with your price, and let buyers purchase
@@ -230,9 +228,9 @@ export default function Marketplace() {
                   completed marketplace sales.
                 </p>
                 <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:mt-9 sm:flex-row">
-                  <a href={marketplaceDeeplink} className="btn-gold w-full justify-center sm:w-auto">
+                  <a href={`${APP_URL}/listings/new`} className="btn-gold w-full justify-center sm:w-auto">
                     <Zap className="h-[18px] w-[18px]" />
-                    Open in Nimiq Pay
+                    Create a listing
                   </a>
                   <div className="flex w-full gap-3 sm:w-auto">
                     <a href={NIMIQ_PAY_IOS} target="_blank" rel="noopener noreferrer" className="btn-glass !px-5 flex-1 justify-center sm:flex-none">

@@ -74,7 +74,7 @@ export function NewUserWelcome() {
           style={{ animationDelay: "1050ms" }}
         >
           <ShieldCheck className="h-3.5 w-3.5 text-[#71e8bd]" />
-          Your wallet keys always stay in Nimiq Pay
+          Your wallet keys always stay in your wallet
         </div>
 
         <button

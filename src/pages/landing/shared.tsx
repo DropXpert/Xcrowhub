@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ChevronsUp, type LucideIcon } from "lucide-react";
 import { BorderGlow } from "@/components/BorderGlow";
-import { nimiqPayDeeplink, NIMIQ_PAY_SITE, openNimiqPayOrStore } from "@/lib/host";
+import { APP_URL, nimiqPayDeeplink, NIMIQ_PAY_SITE } from "@/lib/host";
 
 /* Shared building blocks for the public marketing surface (Landing + Marketplace).
    Kept standalone: no app stores, wallet, or router guards. */
@@ -76,8 +76,7 @@ export function Nav({ scrolled }: { scrolled: boolean }) {
           </nav>
 
           <a
-            href={deeplink}
-            onClick={openNimiqPayOrStore(deeplink)}
+            href={APP_URL}
             className="btn-gold !px-4 !py-2 !text-[14.5px]"
           >
             Launch app

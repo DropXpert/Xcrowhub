@@ -1,7 +1,6 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
-import { isNimiqPayHost } from "@/lib/host";
 import { useDealStore } from "@/store/dealStore";
 import { useAuthStore } from "@/store/authStore";
 import { useSupportStore } from "@/store/supportStore";
@@ -14,7 +13,6 @@ import { AdminGuard } from "@/components/AdminGuard";
 import { AuthGuard } from "@/components/AuthGuard";
 import { PageLoader } from "@/components/PageLoader";
 import { LandingLoader } from "@/components/LoadingStates";
-import { OpenInNimiqPay } from "@/components/OpenInNimiqPay";
 import { StarsBackground } from "@/components/StarsBackground";
 import { PublicSeo } from "@/components/PublicSeo";
 
@@ -128,58 +126,11 @@ function ComingSoon() {
   );
 }
 
-function BrowserMiniAppGate() {
-  useEffect(() => {
-    (window as any).__hideSplash?.();
-  }, []);
-
-  return (
-    <div className="min-h-full bg-bg">
-      <OpenInNimiqPay />
-    </div>
-  );
-}
-
 function isAppSubdomain() {
   return typeof window !== "undefined" && window.location.hostname === "app.xcrowhub.com";
 }
 
-function initialHostState(): "checking" | "host" | "browser" {
-  if (isNimiqPayHost()) return "host";
-  if (!isAppSubdomain()) return "browser";
-  return "checking";
-}
-
-function currentMiniAppPath() {
-  if (typeof window === "undefined") return "";
-  if (window.location.pathname === "/open") {
-    const to = new URLSearchParams(window.location.search).get("to") ?? "";
-    return to.startsWith("/") ? to : "";
-  }
-  return `${window.location.pathname}${window.location.search}${window.location.hash}`;
-}
-
 export default function App() {
-  // Gate the app to the Nimiq Pay host. `nimiqPay` is injected synchronously,
-  // but allow a short grace in case the provider attaches a beat later.
-  const [hostState, setHostState] = useState<"checking" | "host" | "browser">(
-    initialHostState
-  );
-  useEffect(() => {
-    if (hostState !== "checking") return;
-    let tries = 0;
-    const id = setInterval(() => {
-      if (isNimiqPayHost()) {
-        setHostState("host");
-        clearInterval(id);
-      } else if (++tries >= 25) {
-        setHostState("browser");
-        clearInterval(id);
-      }
-    }, 200);
-    return () => clearInterval(id);
-  }, [hostState]);
-
   // Splash is now hidden by the <SplashHider /> mounted inside each resolved
   // route (and by the 4s safety net in index.html if a chunk hangs). We used
   // to fire __hideSplash eagerly here, but that ripped the splash away before
@@ -187,23 +138,10 @@ export default function App() {
   // splash and the landing paint. Suspense fallbacks now render null so the
   // splash remains visible until the real page is ready.
 
-  // Outside Nimiq Pay: app.xcrowhub.com shows the "Open in Nimiq Pay" gate;
-  // www.xcrowhub.com (and any other host) shows the public marketing site.
-  if (hostState === "browser") {
-    if (isAppSubdomain()) {
-      const path = currentMiniAppPath();
-      if (path && path !== "/") {
-        return (
-          <Suspense fallback={<PublicRouteFallback />}>
-            <SplashHider />
-            <OpenInApp to={path} />
-          </Suspense>
-        );
-      }
-
-      return <BrowserMiniAppGate />;
-    }
-
+  // The marketing domain stays public. The app subdomain renders the same
+  // product in Nimiq Pay and standard browsers; its wallet adapter decides
+  // between the injected provider and Nimiq Hub when the user connects.
+  if (!isAppSubdomain() && !import.meta.env.DEV) {
     return (
       <Suspense fallback={<PublicRouteFallback />}>
         <SplashHider />
@@ -222,16 +160,7 @@ export default function App() {
       </Suspense>
     );
   }
-  if (hostState === "checking") {
-    return (
-      <PageLoader
-        title="Opening XcrowHub"
-        detail="Preparing the mini app."
-      />
-    );
-  }
-
-  // Show maintenance screen inside Nimiq Pay when the flag is on.
+  // Keep maintenance behavior consistent across both app surfaces.
   if (MAINTENANCE) return <ComingSoon />;
 
   return <MiniAppShell />;

@@ -25,7 +25,7 @@ import {
 
 import { SpotlightCard } from "@/components/SpotlightCard";
 import { Nav, Footer, SectionHeading, FeatureIcon, BentoCard, GlowCard, useReveal, useParallax, deeplink } from "@/pages/landing/shared";
-import { openNimiqPayOrStore } from "@/lib/host";
+import { APP_URL, openNimiqPayOrStore } from "@/lib/host";
 
 /* Founder pulls in ProfileCard (~1000 lines of TSX + CSS + tilt engine). Split
    it out of Landing's initial bundle so the hero paints first. */
@@ -36,7 +36,7 @@ const Founder = lazy(() => import("@/pages/landing/Founder"));
 
    This is intentionally standalone: it does NOT touch the app's stores, wallet,
    router guards, or Nimiq host APIs. It renders cleanly in any browser. The app
-   itself lives inside Nimiq Pay; this page sells it and routes people there.
+   itself works in browsers and inside Nimiq Pay.
 ─────────────────────────────────────────────────────────────────────────── */
 
 export default function Landing() {
@@ -106,8 +106,7 @@ function Hero({ scrollY }: { scrollY: number }) {
 
           <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
             <a
-              href={deeplink}
-              onClick={openNimiqPayOrStore(deeplink)}
+              href={`${APP_URL}/create/new`}
               className="btn-gold w-full justify-center whitespace-nowrap sm:w-auto"
             >
               <Wallet className="h-[18px] w-[18px]" />
@@ -419,17 +418,16 @@ function FinalCta() {
                 Ready to do safer <span className="text-gradient">P2P deals?</span>
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-[14.5px] leading-relaxed text-[#B9B1A2] sm:mt-5 sm:text-[16px]">
-                Open XcrowHub inside Nimiq Pay. Start with a private deal or publish a listing on the marketplace. Same protection either way.
+                Open XcrowHub in your browser or inside Nimiq Pay. Start with a private deal or publish a marketplace listing.
               </p>
 
               <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:mt-9 sm:flex-row">
                 <a
-                  href={deeplink}
-                  onClick={openNimiqPayOrStore(deeplink)}
+                  href={APP_URL}
                   className="btn-gold w-full justify-center sm:w-auto"
                 >
                   <Zap className="h-[18px] w-[18px]" />
-                  Open in Nimiq Pay
+                  Open web app
                 </a>
                 <a
                   href={deeplink}
@@ -437,7 +435,7 @@ function FinalCta() {
                   className="btn-glass w-full justify-center sm:w-auto"
                 >
                   <Wallet className="h-[18px] w-[18px]" />
-                  Create a private deal
+                  Open in Nimiq Pay
                 </a>
               </div>
             </div>
@@ -482,8 +480,7 @@ function ReferEarn() {
             ))}
             <div className="pt-1">
               <a
-                href={deeplink}
-                onClick={openNimiqPayOrStore(deeplink)}
+                href={`${APP_URL}/referral`}
                 className="btn-gold w-full justify-center sm:w-auto"
               >
                 <Gift className="h-[18px] w-[18px]" />
@@ -600,8 +597,7 @@ function MarketplaceTeaser() {
                   Explore the marketplace
                 </Link>
                 <a
-                  href={deeplink}
-                  onClick={openNimiqPayOrStore(deeplink)}
+                  href={`${APP_URL}/listings/new`}
                   className="btn-glass w-full justify-center sm:w-auto"
                 >
                   Create a listing <ArrowRight className="h-[18px] w-[18px]" />

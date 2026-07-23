@@ -26,7 +26,8 @@ import {
   FileCheck2,
 } from "lucide-react";
 
-import { Nav, Footer, useReveal, useParallax, deeplink } from "@/pages/landing/shared";
+import { Nav, Footer, useReveal, useParallax } from "@/pages/landing/shared";
+import { APP_URL } from "@/lib/host";
 
 /* ───────────────────────────────────────────────────────────────────────────
    Docs: the public, browser-facing documentation page (xcrowhub.com/docs).
@@ -90,11 +91,11 @@ export default function Docs() {
             <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-[#B9B1A2] sm:text-[16px]">
               A complete guide to protected peer-to-peer crypto deals — escrow, the marketplace,
               the deal lifecycle, on-chain verification, disputes, fees, and referrals. Everything
-              you need to deal safely on Nimiq Pay.
+              you need to deal safely in the web app or Nimiq Pay.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <a href={deeplink} className="btn-gold w-full justify-center sm:w-auto">
+              <a href={APP_URL} className="btn-gold w-full justify-center sm:w-auto">
                 <Wallet className="h-[18px] w-[18px]" />
                 Launch app
               </a>
@@ -115,7 +116,7 @@ export default function Docs() {
           <DocSection id="overview" icon={BookOpen} chip="Start here" title="What is XcrowHub?">
             <Lede>
               XcrowHub is a <strong className="text-[#EDE7DA] font-semibold">protected-payments layer</strong> for
-              peer-to-peer crypto deals, running as a mini app inside Nimiq Pay. The buyer's money is locked
+              peer-to-peer crypto deals, available in browsers and inside Nimiq Pay. The buyer's money is locked
               in a protected hold and only released to the seller once delivery is confirmed — or resolved
               through a fair, proof-based dispute.
             </Lede>
@@ -148,7 +149,7 @@ export default function Docs() {
                 both NIM and USDT. A seller never delivers against a payment that didn't actually settle.
               </MiniCard>
               <MiniCard icon={Fingerprint} title="Wallet-signed">
-                Your wallet address is your identity. Every action is authorized by a Nimiq Pay signature —
+                Your wallet address is your identity. Every action is authorized by your wallet signature —
                 there are no passwords and no signup forms.
               </MiniCard>
               <MiniCard icon={Scale} title="Proof-based disputes">
@@ -160,10 +161,9 @@ export default function Docs() {
 
           <DocSection id="getting-started" icon={Rocket} chip="Getting started" title="Your first deal in three steps">
             <div className="space-y-6">
-              <Step n={1} title="Open XcrowHub inside Nimiq Pay">
-                XcrowHub runs as a mini app. Launch it from the button above, or from any
-                {" "}<span className="text-[#EDE7DA]">Launch app</span> link — it opens directly inside your
-                Nimiq Pay wallet.
+              <Step n={1} title="Open XcrowHub">
+                Launch the browser app or open XcrowHub inside Nimiq Pay. In a browser,
+                connect securely through Nimiq Hub; no wallet extension is required.
               </Step>
               <Step n={2} title="Connect — no signup">
                 Your wallet is your account. The first action you take asks for a signature to prove the
@@ -410,7 +410,7 @@ export default function Docs() {
                 Private deals are free. Marketplace sales carry a 1% fee on the seller's side (the seller keeps 99%).
               </Faq>
               <Faq q="Where does XcrowHub run?">
-                As a mini app inside Nimiq Pay. The marketing site lives at xcrowhub.com; the app opens in your wallet.
+                In a standard browser or as a mini app inside Nimiq Pay. The marketing site lives at xcrowhub.com.
               </Faq>
             </div>
 
@@ -422,10 +422,10 @@ export default function Docs() {
                     Ready to deal <span className="text-gradient">safely?</span>
                   </h3>
                   <p className="mx-auto mt-3 max-w-md text-[14px] leading-relaxed text-[#B9B1A2]">
-                    Open XcrowHub inside Nimiq Pay and start with a private deal or a marketplace listing.
+                    Open XcrowHub in your browser or inside Nimiq Pay and start with a private deal or marketplace listing.
                   </p>
                   <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                    <a href={deeplink} className="btn-gold w-full justify-center sm:w-auto">
+                    <a href={APP_URL} className="btn-gold w-full justify-center sm:w-auto">
                       <Wallet className="h-[18px] w-[18px]" />
                       Launch app
                     </a>

@@ -146,10 +146,10 @@ export default function Privacy() {
               </p>
             </SubSection>
 
-            <SubSection title="5.2 Nimiq Pay">
+            <SubSection title="5.2 Nimiq Hub and Nimiq Pay">
               <p>
-                XcrowHub is a mini app running inside the Nimiq Pay wallet. Transaction signing
-                and NIM payments are handled by Nimiq Pay. We do not have access to your private
+                XcrowHub runs in standard browsers and as a Nimiq Pay mini app. Transaction signing
+                and NIM payments are handled by Nimiq Hub or Nimiq Pay. We do not have access to your private
                 keys. Nimiq's privacy policy governs their data practices.
               </p>
             </SubSection>

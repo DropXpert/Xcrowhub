@@ -1,11 +1,8 @@
 // Detect whether the app is running inside the Nimiq Pay host (which injects
 // window.nimiq / window.nimiqPay). Outside the host there's no wallet runtime,
-// so the app shows an "Open in Nimiq Pay" gate.
-//
-// In dev (`npm run dev`) the gate is bypassed so local work isn't blocked.
+// Normal browsers use Nimiq Hub instead of an injected provider.
 
 export function isNimiqPayHost(): boolean {
-  if (import.meta.env.DEV) return true;
   if (typeof window === "undefined") return false;
   const w = window as unknown as { nimiq?: unknown; nimiqPay?: unknown };
   return Boolean(w.nimiq || w.nimiqPay);
@@ -13,6 +10,7 @@ export function isNimiqPayHost(): boolean {
 
 // The canonical mini-app URL — always app.xcrowhub.com in production.
 export const APP_URL = "https://app.xcrowhub.com";
+export const NIMIQ_WEB_WALLET_URL = "https://wallet.nimiq.com";
 
 // Read a pending referral code without importing the referral module (keeps this
 // lightweight file dependency-free and avoids pulling Supabase into the landing

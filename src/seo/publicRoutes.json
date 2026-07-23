@@ -79,13 +79,13 @@
   },
   "/find": {
     "title": "Find an XcrowHub Deal | Open Deal ID or Link",
-    "description": "Open an existing XcrowHub escrow deal using its deal ID, shared payment link or QR code inside Nimiq Pay.",
+    "description": "Open an existing XcrowHub escrow deal using its deal ID, shared payment link or QR code in the web app or Nimiq Pay.",
     "eyebrow": "Find a deal",
     "heading": "Open an existing protected deal",
     "summary": "Use the deal ID or shared XcrowHub link to open the correct escrow status and payment screen.",
     "sections": [
       { "heading": "Use a deal ID", "body": "Paste the XcrowHub deal ID exactly as it appears on the receipt or shared link." },
-      { "heading": "Open a shared link", "body": "A seller can share a private deal link that opens the correct deal inside Nimiq Pay." },
+      { "heading": "Open a shared link", "body": "A seller can share a private deal link that opens the correct deal in the XcrowHub web app or Nimiq Pay." },
       { "heading": "Scan the QR code", "body": "The XcrowHub scanner can read a deal QR code and take the buyer to the protected payment flow." }
     ]
   }

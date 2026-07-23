@@ -1,4 +1,5 @@
-import { getWallet } from "@/wallet";
+import { getNimWallet, getWallet } from "@/wallet";
+import type { AuthChallenge } from "@/wallet/WalletProvider";
 import type { Currency } from "@/types/deal";
 import { setSupabaseAccessToken, isSupabaseConfiguredForClient } from "./supabase";
 import { supabaseConfig } from "./config";
@@ -70,19 +71,35 @@ export async function loginWithWallet(currency: Currency = "NIM"): Promise<AuthS
     return null;
   }
 
-  const wallet = await getWallet(currency);
-  const address = await wallet.getAddress();
+  // NIM is selected synchronously so the browser Hub can open during the
+  // original click. Awaiting provider discovery first would trigger blockers.
+  const wallet = currency === "NIM" ? getNimWallet() : await getWallet(currency);
+  let address = "";
 
   try {
     const edgeBase = `${supabaseConfig.url}/functions/v1/auth`;
+    let challenge: AuthChallenge;
+    let signature: string;
+    let publicKey: string | undefined;
 
-    // Step 1: Get a fresh nonce/challenge from the Edge Function
-    const nonceRes = await fetch(`${edgeBase}?address=${encodeURIComponent(address)}`);
-    if (!nonceRes.ok) throw new Error(`Nonce request failed: ${await nonceRes.text()}`);
-    const { message } = await nonceRes.json() as { nonce: string; message: string; expiresAt: string };
-
-    // Step 2: Sign the challenge message
-    const { signature, publicKey } = await wallet.signMessage(message);
+    if (wallet.authenticate) {
+      // Browser Hub: address selection + nonce signing happen in one popup.
+      const authenticated = await wallet.authenticate(() => requestChallenge(edgeBase));
+      address = authenticated.address;
+      challenge = {
+        nonce: authenticated.nonce,
+        message: authenticated.message,
+      };
+      signature = authenticated.signature;
+      publicKey = authenticated.publicKey;
+    } else {
+      // Injected providers already expose an account before message signing.
+      address = await wallet.getAddress();
+      challenge = await requestChallenge(edgeBase, address);
+      const signed = await wallet.signMessage(challenge.message);
+      signature = signed.signature;
+      publicKey = signed.publicKey;
+    }
 
     // Step 3: POST to verify + mint JWT
     const authRes = await fetch(edgeBase, {
@@ -92,7 +109,8 @@ export async function loginWithWallet(currency: Currency = "NIM"): Promise<AuthS
         address,
         signature,
         publicKey,
-        message,
+        message: challenge.message,
+        nonce: challenge.nonce,
         network: currency === "NIM" ? "nimiq" : "evm",
       }),
     });
@@ -149,6 +167,19 @@ export async function loginWithWallet(currency: Currency = "NIM"): Promise<AuthS
     saveSession(session);
     return session;
   }
+}
+
+async function requestChallenge(
+  edgeBase: string,
+  address?: string,
+): Promise<AuthChallenge> {
+  const suffix = address ? `?address=${encodeURIComponent(address)}` : "";
+  const response = await fetch(`${edgeBase}${suffix}`);
+  if (!response.ok) {
+    throw new Error(`Nonce request failed: ${await response.text()}`);
+  }
+  const data = await response.json() as AuthChallenge;
+  return { nonce: data.nonce, message: data.message };
 }
 
 export async function applyStoredSession(): Promise<AuthSession | null> {

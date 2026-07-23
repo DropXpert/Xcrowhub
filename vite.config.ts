@@ -21,6 +21,7 @@ export default defineConfig({
           "supabase": ["@supabase/supabase-js"],
           "ethers": ["ethers"],
           "nimiq": ["@nimiq/mini-app-sdk"],
+          "nimiq-hub": ["@nimiq/hub-api"],
         },
       },
     },
