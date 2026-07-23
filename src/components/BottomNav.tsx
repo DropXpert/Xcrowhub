@@ -85,7 +85,6 @@ export function BottomNav() {
                   beta
                 </span>
               </span>
-              <span className="mt-0.5 block text-[10px] font-medium text-muted">Secure deal workspace</span>
             </span>
           </Link>
           <button
