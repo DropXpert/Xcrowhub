@@ -187,7 +187,7 @@ export function AppHeader() {
   }, [isAdmin, pathname, navigate]);
 
   return (
-    <header className="desktop-app-header mx-auto flex w-full max-w-app items-center justify-between gap-3 px-5 pt-5 lg:max-w-site lg:px-6 lg:pt-6">
+    <header className="desktop-app-header mx-auto flex w-full max-w-app items-center justify-between gap-3 pt-5 lg:max-w-site lg:pt-6">
       <Link to={isAdmin ? "/admin" : "/"} className="flex min-w-0 items-center gap-2 lg:hidden">
         <img src="/logo-icon.png" alt="XcrowHub" className="h-9 w-9 shrink-0 rounded-card" />
         <span className="min-w-0 truncate text-[15px] font-semibold tracking-tight text-ink">XcrowHub</span>

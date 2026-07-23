@@ -87,6 +87,11 @@
 }
 
 @layer components {
+  .desktop-app-header {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
   .app-shell {
     @apply mx-auto min-h-full w-full max-w-app px-5 pb-32 pt-6
            lg:max-w-site lg:pb-12 lg:pl-[17rem] lg:pr-6 lg:pt-8;
@@ -103,6 +108,7 @@
 
     .desktop-app-header {
       padding-left: 17rem;
+      padding-right: 1.5rem;
     }
 
     .desktop-sidebar-collapsed .app-shell,
@@ -127,7 +133,20 @@
       position: relative;
       isolation: isolate;
       height: 100%;
-      overflow: hidden;
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    .desktop-navigation-panel::after {
+      content: "";
+      position: absolute;
+      inset: 5.8rem 0 0;
+      z-index: -2;
+      pointer-events: none;
       border: 1px solid rgb(255 255 255 / 0.14);
       border-radius: 1.75rem;
       background:
@@ -142,9 +161,10 @@
     .desktop-navigation-panel::before {
       content: "";
       position: absolute;
-      inset: 0;
+      inset: 5.8rem 0 0;
       z-index: -1;
       pointer-events: none;
+      border-radius: 1.75rem;
       opacity: 0.16;
       background-image: radial-gradient(rgb(255 255 255 / 0.8) 0.75px, transparent 0.75px);
       background-size: 22px 22px;
@@ -152,10 +172,18 @@
     }
 
     .desktop-sidebar-header {
+      position: relative;
+      z-index: 2;
       min-height: 5.25rem;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.9rem 0.8rem 0.7rem;
+      margin-bottom: 0.55rem;
+      padding: 0.7rem 0.75rem;
+      border: 1px solid rgb(var(--c-edge) / 0.9);
+      border-radius: 1.3rem;
+      background: rgb(var(--c-surface) / 0.96);
+      box-shadow: var(--shadow-lift);
+      backdrop-filter: blur(18px);
     }
 
     .desktop-sidebar-brand {
@@ -174,8 +202,8 @@
       place-items: center;
       border: 1px solid rgb(255 255 255 / 0.18);
       border-radius: 1rem;
-      background: linear-gradient(145deg, rgb(255 255 255 / 0.23), rgb(255 255 255 / 0.08));
-      box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 10px 28px -14px rgb(0 0 0 / 0.8);
+      background: rgb(var(--c-bg));
+      box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 10px 28px -16px rgb(0 0 0 / 0.55);
     }
 
     .desktop-sidebar-toggle {
@@ -184,16 +212,16 @@
       width: 2rem;
       flex: 0 0 auto;
       place-items: center;
-      border: 1px solid rgb(255 255 255 / 0.1);
+      border: 1px solid rgb(var(--c-edge) / 0.9);
       border-radius: 999px;
-      background: rgb(255 255 255 / 0.09);
-      color: rgb(255 255 255 / 0.7);
+      background: rgb(var(--c-bg));
+      color: rgb(var(--c-muted));
       transition: background 160ms ease, color 160ms ease, transform 160ms ease;
     }
 
     .desktop-sidebar-toggle:hover {
-      background: rgb(255 255 255 / 0.16);
-      color: white;
+      background: rgb(var(--c-accent-soft));
+      color: rgb(var(--c-accent));
       transform: translateY(-1px);
     }
 
@@ -243,12 +271,23 @@
       border: 1px solid rgb(255 255 255 / 0.09);
       border-radius: 1rem;
       background: rgb(255 255 255 / 0.055);
+      transition: background 160ms ease, border-color 160ms ease;
+    }
+
+    .desktop-sidebar-footer:hover {
+      border-color: rgb(255 255 255 / 0.16);
+      background: rgb(255 255 255 / 0.1);
     }
 
     .desktop-navigation[data-collapsed="true"] .desktop-sidebar-header {
       min-height: auto;
       flex-direction: column;
       padding: 0.85rem 0.5rem 0.65rem;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-navigation-panel::before,
+    .desktop-navigation[data-collapsed="true"] .desktop-navigation-panel::after {
+      inset-block-start: 7rem;
     }
 
     .desktop-navigation[data-collapsed="true"] .desktop-sidebar-brand {
@@ -259,6 +298,10 @@
     .desktop-navigation[data-collapsed="true"] .desktop-sidebar-label,
     .desktop-navigation[data-collapsed="true"] .desktop-nav-label,
     .desktop-navigation[data-collapsed="true"] .desktop-sidebar-footer-copy {
+      display: none;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-footer-chevron {
       display: none;
     }
 

@@ -7,7 +7,7 @@ import {
   MessageCircle,
   PanelLeftClose,
   PanelLeftOpen,
-  ShieldCheck,
+  ChevronRight,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
@@ -37,6 +37,15 @@ export function BottomNav() {
   });
   const getProfile = useProfileStore((s) => s.getProfile);
   const avatarDataUrl = session ? getProfile(session.address).avatarDataUrl : null;
+  const profileName = session
+    ? getProfile(session.address).username || "Your profile"
+    : "Your profile";
+  const profileDetail = session
+    ? (() => {
+        const compact = session.address.replace(/\s+/g, "");
+        return `${compact.slice(0, 5)}…${compact.slice(-4)}`;
+      })()
+    : "Connect your wallet";
 
   useEffect(() => {
     document.documentElement.classList.toggle("desktop-sidebar-collapsed", collapsed);
@@ -71,12 +80,12 @@ export function BottomNav() {
             </span>
             <span className="desktop-sidebar-brand-copy">
               <span className="flex items-center gap-2">
-                <span className="text-[15px] font-bold tracking-tight text-white">XcrowHub</span>
-                <span className="rounded-md border border-white/15 bg-white/10 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-white/70">
+                <span className="text-[15px] font-bold tracking-tight text-ink">XcrowHub</span>
+                <span className="rounded-md border border-warning/25 bg-warning/10 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-warning">
                   beta
                 </span>
               </span>
-              <span className="mt-0.5 block text-[10px] font-medium text-white/45">Secure deal workspace</span>
+              <span className="mt-0.5 block text-[10px] font-medium text-muted">Secure deal workspace</span>
             </span>
           </Link>
           <button
@@ -99,7 +108,11 @@ export function BottomNav() {
             const locked = !isPublic && !session;
 
             return (
-              <li key={to} className="flex-1 lg:flex-none" data-tour={tour}>
+              <li
+                key={to}
+                className={cn("flex-1 lg:flex-none", isProfile && "lg:hidden")}
+                data-tour={tour}
+              >
                 <Link
                   to={isProfile && session ? `/profile/${encodeURIComponent(session.address)}` : to}
                   data-active={active && !locked}
@@ -143,15 +156,29 @@ export function BottomNav() {
             );
           })}
         </ul>
-        <div className="desktop-sidebar-footer hidden lg:flex">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/10 text-emerald-200">
-            <ShieldCheck className="h-4 w-4" />
-          </span>
+        <Link
+          to={session ? `/profile/${encodeURIComponent(session.address)}` : "/profile"}
+          className="desktop-sidebar-footer hidden lg:flex"
+          title={collapsed ? "Profile" : undefined}
+        >
+          {session ? (
+            <ProfileAvatar
+              address={session.address}
+              size="sm"
+              className="h-8 w-8 shrink-0 border border-white/20 text-[10px]"
+              avatarDataUrl={avatarDataUrl}
+            />
+          ) : (
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/10 text-white/75">
+              <User className="h-4 w-4" />
+            </span>
+          )}
           <span className="desktop-sidebar-footer-copy min-w-0">
-            <span className="block text-[11px] font-semibold text-white/80">Protected escrow</span>
-            <span className="mt-0.5 block text-[9.5px] leading-snug text-white/40">Wallet-secured transactions</span>
+            <span className="block truncate text-[11px] font-semibold text-white/85">{profileName}</span>
+            <span className="mt-0.5 block truncate text-[9.5px] leading-snug text-white/45">{profileDetail}</span>
           </span>
-        </div>
+          <ChevronRight className="desktop-sidebar-footer-chevron ml-auto h-3.5 w-3.5 shrink-0 text-white/35" />
+        </Link>
       </div>
     </nav>
   );
