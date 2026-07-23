@@ -98,8 +98,9 @@ export function BottomNav() {
             {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
           </button>
         </div>
-        <div className="desktop-sidebar-label hidden lg:block">Navigation</div>
-        <ul className="flex items-stretch lg:flex-1 lg:flex-col lg:gap-1.5 lg:px-3 lg:py-2">
+        <div className="desktop-sidebar-glass">
+          <div className="desktop-sidebar-label hidden lg:block">Navigation</div>
+          <ul className="flex items-stretch lg:flex-1 lg:flex-col lg:gap-1.5 lg:px-3 lg:py-2">
           {tabs.map(({ to, icon: Icon, label, public: isPublic, tour }) => {
             const isProfile = to === "/profile";
             const isHome = to === "/";
@@ -155,30 +156,31 @@ export function BottomNav() {
               </li>
             );
           })}
-        </ul>
-        <Link
-          to={session ? `/profile/${encodeURIComponent(session.address)}` : "/profile"}
-          className="desktop-sidebar-footer hidden lg:flex"
-          title={collapsed ? "Profile" : undefined}
-        >
-          {session ? (
-            <ProfileAvatar
-              address={session.address}
-              size="sm"
-              className="h-8 w-8 shrink-0 border border-white/20 text-[10px]"
-              avatarDataUrl={avatarDataUrl}
-            />
-          ) : (
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/10 text-white/75">
-              <User className="h-4 w-4" />
+          </ul>
+          <Link
+            to={session ? `/profile/${encodeURIComponent(session.address)}` : "/profile"}
+            className="desktop-sidebar-footer hidden lg:flex"
+            title={collapsed ? "Profile" : undefined}
+          >
+            {session ? (
+              <ProfileAvatar
+                address={session.address}
+                size="sm"
+                className="h-8 w-8 shrink-0 border border-white/20 text-[10px]"
+                avatarDataUrl={avatarDataUrl}
+              />
+            ) : (
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/10 text-white/75">
+                <User className="h-4 w-4" />
+              </span>
+            )}
+            <span className="desktop-sidebar-footer-copy min-w-0">
+              <span className="block truncate text-[11px] font-semibold text-white/85">{profileName}</span>
+              <span className="mt-0.5 block truncate text-[9.5px] leading-snug text-white/45">{profileDetail}</span>
             </span>
-          )}
-          <span className="desktop-sidebar-footer-copy min-w-0">
-            <span className="block truncate text-[11px] font-semibold text-white/85">{profileName}</span>
-            <span className="mt-0.5 block truncate text-[9.5px] leading-snug text-white/45">{profileDetail}</span>
-          </span>
-          <ChevronRight className="desktop-sidebar-footer-chevron ml-auto h-3.5 w-3.5 shrink-0 text-white/35" />
-        </Link>
+            <ChevronRight className="desktop-sidebar-footer-chevron ml-auto h-3.5 w-3.5 shrink-0 text-white/35" />
+          </Link>
+        </div>
       </div>
     </nav>
   );
