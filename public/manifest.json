@@ -1,0 +1,27 @@
+{
+  "name": "XcrowHub",
+  "short_name": "XcrowHub",
+  "description": "Protected deals for crypto P2P. Money stays in escrow until delivery is confirmed. Zero fees.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8F3EA",
+  "theme_color": "#2F6F5E",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["finance", "utilities"],
+  "lang": "en"
+}

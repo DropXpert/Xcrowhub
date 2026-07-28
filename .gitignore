@@ -1,0 +1,33 @@
+node_modules
+dist
+dist-ssr
+.vite
+.env
+.env.*
+!.env.example
+# Supabase secrets (service key etc.) - never commit
+supabase.env
+*.env
+pass.key
+.DS_Store
+*.log
+.idea
+.vscode
+*.tsbuildinfo
+signer/data/
+supabase/.temp/
+# Local database and Storage exports contain production data; never commit.
+backups/
+
+# Local operations, credentials, and unrelated services are not part of the
+# public Mini App submission.
+handoff.md
+infra/
+mcps/
+terminals/
+telegram-task-bot/
+scripts/backup-supabase-storage.mjs
+scripts/export-proofhold-data.mjs
+scripts/vps-keepalive.py
+supabase/migrations/0039_taskbot_code_claim.sql
+supabase/migrations/0040_remove_obsolete_taskbot_supabase.sql

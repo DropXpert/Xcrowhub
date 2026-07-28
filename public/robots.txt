@@ -1,0 +1,138 @@
+# XcrowHub — https://www.xcrowhub.com
+# Protected escrow deals for crypto P2P (NIM + USDT)
+
+# ─── Search engines ────────────────────────────────
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+# ─── AI / LLM crawlers (training + retrieval) ──────
+# Most users now discover products through AI answers (ChatGPT, Claude,
+# Perplexity, Gemini, Copilot). We want XcrowHub to be citeable there.
+
+# OpenAI
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+# Google Gemini / Vertex AI training
+User-agent: Google-Extended
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# Microsoft Copilot / Bing Chat
+User-agent: CCBot
+Allow: /
+
+# Meta AI
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+# Bytedance / Doubao
+User-agent: Bytespider
+Allow: /
+
+# Apple Intelligence
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Cohere
+User-agent: cohere-ai
+Allow: /
+
+User-agent: cohere-training-data-crawler
+Allow: /
+
+# You.com
+User-agent: YouBot
+Allow: /
+
+# Diffbot (used by many AI pipelines)
+User-agent: Diffbot
+Allow: /
+
+# Amazon Nova / Amazonbot
+User-agent: Amazonbot
+Allow: /
+
+# Mistral
+User-agent: MistralAI-User
+Allow: /
+
+# xAI / Grok
+User-agent: xAI-Bot
+Allow: /
+
+# Common Crawl (feeds many open LLMs)
+User-agent: CCBot
+Allow: /
+
+# ─── Everything else ───────────────────────────────
+User-agent: *
+Allow: /
+
+# Do not index dynamic app routes that require a wallet session — they
+# are useless outside the app and just waste crawl budget.
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /create/
+Disallow: /pay/
+Disallow: /deal/*/pay
+Disallow: /deal/*/submit-proof
+Disallow: /deal/*/confirm
+Disallow: /deal/*/delivery
+Disallow: /deal/*/query
+Disallow: /open-in-app
+
+Sitemap: https://www.xcrowhub.com/sitemap.xml
+Host: www.xcrowhub.com

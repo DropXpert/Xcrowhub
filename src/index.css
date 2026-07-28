@@ -1,0 +1,880 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ── Light mode tokens (default) ──────────────────────────────── */
+  :root {
+    color-scheme: light;
+    /* RGB channels — used as rgb(var(--c-x) / alpha) in Tailwind */
+    --c-bg:          248 243 234;
+    --c-surface:     255 253 248;
+    --c-ink:         23 20 17;
+    --c-muted:       113 105 95;
+    --c-edge:        228 216 199;
+    --c-accent:      47 111 94;
+    --c-accent-soft: 221 235 229;
+    --c-accent-ink:  31 74 63;
+    --c-warning:     183 121 31;
+    --c-danger:      185 74 72;
+    /* Shadows */
+    --shadow-receipt: 0 1px 0 rgba(23,20,17,0.04), 0 1px 2px rgba(23,20,17,0.06);
+    --shadow-lift:    0 8px 24px -8px rgba(23,20,17,0.18);
+    --shadow-glow:    0 0 0 1px rgba(232,185,100,0.18), 0 24px 60px -20px rgba(232,185,100,0.35);
+  }
+
+  /* ── Dark mode tokens ─────────────────────────────────────────── */
+  .dark {
+    color-scheme: dark;
+    --c-bg:          11 22 18;
+    --c-surface:     17 32 24;
+    --c-ink:         237 231 218;
+    --c-muted:       122 154 140;
+    --c-edge:        27 46 36;
+    --c-accent:      79 209 165;
+    --c-accent-soft: 13 42 28;
+    --c-accent-ink:  160 232 204;
+    --c-warning:     232 185 100;
+    --c-danger:      224 90 88;
+    --shadow-receipt: 0 1px 0 rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.45);
+    --shadow-lift:    0 8px 28px -8px rgba(0,0,0,0.65);
+    --shadow-glow:    0 0 0 1px rgba(79,209,165,0.2), 0 24px 60px -20px rgba(79,209,165,0.3);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  html {
+    @apply bg-bg;
+  }
+
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+    font-feature-settings: "cv11", "ss01", "ss03";
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Paper grain — warm dots in light, barely-visible in dark */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(rgba(23,20,17,0.025) 1px, transparent 1px);
+    background-size: 3px 3px;
+    z-index: 0;
+  }
+  .dark body::before {
+    background-image: radial-gradient(rgba(255,255,255,0.012) 1px, transparent 1px);
+  }
+
+  #root {
+    position: relative;
+    z-index: 1;
+    background: rgb(var(--c-bg));
+  }
+
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-bg rounded;
+  }
+}
+
+@layer components {
+  .desktop-app-header {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .desktop-sidebar-glass {
+    display: contents;
+  }
+
+  .app-shell {
+    @apply mx-auto min-h-full w-full max-w-app px-5 pb-32 pt-6
+           lg:max-w-site lg:pb-12 lg:pl-[17.5rem] lg:pr-6 lg:pt-8;
+  }
+
+  /* The installed app keeps its compact 480px presentation on phones. At the
+     desktop breakpoint it becomes a proper workspace with a persistent left
+     rail and a wider content canvas. */
+  @media (min-width: 1024px) {
+    .app-shell,
+    .desktop-app-header {
+      transition: padding-left 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .desktop-app-header {
+      padding-left: 17.5rem;
+      padding-right: 1.5rem;
+    }
+
+    .desktop-sidebar-collapsed .app-shell,
+    .desktop-sidebar-collapsed .desktop-app-header {
+      padding-left: 7.5rem;
+    }
+
+    .desktop-navigation {
+      position: fixed;
+      inset: 1.5rem auto 1.5rem max(1.5rem, calc((100vw - 1200px) / 2));
+      width: 15rem;
+      overflow: visible;
+      overscroll-behavior: none;
+      transition: width 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .desktop-navigation[data-collapsed="true"] {
+      width: 4.75rem;
+    }
+
+    .desktop-navigation-panel {
+      position: relative;
+      isolation: isolate;
+      height: 100%;
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    .desktop-sidebar-glass {
+      position: relative;
+      isolation: isolate;
+      display: flex;
+      min-height: 0;
+      flex: 1;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgb(255 255 255 / 0.14);
+      border-radius: 1.75rem;
+      background:
+        radial-gradient(circle at 18% 0%, rgb(79 209 165 / 0.34), transparent 27%),
+        linear-gradient(180deg, #0f7058 0%, #0a493b 39%, #082b24 68%, #061d19 100%);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.14),
+        0 28px 70px -30px rgb(0 34 26 / 0.85);
+      backdrop-filter: blur(24px);
+      background-clip: padding-box;
+    }
+
+    .desktop-sidebar-glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      border-radius: 1.75rem;
+      opacity: 0.16;
+      background-image: radial-gradient(rgb(255 255 255 / 0.8) 0.75px, transparent 0.75px);
+      background-size: 22px 22px;
+      mask-image: linear-gradient(to bottom, black, transparent 55%);
+    }
+
+    .desktop-sidebar-header {
+      position: relative;
+      z-index: 2;
+      min-height: 5.25rem;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.55rem;
+      padding: 0.7rem 0.75rem;
+      border: 1px solid rgb(var(--c-edge) / 0.9);
+      border-radius: 1.3rem;
+      background: rgb(var(--c-surface) / 0.96);
+      box-shadow: var(--shadow-lift);
+      backdrop-filter: blur(18px);
+    }
+
+    .desktop-sidebar-brand {
+      display: flex;
+      min-width: 0;
+      flex: 1;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .desktop-sidebar-logo {
+      display: grid;
+      height: 2.75rem;
+      width: 2.75rem;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid rgb(255 255 255 / 0.18);
+      border-radius: 1rem;
+      background: rgb(var(--c-bg));
+      box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 10px 28px -16px rgb(0 0 0 / 0.55);
+    }
+
+    .desktop-sidebar-toggle {
+      display: grid;
+      height: 2rem;
+      width: 2rem;
+      flex: 0 0 auto;
+      margin-left: 0.25rem;
+      place-items: center;
+      border: 1px solid rgb(var(--c-edge) / 0.9);
+      border-radius: 999px;
+      background: rgb(var(--c-bg));
+      color: rgb(var(--c-muted));
+      transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .desktop-sidebar-toggle:hover {
+      background: rgb(var(--c-accent-soft));
+      color: rgb(var(--c-accent));
+      transform: translateY(-1px);
+    }
+
+    .desktop-sidebar-label {
+      padding: 0.4rem 1.1rem 0.35rem;
+      color: rgb(255 255 255 / 0.38);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .desktop-nav-link {
+      position: relative;
+      color: rgb(255 255 255 / 0.7) !important;
+    }
+
+    .desktop-nav-link:hover {
+      background: rgb(255 255 255 / 0.09);
+      color: white !important;
+    }
+
+    .desktop-nav-link[data-active="true"] {
+      background: linear-gradient(135deg, #ffffff, #eaf7f2);
+      color: #0a3027 !important;
+      box-shadow: 0 12px 25px -15px rgb(0 0 0 / 0.75), inset 0 0 0 1px rgb(255 255 255 / 0.8);
+    }
+
+    .desktop-nav-link[data-locked="true"] {
+      color: rgb(255 255 255 / 0.36) !important;
+    }
+
+    .desktop-nav-icon {
+      background: rgb(255 255 255 / 0.08);
+      color: inherit;
+    }
+
+    .desktop-nav-link[data-active="true"] .desktop-nav-icon {
+      background: rgb(10 112 88 / 0.1);
+    }
+
+    .desktop-sidebar-footer {
+      align-items: center;
+      gap: 0.65rem;
+      margin: auto 0.75rem 0.75rem;
+      padding: 0.75rem;
+      border: 1px solid rgb(255 255 255 / 0.09);
+      border-radius: 1rem;
+      background: rgb(255 255 255 / 0.055);
+      transition: background 160ms ease, border-color 160ms ease;
+    }
+
+    .desktop-sidebar-footer:hover {
+      border-color: rgb(255 255 255 / 0.16);
+      background: rgb(255 255 255 / 0.1);
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-header {
+      min-height: auto;
+      flex-direction: column;
+      padding: 0.85rem 0.5rem 0.65rem;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-toggle {
+      margin-left: 0;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-brand {
+      flex: 0 0 auto;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-brand-copy,
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-label,
+    .desktop-navigation[data-collapsed="true"] .desktop-nav-label,
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-footer-copy {
+      display: none;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-footer-chevron {
+      display: none;
+    }
+
+    .desktop-navigation[data-collapsed="true"] ul {
+      padding-inline: 0.55rem;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-nav-link {
+      justify-content: center;
+      padding-inline: 0;
+    }
+
+    .desktop-navigation[data-collapsed="true"] .desktop-sidebar-footer {
+      justify-content: center;
+      margin-inline: 0.55rem;
+      padding-inline: 0;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .input-focused [data-bottom-nav] {
+      display: none !important;
+    }
+
+    /* Keep the username dialog centered unless the software keyboard is
+       actively serving its text input. Buttons in the confirmation step must
+       not move the dialog to the top. */
+    .username-editor-overlay:has(input:focus) {
+      align-items: flex-start;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+  }
+
+  /* Safe-area utilities for full-screen overlays (chat, scanners) that
+     bypass the app-shell padding. Uses max() with a floor so short devices
+     without a home indicator still get a comfortable minimum. */
+  .safe-top {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+  .safe-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    @apply rounded-card border border-edge bg-surface shadow-receipt;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Marketplace tiles keep a visible outer accent and depth at rest. The
+     content layer stays fluid so narrow two-column layouts can wrap metadata
+     instead of pushing timing text outside the card. */
+  .marketplace-card {
+    position: relative;
+    isolation: isolate;
+    min-width: 0;
+    border: 1px solid rgb(var(--c-edge) / 0.9);
+    border-radius: 18px;
+    background: rgb(var(--c-surface));
+    box-shadow: 0 10px 22px -18px rgb(var(--c-ink) / 0.5),
+      0 0 0 1px rgb(var(--c-accent) / 0.08);
+  }
+
+  .marketplace-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(145deg, rgb(var(--c-accent) / 0.55), rgb(var(--c-edge) / 0.75) 50%, rgb(var(--c-warning) / 0.28));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .marketplace-card::after {
+    content: "";
+    position: absolute;
+    inset: 7px -3px -5px;
+    z-index: -2;
+    border-radius: inherit;
+    background: rgb(var(--c-accent) / 0.14);
+    filter: blur(12px);
+    pointer-events: none;
+  }
+
+  .marketplace-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .form-tabs {
+    @apply flex gap-1 rounded-xl border border-edge bg-bg p-1;
+  }
+
+  .form-tab {
+    @apply min-w-0 flex-1 rounded-lg px-3 py-2 text-[12.5px] font-medium text-muted transition;
+  }
+
+  .form-tab[aria-selected="true"] {
+    @apply bg-surface text-ink shadow-receipt;
+  }
+
+  .form-tab-panel {
+    @apply card space-y-4 px-4 py-4 sm:px-5 sm:py-5;
+  }
+
+  .field-label {
+    @apply text-[14px] font-medium uppercase tracking-wider text-muted;
+  }
+
+  .input,
+  .textarea,
+  .select {
+    @apply min-w-0 max-w-full w-full rounded-lg border border-edge bg-surface px-3.5 py-2.5
+           text-[15px] text-ink placeholder:text-muted/70
+           focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none
+           transition;
+  }
+
+  .textarea {
+    @apply min-h-[88px] resize-y leading-relaxed;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5
+           text-[14px] font-medium transition active:scale-[0.99]
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply btn bg-accent text-white hover:bg-accent-ink shadow-receipt;
+  }
+
+  .btn-secondary {
+    @apply btn border border-edge bg-surface text-ink hover:bg-bg;
+  }
+
+  .btn-ghost {
+    @apply btn text-muted hover:text-ink hover:bg-edge/40;
+  }
+
+  .btn-danger {
+    @apply btn bg-danger text-white hover:opacity-90;
+  }
+
+  /* Squared tag — deliberately not a pill. Used for category, trust, filters,
+     counts, wallet/connect controls. Same footprint as before (tap-safe),
+     just crisp corners instead of a bubble. */
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1
+           text-xs font-medium;
+  }
+
+  .divider-dashed {
+    border-top: 1px dashed theme("colors.edge");
+  }
+
+  /* Receipt-style perforated divider */
+  .perforation {
+    height: 14px;
+    background-image: radial-gradient(
+      circle at 7px 7px,
+      theme("colors.bg") 5px,
+      transparent 5.5px
+    );
+    background-size: 14px 14px;
+    background-position: -7px center;
+    background-repeat: repeat-x;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Landing page — premium marketing surface (dark canvas, glass, gradients).
+   Scoped under .lp so none of it leaks into the receipt-style app UI.
+─────────────────────────────────────────────────────────────────────────── */
+@layer components {
+  .lp {
+    @apply text-[#EDE7DA] antialiased;
+    background: #0E1512;
+  }
+
+  /* Animated aurora blobs that sit behind the hero */
+  .lp-aurora {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(70px);
+    will-change: transform, opacity;
+    pointer-events: none;
+  }
+
+  /* Fine dot-grid + soft radial vignette layered behind sections */
+  .lp-grid {
+    background-image:
+      linear-gradient(rgba(232, 185, 100, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232, 185, 100, 0.05) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+  }
+
+  /* Frosted glass capsule — the core building block */
+  .glass {
+    background: linear-gradient(
+      155deg,
+      rgba(255, 255, 255, 0.07) 0%,
+      rgba(255, 255, 255, 0.025) 100%
+    );
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 20px 50px -24px rgba(0, 0, 0, 0.7);
+  }
+
+  .glass-soft {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Gradient-stroked card via mask trick — a true 1px gradient border */
+  .gradient-border {
+    position: relative;
+    border-radius: 20px;
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      140deg,
+      rgba(232, 185, 100, 0.7),
+      rgba(79, 209, 165, 0.35) 40%,
+      rgba(255, 255, 255, 0.04) 75%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Warm gold→jade gradient text */
+  .text-gradient {
+    background: linear-gradient(100deg, #F5D89B 0%, #E8B964 35%, #4FD1A5 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-warm {
+    background: linear-gradient(100deg, #FBE8C0 0%, #E8B964 60%, #C98F3E 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Gold primary button with sheen */
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3.5
+           text-[12px] font-semibold transition active:scale-[0.98];
+    color: #1A1208;
+    background: linear-gradient(180deg, #F5D89B 0%, #E8B964 100%);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.4) inset,
+      0 14px 30px -10px rgba(232, 185, 100, 0.55);
+  }
+  .btn-gold:hover {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.5) inset,
+      0 18px 40px -10px rgba(232, 185, 100, 0.7);
+    transform: translateY(-1px);
+  }
+
+  .btn-glass {
+    @apply inline-flex items-center justify-center gap-2 rounded-pill px-6 py-3.5
+           text-[12px] font-semibold text-[#EDE7DA] transition active:scale-[0.98];
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .btn-glass:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(232, 185, 100, 0.4);
+  }
+
+  /* Pill chip on the dark canvas */
+  .lp-chip {
+    @apply inline-flex items-center gap-2 rounded-pill px-3.5 py-1.5 text-[12px] font-medium;
+    background: rgba(232, 185, 100, 0.1);
+    border: 1px solid rgba(232, 185, 100, 0.25);
+    color: #F5D89B;
+  }
+
+  /* Receipt perforation on the dark canvas */
+  .perforation-dark {
+    height: 14px;
+    background-image: radial-gradient(
+      circle at 7px 7px,
+      #0E1512 5px,
+      transparent 5.5px
+    );
+    background-size: 14px 14px;
+    background-position: -7px center;
+    background-repeat: repeat-x;
+  }
+
+  /* Shimmering skeleton sweep used on the "live" badge */
+  .shimmer-text {
+    background: linear-gradient(
+      90deg,
+      rgba(237, 231, 218, 0.5) 0%,
+      #FFFFFF 50%,
+      rgba(237, 231, 218, 0.5) 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* Scroll-reveal: hidden until .is-visible toggled by IntersectionObserver */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes alert-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes welcome-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes welcome-character-in {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes welcome-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcome-card {
+  animation: welcome-card-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.welcome-icon {
+  animation: welcome-card-in 550ms 150ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.welcome-split-char {
+  opacity: 0;
+  will-change: transform, opacity, filter;
+  animation: welcome-character-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.welcome-fade {
+  opacity: 0;
+  animation: welcome-fade-in 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Shared data-loading placeholders. The gradient follows the active app
+   theme, so loading states never flash a light card in dark mode. */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: rgb(var(--c-edge) / 0.48);
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--c-surface) / 0.72),
+    transparent
+  );
+  animation: xcrow-skeleton-sweep 1.45s ease-in-out infinite;
+}
+
+.skeleton-dot {
+  opacity: 0.35;
+  animation: xcrow-skeleton-dot 900ms ease-in-out infinite;
+}
+
+@keyframes xcrow-skeleton-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes xcrow-skeleton-dot {
+  0%, 100% {
+    opacity: 0.28;
+    transform: scale(0.72);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+}
+
+/* Landing loader adapted from Uiverse's tidy-walrus-92. */
+.three-body {
+  --uib-size: 35px;
+  --uib-speed: 0.8s;
+  --uib-color: #e8b964;
+  position: relative;
+  display: inline-block;
+  width: var(--uib-size);
+  height: var(--uib-size);
+  animation: xcrow-three-body-spin calc(var(--uib-speed) * 2.5) infinite linear;
+}
+
+.three-body__dot {
+  position: absolute;
+  width: 30%;
+  height: 100%;
+}
+
+.three-body__dot::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%;
+  border-radius: 50%;
+  background-color: var(--uib-color);
+}
+
+.three-body__dot:nth-child(1) {
+  bottom: 5%;
+  left: 0;
+  transform: rotate(60deg);
+  transform-origin: 50% 85%;
+}
+
+.three-body__dot:nth-child(1)::after {
+  bottom: 0;
+  left: 0;
+  animation: xcrow-three-body-wobble-one var(--uib-speed) infinite ease-in-out;
+  animation-delay: calc(var(--uib-speed) * -0.3);
+}
+
+.three-body__dot:nth-child(2) {
+  right: 0;
+  bottom: 5%;
+  transform: rotate(-60deg);
+  transform-origin: 50% 85%;
+}
+
+.three-body__dot:nth-child(2)::after {
+  bottom: 0;
+  left: 0;
+  animation: xcrow-three-body-wobble-one var(--uib-speed) infinite
+    calc(var(--uib-speed) * -0.15) ease-in-out;
+}
+
+.three-body__dot:nth-child(3) {
+  bottom: -5%;
+  left: 0;
+  transform: translateX(116.666%);
+}
+
+.three-body__dot:nth-child(3)::after {
+  top: 0;
+  left: 0;
+  animation: xcrow-three-body-wobble-two var(--uib-speed) infinite ease-in-out;
+}
+
+@keyframes xcrow-three-body-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes xcrow-three-body-wobble-one {
+  0%, 100% { opacity: 1; transform: translateY(0) scale(1); }
+  50% { opacity: 0.8; transform: translateY(-66%) scale(0.65); }
+}
+
+@keyframes xcrow-three-body-wobble-two {
+  0%, 100% { opacity: 1; transform: translateY(0) scale(1); }
+  50% { opacity: 0.8; transform: translateY(66%) scale(0.65); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .lp-aurora,
+  .animate-float-y,
+  .animate-aurora,
+  .animate-spin-slow,
+  .animate-marquee,
+  .animate-pulse-ring {
+    animation: none !important;
+  }
+  .welcome-card,
+  .welcome-icon,
+  .welcome-split-char,
+  .welcome-fade,
+  .skeleton-shimmer::after,
+  .skeleton-dot,
+  .three-body,
+  .three-body__dot::after {
+    animation: none !important;
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}

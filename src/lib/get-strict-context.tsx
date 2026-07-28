@@ -1,0 +1,29 @@
+import * as React from "react";
+
+/**
+ * Creates a typed context + provider pair whose hook throws if used outside the
+ * provider. Ported from animate-ui (used by the animated ui/* primitives).
+ */
+function getStrictContext<T>(name?: string) {
+  const Context = React.createContext<T | undefined>(undefined);
+
+  const Provider = ({
+    value,
+    children,
+  }: {
+    value: T;
+    children?: React.ReactNode;
+  }) => <Context.Provider value={value}>{children}</Context.Provider>;
+
+  const useSafeContext = () => {
+    const ctx = React.useContext(Context);
+    if (ctx === undefined) {
+      throw new Error(`useContext must be used within ${name ?? "a Provider"}`);
+    }
+    return ctx;
+  };
+
+  return [Provider, useSafeContext] as const;
+}
+
+export { getStrictContext };
