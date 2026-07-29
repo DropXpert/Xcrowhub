@@ -392,29 +392,33 @@ function TrustSignals() {
 /* ── Roadmap ─────────────────────────────────────────────────────────────── */
 function Roadmap() {
   const roadmapRef = useRef<HTMLElement>(null);
-  const [roadmapVisible, setRoadmapVisible] = useState(false);
+  const [roadmapProgress, setRoadmapProgress] = useState(0);
 
   useEffect(() => {
     const section = roadmapRef.current;
     if (!section) return;
 
-    if (!("IntersectionObserver" in window)) {
-      setRoadmapVisible(true);
-      return;
-    }
+    let frame = 0;
+    const updateProgress = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const rect = section.getBoundingClientRect();
+        const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+        const progress = isDesktop
+          ? -rect.top / Math.max(section.offsetHeight - window.innerHeight, 1)
+          : (window.innerHeight * 0.75 - rect.top) / Math.max(section.offsetHeight, 1);
+        setRoadmapProgress(Math.min(Math.max(progress, 0), 1));
+      });
+    };
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setRoadmapVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.2, rootMargin: "0px 0px -10% 0px" },
-    );
-
-    observer.observe(section);
-    return () => observer.disconnect();
+    updateProgress();
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateProgress);
+      window.removeEventListener("resize", updateProgress);
+    };
   }, []);
 
   const phases = [
@@ -423,7 +427,7 @@ function Roadmap() {
       title: "Live foundation",
       accent: "text-gold",
       dot: "bg-gold shadow-[0_0_24px_rgba(232,185,100,0.85)]",
-      position: "md:left-[7%] md:top-[62%]",
+      position: "md:left-[calc(11.67%+18px)] md:top-[calc(63.46%-12px)] md:w-[25%]",
       items: [
         "Nimiq Pay mini app",
         "Private escrow deals",
@@ -436,7 +440,7 @@ function Roadmap() {
       title: "Work marketplace",
       accent: "text-jade",
       dot: "bg-jade shadow-[0_0_24px_rgba(79,209,165,0.85)]",
-      position: "md:left-[39%] md:top-[35%]",
+      position: "md:left-[calc(50%+18px)] md:top-[calc(25%-12px)] md:w-[24%]",
       items: [
         "Brands hire freelancers",
         "Protected milestones",
@@ -448,7 +452,7 @@ function Roadmap() {
       title: "Asset expansion",
       accent: "text-[#75E5C0]",
       dot: "bg-[#75E5C0] shadow-[0_0_24px_rgba(117,229,192,0.85)]",
-      position: "md:left-[71%] md:top-[8%]",
+      position: "md:left-[calc(78.33%+18px)] md:top-[calc(63.46%-12px)] md:w-[19%]",
       items: [
         "In-app crypto swaps",
         "More assets and wallets",
@@ -458,54 +462,103 @@ function Roadmap() {
   ];
 
   return (
-    <section ref={roadmapRef} id="roadmap" className="relative py-16 sm:py-24 md:py-32">
-      <div className="mx-auto max-w-site px-5">
+    <section
+      ref={roadmapRef}
+      id="roadmap"
+      className="relative py-16 sm:py-24 md:h-[210vh] md:py-0"
+    >
+      <div className="mx-auto max-w-site px-5 md:sticky md:top-0 md:flex md:min-h-screen md:flex-col md:justify-center md:py-16">
         <SectionHeading
           chip="Roadmap"
           title="Building the complete work-and-pay layer."
-          sub="XcrowHub grows in focused phases, from protected deals today to a broader marketplace and multi-asset experience."
+          sub="Scroll through the phases as XcrowHub expands from protected deals to a broader marketplace and multi-asset experience."
         />
 
-        <div className="reveal mt-10 sm:mt-14">
-          <div className="relative grid gap-10 py-5 pl-10 md:block md:min-h-[570px] md:py-0 md:pl-0">
+        <div className="mt-10 sm:mt-12">
+          <div className="relative grid gap-10 py-5 pl-10 md:block md:h-[520px] md:py-0 md:pl-0">
             <div
               aria-hidden
-              className={`absolute bottom-7 left-[18px] top-7 w-[2px] origin-top bg-gradient-to-b from-gold via-jade to-[#75E5C0] shadow-[0_0_16px_rgba(79,209,165,0.45)] transition-transform duration-[1600ms] md:hidden ${
-                roadmapVisible ? "scale-y-100" : "scale-y-0"
-              }`}
+              className="absolute bottom-7 left-[18px] top-7 w-[2px] origin-top bg-gradient-to-b from-gold via-jade to-[#75E5C0] shadow-[0_0_16px_rgba(79,209,165,0.45)] md:hidden"
+              style={{ transform: `scaleY(${Math.min(roadmapProgress * 1.35, 1)})` }}
             />
 
-            <div
-              aria-hidden
-              className={`absolute left-[calc(7%+6px)] top-[calc(62%+6px)] hidden h-[3px] w-[35%] origin-left -rotate-[23deg] rounded-full bg-gradient-to-r from-gold via-jade to-jade shadow-[0_0_16px_rgba(79,209,165,0.55)] transition-transform duration-1000 md:block ${
-                roadmapVisible ? "scale-x-100" : "scale-x-0"
-              }`}
-              style={{ transitionDelay: "180ms" }}
-            />
-            <div
-              aria-hidden
-              className={`absolute left-[calc(39%+6px)] top-[calc(35%+6px)] hidden h-[3px] w-[35%] origin-left -rotate-[22deg] rounded-full bg-gradient-to-r from-jade to-[#75E5C0] shadow-[0_0_16px_rgba(117,229,192,0.55)] transition-transform duration-1000 md:block ${
-                roadmapVisible ? "scale-x-100" : "scale-x-0"
-              }`}
-              style={{ transitionDelay: "820ms" }}
-            />
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 1200 520"
+              preserveAspectRatio="none"
+              className="pointer-events-none absolute inset-0 hidden h-full w-full overflow-visible md:block"
+            >
+              <defs>
+                <linearGradient id="roadmap-line-gradient" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#E8B964" />
+                  <stop offset="48%" stopColor="#4FD1A5" />
+                  <stop offset="100%" stopColor="#75E5C0" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M 30 400 C 70 360, 100 320, 140 330 C 280 400, 430 160, 600 130 C 760 100, 800 400, 940 330 C 1040 280, 1100 180, 1180 140"
+                fill="none"
+                stroke="rgba(255,255,255,0.07)"
+                strokeWidth="3"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d="M 30 400 C 70 360, 100 320, 140 330 C 280 400, 430 160, 600 130 C 760 100, 800 400, 940 330 C 1040 280, 1100 180, 1180 140"
+                fill="none"
+                pathLength="1"
+                stroke="url(#roadmap-line-gradient)"
+                strokeDasharray="1"
+                strokeDashoffset={1 - roadmapProgress}
+                strokeLinecap="round"
+                strokeWidth="3"
+                vectorEffect="non-scaling-stroke"
+                style={{
+                  filter: "drop-shadow(0 0 8px rgba(79,209,165,0.7))",
+                  transition: "stroke-dashoffset 80ms linear",
+                }}
+              />
+              {[
+                { x: 140, y: 330, showAt: 0.08, color: "#E8B964" },
+                { x: 600, y: 130, showAt: 0.38, color: "#4FD1A5" },
+                { x: 940, y: 330, showAt: 0.68, color: "#75E5C0" },
+              ].map((node) => {
+                const visible = roadmapProgress >= node.showAt;
+                return (
+                  <g
+                    key={`${node.x}-${node.y}`}
+                    style={{
+                      opacity: visible ? 1 : 0,
+                      transform: visible ? "scale(1)" : "scale(0.4)",
+                      transformBox: "fill-box",
+                      transformOrigin: "center",
+                      transition: "opacity 420ms ease, transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
+                    }}
+                  >
+                    <circle cx={node.x} cy={node.y} r="13" fill={node.color} opacity="0.12" />
+                    <circle cx={node.x} cy={node.y} r="6" fill={node.color} />
+                  </g>
+                );
+              })}
+            </svg>
 
             {phases.map((phase, index) => (
-              <article
-                key={phase.phase}
-                className={`relative z-10 transition-[opacity,transform] duration-700 ease-out md:absolute md:w-[27%] ${phase.position} ${
-                  roadmapVisible
-                    ? "translate-y-0 scale-100 opacity-100"
-                    : "translate-y-8 scale-[0.97] opacity-0"
-                }`}
-                style={{ transitionDelay: `${380 + index * 430}ms` }}
-              >
+              (() => {
+                const phaseVisible = roadmapProgress >= 0.08 + index * 0.3;
+                return (
+                  <article
+                    key={phase.phase}
+                    className={`relative z-10 transition-[opacity,transform] duration-700 ease-out md:absolute ${phase.position} ${
+                      phaseVisible
+                        ? "translate-y-0 scale-100 opacity-100"
+                        : "translate-y-8 scale-[0.97] opacity-0"
+                    }`}
+                  >
                 <div className="flex items-center gap-3">
                   <span
                     aria-hidden
-                    className={`absolute -left-[28px] top-1 h-3.5 w-3.5 rounded-full ring-4 ring-night md:static md:left-auto md:top-auto ${phase.dot} ${
-                      roadmapVisible ? "animate-pulse" : ""
-                    }`}
+                        className={`absolute -left-[28px] top-1 h-3.5 w-3.5 rounded-full ring-4 ring-night md:hidden ${phase.dot} ${
+                          phaseVisible ? "animate-pulse" : ""
+                        }`}
                   />
                   <p className={`text-[13px] font-extrabold uppercase tracking-[0.18em] ${phase.accent}`}>
                     {phase.phase}
@@ -522,7 +575,9 @@ function Roadmap() {
                     </li>
                   ))}
                 </ul>
-              </article>
+                  </article>
+                );
+              })()
             ))}
           </div>
         </div>
