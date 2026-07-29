@@ -496,14 +496,14 @@ function Roadmap() {
                 </linearGradient>
               </defs>
               <path
-                d="M 30 400 C 70 360, 100 320, 140 330 C 280 400, 430 160, 600 130 C 760 100, 800 400, 940 330 C 1040 280, 1100 180, 1180 140"
+                d="M 140 330 C 280 400, 430 160, 600 130 C 760 100, 800 400, 940 330"
                 fill="none"
                 stroke="rgba(255,255,255,0.07)"
                 strokeWidth="3"
                 vectorEffect="non-scaling-stroke"
               />
               <path
-                d="M 30 400 C 70 360, 100 320, 140 330 C 280 400, 430 160, 600 130 C 760 100, 800 400, 940 330 C 1040 280, 1100 180, 1180 140"
+                d="M 140 330 C 280 400, 430 160, 600 130 C 760 100, 800 400, 940 330"
                 fill="none"
                 pathLength="1"
                 stroke="url(#roadmap-line-gradient)"
