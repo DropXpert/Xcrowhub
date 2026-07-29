@@ -423,7 +423,7 @@ function Roadmap() {
       title: "Live foundation",
       accent: "text-gold",
       dot: "bg-gold shadow-[0_0_24px_rgba(232,185,100,0.85)]",
-      position: "md:bottom-[8%] md:left-[3%]",
+      position: "md:left-[7%] md:top-[62%]",
       items: [
         "Nimiq Pay mini app",
         "Private escrow deals",
@@ -436,7 +436,7 @@ function Roadmap() {
       title: "Work marketplace",
       accent: "text-jade",
       dot: "bg-jade shadow-[0_0_24px_rgba(79,209,165,0.85)]",
-      position: "md:left-[36%] md:top-[39%]",
+      position: "md:left-[39%] md:top-[35%]",
       items: [
         "Brands hire freelancers",
         "Protected milestones",
@@ -448,7 +448,7 @@ function Roadmap() {
       title: "Asset expansion",
       accent: "text-[#75E5C0]",
       dot: "bg-[#75E5C0] shadow-[0_0_24px_rgba(117,229,192,0.85)]",
-      position: "md:right-[3%] md:top-[8%]",
+      position: "md:left-[71%] md:top-[8%]",
       items: [
         "In-app crypto swaps",
         "More assets and wallets",
@@ -467,58 +467,54 @@ function Roadmap() {
         />
 
         <div className="reveal mt-10 sm:mt-14">
-          <div
-            className="relative isolate grid gap-5 overflow-hidden rounded-[28px] border border-white/10 bg-[#050E0B] bg-cover bg-center p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:p-7 md:block md:min-h-[620px] md:p-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(90deg, rgba(2,9,7,0.2), rgba(2,9,7,0.02)), url('/roadmap-background.jpg')",
-            }}
-          >
+          <div className="relative grid gap-10 py-5 pl-10 md:block md:min-h-[570px] md:py-0 md:pl-0">
             <div
               aria-hidden
-              className="absolute inset-0 z-0 bg-cover bg-center will-change-[clip-path]"
-              style={{
-                backgroundImage: "url('/roadmap-background.jpg')",
-                clipPath: roadmapVisible
-                  ? "circle(150% at 0% 100%)"
-                  : "circle(0% at 0% 100%)",
-                transition: "clip-path 1.9s cubic-bezier(0.22, 1, 0.36, 1)",
-              }}
-            />
-            <div
-              aria-hidden
-              className="absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_50%,transparent_30%,rgba(2,8,6,0.4)_100%)]"
-            />
-            <div
-              aria-hidden
-              className={`absolute bottom-10 left-[31px] top-10 z-[2] w-px origin-bottom bg-gradient-to-t from-gold via-jade to-[#75E5C0] transition-transform duration-[1600ms] md:hidden ${
+              className={`absolute bottom-7 left-[18px] top-7 w-[2px] origin-top bg-gradient-to-b from-gold via-jade to-[#75E5C0] shadow-[0_0_16px_rgba(79,209,165,0.45)] transition-transform duration-[1600ms] md:hidden ${
                 roadmapVisible ? "scale-y-100" : "scale-y-0"
               }`}
+            />
+
+            <div
+              aria-hidden
+              className={`absolute left-[calc(7%+6px)] top-[calc(62%+6px)] hidden h-[3px] w-[35%] origin-left -rotate-[23deg] rounded-full bg-gradient-to-r from-gold via-jade to-jade shadow-[0_0_16px_rgba(79,209,165,0.55)] transition-transform duration-1000 md:block ${
+                roadmapVisible ? "scale-x-100" : "scale-x-0"
+              }`}
+              style={{ transitionDelay: "180ms" }}
+            />
+            <div
+              aria-hidden
+              className={`absolute left-[calc(39%+6px)] top-[calc(35%+6px)] hidden h-[3px] w-[35%] origin-left -rotate-[22deg] rounded-full bg-gradient-to-r from-jade to-[#75E5C0] shadow-[0_0_16px_rgba(117,229,192,0.55)] transition-transform duration-1000 md:block ${
+                roadmapVisible ? "scale-x-100" : "scale-x-0"
+              }`}
+              style={{ transitionDelay: "820ms" }}
             />
 
             {phases.map((phase, index) => (
               <article
                 key={phase.phase}
-                className={`relative z-10 ml-3 rounded-2xl border border-white/10 bg-[#071510]/85 p-5 shadow-[0_18px_48px_rgba(0,0,0,0.3)] backdrop-blur-md transition-[opacity,transform] duration-700 ease-out sm:p-6 md:absolute md:ml-0 md:w-[30%] ${phase.position} ${
+                className={`relative z-10 transition-[opacity,transform] duration-700 ease-out md:absolute md:w-[27%] ${phase.position} ${
                   roadmapVisible
                     ? "translate-y-0 scale-100 opacity-100"
                     : "translate-y-8 scale-[0.97] opacity-0"
                 }`}
                 style={{ transitionDelay: `${380 + index * 430}ms` }}
               >
-                <span
-                  aria-hidden
-                  className={`absolute -left-[18px] top-7 h-3.5 w-3.5 rounded-full ring-4 ring-[#071510] md:-left-2 ${phase.dot} ${
-                    roadmapVisible ? "animate-pulse" : ""
-                  }`}
-                />
-                <p className={`text-[13px] font-extrabold uppercase tracking-[0.18em] ${phase.accent}`}>
-                  {phase.phase}
-                </p>
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden
+                    className={`absolute -left-[28px] top-1 h-3.5 w-3.5 rounded-full ring-4 ring-night md:static md:left-auto md:top-auto ${phase.dot} ${
+                      roadmapVisible ? "animate-pulse" : ""
+                    }`}
+                  />
+                  <p className={`text-[13px] font-extrabold uppercase tracking-[0.18em] ${phase.accent}`}>
+                    {phase.phase}
+                  </p>
+                </div>
                 <h3 className="mt-2 text-[20px] font-extrabold uppercase tracking-[0.02em] text-white sm:text-[22px]">
                   {phase.title}
                 </h3>
-                <ul className="mt-4 space-y-2 text-[13.5px] text-[#D7E8E1] sm:text-[14.5px]">
+                <ul className="mt-4 space-y-2 text-[13.5px] text-[#B9B1A2] sm:text-[14.5px]">
                   {phase.items.map((item) => (
                     <li key={item} className="flex items-start gap-2.5">
                       <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-70" />
