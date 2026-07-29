@@ -4,7 +4,11 @@ import type { Deal } from "@/types/deal";
 import { useDealStore } from "@/store/dealStore";
 import { useAuthStore } from "@/store/authStore";
 import { getNimWallet, getWallet } from "@/wallet";
-import { isCustodyConfigured, custodyAddressFor } from "@/lib/config";
+import {
+  isCustodyConfigured,
+  custodyAddressFor,
+  normalizeWalletAddress,
+} from "@/lib/config";
 import { AlertDialog } from "@/components/AlertDialog";
 import { SkeletonBlock, SkeletonDots } from "@/components/LoadingStates";
 
@@ -26,6 +30,11 @@ export function PaymentBox({ deal }: { deal: Deal }) {
   const [confirmingPay, setConfirmingPay] = useState(false);
   const inFlight = useRef(false);
   const paymentsReady = isCustodyConfigured(deal.priceCurrency);
+  const connectedWalletIsSeller = Boolean(
+    session?.address &&
+      normalizeWalletAddress(session.address) ===
+        normalizeWalletAddress(deal.sellerWalletAddress)
+  );
 
   // A payment has been sent + recorded once the deal carries a tx hash while
   // still awaiting_payment. In that state we stop offering "Pay" and instead
@@ -86,6 +95,14 @@ export function PaymentBox({ deal }: { deal: Deal }) {
       if (!buyer) {
         throw new Error(`Connect a ${deal.priceCurrency} wallet first.`);
       }
+      if (
+        normalizeWalletAddress(buyer) ===
+        normalizeWalletAddress(deal.sellerWalletAddress)
+      ) {
+        throw new Error(
+          "You cannot pay your own deal. Share the payment link with a buyer."
+        );
+      }
       const wallet = deal.priceCurrency === "NIM"
         ? getNimWallet()
         : await getWallet(deal.priceCurrency);
@@ -139,6 +156,7 @@ export function PaymentBox({ deal }: { deal: Deal }) {
     }
 
     const text = errorText(err);
+    if (/own deal|seller.*buyer|same wallet/i.test(text)) return text;
     if (/network|chain|switch/i.test(text)) {
       return "Switch to the required network and try again.";
     }
@@ -238,6 +256,27 @@ export function PaymentBox({ deal }: { deal: Deal }) {
           updated after a few minutes, your transaction may still be pending on
           the network — it will confirm automatically.
         </p>
+      </section>
+    );
+  }
+
+  if (connectedWalletIsSeller) {
+    return (
+      <section className="card space-y-3 px-5 py-5">
+        <div className="flex items-start gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
+            <Lock className="h-4 w-4" />
+          </span>
+          <div className="space-y-1">
+            <h3 className="text-[15px] font-semibold text-ink">
+              Share this deal with your buyer
+            </h3>
+            <p className="text-[13px] leading-relaxed text-muted">
+              The seller wallet cannot accept or fund its own deal. Send the
+              payment link to a different wallet to continue.
+            </p>
+          </div>
+        </div>
       </section>
     );
   }

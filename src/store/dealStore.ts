@@ -19,6 +19,7 @@ import { getSupabaseClient, isSupabaseConfiguredForClient } from "@/lib/supabase
 import { useListingStore } from "@/store/listingStore";
 import { clampNumber, INPUT_LIMITS, limitText, VALUE_LIMITS } from "@/lib/inputLimits";
 import { validateDealAmount } from "@/lib/dealAmounts";
+import { normalizeWalletAddress } from "@/lib/config";
 import {
   ACTIVE_DEAL_LIMIT,
   ACTIVE_DEAL_LIMIT_MESSAGE,
@@ -533,6 +534,12 @@ export const useDealStore = create<DealStoreState>()(
 
         const deal = get().deals[dealId];
         if (!deal) return;
+        if (
+          normalizeWalletAddress(deal.sellerWalletAddress) ===
+          normalizeWalletAddress(buyerWalletAddress)
+        ) {
+          throw new Error("The seller wallet cannot pay its own deal.");
+        }
         const next = transition(deal, "funds_held", {
           buyerWalletAddress,
           paymentTxHash,

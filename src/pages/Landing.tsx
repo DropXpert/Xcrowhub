@@ -445,7 +445,7 @@ function Roadmap() {
       title: "Live foundation",
       accent: "text-gold",
       dot: "bg-gold shadow-[0_0_24px_rgba(232,185,100,0.85)]",
-      position: "md:left-[calc(15%+56px)] md:top-[22px] md:w-[55%]",
+      position: "md:left-[8%] md:top-[22px] md:w-[34%]",
       items: [
         "Nimiq Pay mini app",
         "Private escrow deals",
@@ -458,7 +458,7 @@ function Roadmap() {
       title: "Work marketplace",
       accent: "text-jade",
       dot: "bg-jade shadow-[0_0_24px_rgba(79,209,165,0.85)]",
-      position: "md:left-[calc(15%+56px)] md:top-[242px] md:w-[55%]",
+      position: "md:left-[68%] md:top-[300px] md:w-[29%]",
       items: [
         "Brands hire freelancers",
         "Protected milestones",
@@ -470,7 +470,7 @@ function Roadmap() {
       title: "Asset expansion",
       accent: "text-[#75E5C0]",
       dot: "bg-[#75E5C0] shadow-[0_0_24px_rgba(117,229,192,0.85)]",
-      position: "md:left-[calc(15%+56px)] md:top-[472px] md:w-[55%]",
+      position: "md:left-[8%] md:top-[472px] md:w-[34%]",
       items: [
         "In-app crypto swaps",
         "More assets and wallets",
@@ -514,31 +514,34 @@ function Roadmap() {
                 </linearGradient>
               </defs>
               <path
-                d="M 180 75 C 90 155, 260 215, 180 295 C 100 375, 250 445, 180 525"
+                d="M 420 75 C 760 10, 880 120, 790 300 C 710 415, 520 435, 420 525"
                 fill="none"
                 stroke="rgba(255,255,255,0.07)"
-                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2.5"
                 vectorEffect="non-scaling-stroke"
               />
               <path
-                d="M 180 75 C 90 155, 260 215, 180 295 C 100 375, 250 445, 180 525"
+                d="M 420 75 C 760 10, 880 120, 790 300 C 710 415, 520 435, 420 525"
                 fill="none"
                 pathLength="1"
                 stroke="url(#roadmap-line-gradient)"
                 strokeDasharray="1"
                 strokeDashoffset={1 - roadmapProgress}
                 strokeLinecap="round"
-                strokeWidth="3"
+                strokeLinejoin="round"
+                strokeWidth="2.5"
                 vectorEffect="non-scaling-stroke"
                 style={{
-                  filter: "drop-shadow(0 0 8px rgba(79,209,165,0.7))",
+                  filter: "drop-shadow(0 0 6px rgba(79,209,165,0.58))",
                   transition: "stroke-dashoffset 120ms ease-out",
                 }}
               />
               {[
-                { x: 180, y: 75, showAt: 0.08, color: "#E8B964" },
-                { x: 180, y: 295, showAt: 0.38, color: "#4FD1A5" },
-                { x: 180, y: 525, showAt: 0.68, color: "#75E5C0" },
+                { x: 420, y: 75, showAt: 0.08, color: "#E8B964" },
+                { x: 790, y: 300, showAt: 0.38, color: "#4FD1A5" },
+                { x: 420, y: 525, showAt: 0.68, color: "#75E5C0" },
               ].map((node) => {
                 const visible = roadmapProgress >= node.showAt;
                 return (
