@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Lock,
@@ -56,6 +56,7 @@ export default function Landing() {
       <ReferEarn />
       <DisputeShowcase />
       <TrustSignals />
+      <Roadmap />
       <Founder />
       <FinalCta />
       <Footer />
@@ -382,6 +383,152 @@ function TrustSignals() {
               </GlowCard>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Roadmap ─────────────────────────────────────────────────────────────── */
+function Roadmap() {
+  const roadmapRef = useRef<HTMLElement>(null);
+  const [roadmapVisible, setRoadmapVisible] = useState(false);
+
+  useEffect(() => {
+    const section = roadmapRef.current;
+    if (!section) return;
+
+    if (!("IntersectionObserver" in window)) {
+      setRoadmapVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setRoadmapVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2, rootMargin: "0px 0px -10% 0px" },
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  const phases = [
+    {
+      phase: "Phase 1",
+      title: "Live foundation",
+      accent: "text-gold",
+      dot: "bg-gold shadow-[0_0_24px_rgba(232,185,100,0.85)]",
+      position: "md:bottom-[8%] md:left-[3%]",
+      items: [
+        "Nimiq Pay mini app",
+        "Private escrow deals",
+        "Marketplace and bidding",
+        "Mobile and desktop",
+      ],
+    },
+    {
+      phase: "Phase 2",
+      title: "Work marketplace",
+      accent: "text-jade",
+      dot: "bg-jade shadow-[0_0_24px_rgba(79,209,165,0.85)]",
+      position: "md:left-[36%] md:top-[39%]",
+      items: [
+        "Brands hire freelancers",
+        "Protected milestones",
+        "Service delivery workflows",
+      ],
+    },
+    {
+      phase: "Phase 3",
+      title: "Asset expansion",
+      accent: "text-[#75E5C0]",
+      dot: "bg-[#75E5C0] shadow-[0_0_24px_rgba(117,229,192,0.85)]",
+      position: "md:right-[3%] md:top-[8%]",
+      items: [
+        "In-app crypto swaps",
+        "More assets and wallets",
+        "Nimiq Pay SDK support",
+      ],
+    },
+  ];
+
+  return (
+    <section ref={roadmapRef} id="roadmap" className="relative py-16 sm:py-24 md:py-32">
+      <div className="mx-auto max-w-site px-5">
+        <SectionHeading
+          chip="Roadmap"
+          title="Building the complete work-and-pay layer."
+          sub="XcrowHub grows in focused phases, from protected deals today to a broader marketplace and multi-asset experience."
+        />
+
+        <div className="reveal mt-10 sm:mt-14">
+          <div
+            className="relative isolate grid gap-5 overflow-hidden rounded-[28px] border border-white/10 bg-[#050E0B] bg-cover bg-center p-5 shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:p-7 md:block md:min-h-[620px] md:p-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(90deg, rgba(2,9,7,0.2), rgba(2,9,7,0.02)), url('/roadmap-background.jpg')",
+            }}
+          >
+            <div
+              aria-hidden
+              className="absolute inset-0 z-0 bg-cover bg-center will-change-[clip-path]"
+              style={{
+                backgroundImage: "url('/roadmap-background.jpg')",
+                clipPath: roadmapVisible
+                  ? "circle(150% at 0% 100%)"
+                  : "circle(0% at 0% 100%)",
+                transition: "clip-path 1.9s cubic-bezier(0.22, 1, 0.36, 1)",
+              }}
+            />
+            <div
+              aria-hidden
+              className="absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_50%,transparent_30%,rgba(2,8,6,0.4)_100%)]"
+            />
+            <div
+              aria-hidden
+              className={`absolute bottom-10 left-[31px] top-10 z-[2] w-px origin-bottom bg-gradient-to-t from-gold via-jade to-[#75E5C0] transition-transform duration-[1600ms] md:hidden ${
+                roadmapVisible ? "scale-y-100" : "scale-y-0"
+              }`}
+            />
+
+            {phases.map((phase, index) => (
+              <article
+                key={phase.phase}
+                className={`relative z-10 ml-3 rounded-2xl border border-white/10 bg-[#071510]/85 p-5 shadow-[0_18px_48px_rgba(0,0,0,0.3)] backdrop-blur-md transition-[opacity,transform] duration-700 ease-out sm:p-6 md:absolute md:ml-0 md:w-[30%] ${phase.position} ${
+                  roadmapVisible
+                    ? "translate-y-0 scale-100 opacity-100"
+                    : "translate-y-8 scale-[0.97] opacity-0"
+                }`}
+                style={{ transitionDelay: `${380 + index * 430}ms` }}
+              >
+                <span
+                  aria-hidden
+                  className={`absolute -left-[18px] top-7 h-3.5 w-3.5 rounded-full ring-4 ring-[#071510] md:-left-2 ${phase.dot} ${
+                    roadmapVisible ? "animate-pulse" : ""
+                  }`}
+                />
+                <p className={`text-[13px] font-extrabold uppercase tracking-[0.18em] ${phase.accent}`}>
+                  {phase.phase}
+                </p>
+                <h3 className="mt-2 text-[20px] font-extrabold uppercase tracking-[0.02em] text-white sm:text-[22px]">
+                  {phase.title}
+                </h3>
+                <ul className="mt-4 space-y-2 text-[13.5px] text-[#D7E8E1] sm:text-[14.5px]">
+                  {phase.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2.5">
+                      <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-70" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
         </div>
       </div>
     </section>

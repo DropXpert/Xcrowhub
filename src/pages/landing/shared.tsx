@@ -142,6 +142,7 @@ export function Footer() {
                 <a href="/#private-deals" className="transition hover:text-gold-soft">Private deals</a>
                 <Link to="/marketplace" className="transition hover:text-gold-soft">Marketplace</Link>
                 <a href="/#referral" className="transition hover:text-gold-soft">Refer &amp; earn</a>
+                <a href="/#roadmap" className="transition hover:text-gold-soft">Roadmap</a>
                 <Link to="/docs" className="transition hover:text-gold-soft">Docs</Link>
                 <Link to="/find" className="transition hover:text-gold-soft">Find a deal</Link>
                 <Link to="/support" className="transition hover:text-gold-soft">Support</Link>
