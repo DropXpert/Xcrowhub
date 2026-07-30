@@ -23,11 +23,16 @@ import {
   Copy,
   Building2,
   FileCode2,
+  ExternalLink,
+  BadgeCheck,
+  KeyRound,
+  Route,
 } from "lucide-react";
 
 import { SpotlightCard } from "@/components/SpotlightCard";
 import { Nav, Footer, SectionHeading, FeatureIcon, BentoCard, GlowCard, useReveal, useParallax, deeplink } from "@/pages/landing/shared";
 import { APP_URL, openNimiqPayOrStore } from "@/lib/host";
+import { config } from "@/lib/config";
 import Founder from "@/pages/landing/Founder";
 
 /* ───────────────────────────────────────────────────────────────────────────
@@ -92,15 +97,21 @@ function Hero({ scrollY }: { scrollY: number }) {
         {/* Left: copy */}
         <div className="reveal text-center lg:text-left">
           <h1 className="text-[31px] font-extrabold leading-[1.08] tracking-tight sm:text-[44px] sm:leading-[1.04] md:text-[56px] lg:text-[62px]">
-            Protected deals for <span className="text-gradient">crypto P2P.</span>
+            Your deal. Your money.
+            <br />
+            <span className="text-gradient">Your choice.</span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-lg text-[15px] font-medium leading-relaxed text-[#EDE7DA] sm:mt-5 lg:mx-0">
-            Money stays locked in escrow until delivery is confirmed. No fees on private deals. Works for both one-time deals and repeat work.
+            Choose NIM for a fast managed hold or USDT for verified
+            smart-contract escrow. The exact protection rail is shown before
+            payment, so you decide how the deal moves.
           </p>
 
           <p className="mx-auto mt-3 max-w-lg text-[14px] leading-relaxed text-[#B9B1A2] sm:text-[15px] lg:mx-0">
-            Create a private deal and share a link, or list your services on the marketplace and accept bids. During beta, sellers can keep up to 10 active deals at once to reduce spam.
+            Create a private deal, share a link, or sell through the marketplace.
+            Private deals stay fee-free, with every important action authorised
+            by the participating wallets.
           </p>
 
           <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
@@ -213,7 +224,7 @@ function TrustBar() {
   const items = [
     { icon: BadgeDollarSign, label: "0% fees on private deals" },
     { icon: Lock, label: "Funds held in escrow until delivery" },
-    { icon: ListChecks, label: "10 active deals max during beta" },
+    { icon: BadgeCheck, label: "Verified Polygon escrow contract" },
     { icon: Fingerprint, label: "Wallet-signed actions only" },
     { icon: ShieldCheck, label: "Proof-based dispute resolution" },
   ];
@@ -611,43 +622,310 @@ function Roadmap() {
 }
 
 function EscrowRails() {
+  const [selectedRail, setSelectedRail] = useState<"NIM" | "USDT">("USDT");
+  const [copied, setCopied] = useState(false);
+  const contractAddress = config.usdt.escrowContractAddress;
+  const contractUrl = `https://polygonscan.com/address/${contractAddress}#code`;
+  const isUsdt = selectedRail === "USDT";
+  const railDetails = isUsdt
+    ? [
+        {
+          icon: Wallet,
+          title: "Buyer releases",
+          body: "Confirm delivery and release directly from the wallet.",
+        },
+        {
+          icon: Route,
+          title: "Seller refunds",
+          body: "Return funds directly without an XcrowHub withdrawal.",
+        },
+        {
+          icon: KeyRound,
+          title: "Disputes need two",
+          body: "A matching 2-of-3 settlement signature is required.",
+        },
+      ]
+    : [
+        {
+          icon: Zap,
+          title: "Nimiq native",
+          body: "Pay and settle in NIM through the familiar Nimiq flow.",
+        },
+        {
+          icon: ShieldCheck,
+          title: "Hardened signer",
+          body: "The protected hold is handled by XcrowHub's payout service.",
+        },
+        {
+          icon: FileCheck2,
+          title: "Evidence reviewed",
+          body: "Release, refund, or split follows the recorded deal outcome.",
+        },
+      ];
+
+  const copyContract = async () => {
+    try {
+      await navigator.clipboard.writeText(contractAddress);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
+
   return (
-    <section className="relative pb-8 sm:pb-12">
+    <section id="escrow-rails" className="relative overflow-hidden py-16 sm:py-24 md:py-32">
+      <div aria-hidden className="lp-grid absolute inset-0 -z-10 opacity-50" />
+      <div
+        aria-hidden
+        className="lp-aurora animate-aurora absolute -right-40 top-10 -z-10 h-[34rem] w-[34rem]"
+        style={{ background: "radial-gradient(circle, rgba(79,209,165,0.22), transparent 62%)" }}
+      />
       <div className="mx-auto max-w-site px-5">
-        <div className="reveal grid gap-3 rounded-3xl border border-white/10 bg-white/[0.025] p-4 sm:grid-cols-2 sm:p-5">
-          <div className="flex items-start gap-3 rounded-2xl bg-white/[0.025] p-4">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold/10 text-gold ring-1 ring-gold/20">
-              <Building2 className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="text-[14px] font-bold text-[#EDE7DA]">
-                NIM · Managed escrow
+        <SectionHeading
+          chip="You stay in control"
+          title={
+            <>
+              One deal. <span className="text-gradient">Two protection rails.</span>
+            </>
+          }
+          sub="Choose the asset and settlement model that fits your deal. XcrowHub shows the custody model, fees, and release rules before any payment leaves your wallet."
+        />
+
+        <div className="reveal relative mt-10 overflow-hidden rounded-[30px] border border-white/10 bg-[#07140f]/90 shadow-[0_32px_90px_rgba(0,0,0,0.42)] sm:mt-14">
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-jade/80 to-transparent"
+          />
+
+          <div className="flex flex-col gap-3 border-b border-white/10 bg-white/[0.025] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="flex items-center gap-3">
+              <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-jade/10 text-jade ring-1 ring-jade/30">
+                <BadgeCheck className="h-5 w-5" />
+                <span className="absolute inset-0 animate-ping rounded-full border border-jade/30" />
+              </span>
+              <div>
+                <p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-jade">
+                  Contract proof live
+                </p>
+                <p className="mt-0.5 text-[12px] text-[#928B7D] sm:text-[13px]">
+                  Exact source verified on Polygon mainnet
+                </p>
+              </div>
+            </div>
+            <a
+              href={contractUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 self-start rounded-full border border-jade/20 bg-jade/[0.06] px-3.5 py-2 text-[12px] font-bold text-jade transition-colors hover:bg-jade/10 sm:self-auto"
+            >
+              Inspect verified code
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </div>
+
+          <div className="grid lg:grid-cols-[0.82fr_1.18fr]">
+            <div className="border-b border-white/10 p-5 sm:p-7 lg:border-b-0 lg:border-r">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#746E63]">
+                01 / Choose your rail
               </p>
-              <p className="mt-1 text-[13px] leading-relaxed text-[#928B7D]">
-                NIM deals use XcrowHub's managed custody and hardened payout
-                signer during the protected hold.
+              <h3 className="mt-3 max-w-sm text-[25px] font-extrabold leading-tight sm:text-[31px]">
+                Your funds.
+                <br />
+                <span className="text-gradient">Your call.</span>
+              </h3>
+              <p className="mt-3 max-w-md text-[13.5px] leading-relaxed text-[#928B7D]">
+                Select the asset that matches the level of control and settlement
+                experience you want.
               </p>
+
+              <div
+                className="mt-7 grid gap-3"
+                role="tablist"
+                aria-label="Escrow settlement rail"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={!isUsdt}
+                  onClick={() => setSelectedRail("NIM")}
+                  className={`group flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all duration-300 ${
+                    !isUsdt
+                      ? "border-gold/50 bg-gold/[0.08] shadow-[0_0_30px_rgba(232,185,100,0.08)]"
+                      : "border-white/10 bg-white/[0.025] hover:border-white/20"
+                  }`}
+                >
+                  <span
+                    className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${
+                      !isUsdt
+                        ? "bg-gold/15 text-gold ring-1 ring-gold/30"
+                        : "bg-white/[0.04] text-[#746E63] ring-1 ring-white/10"
+                    }`}
+                  >
+                    <Building2 className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center justify-between gap-3">
+                      <span className="text-[15px] font-bold text-[#EDE7DA]">
+                        NIM
+                      </span>
+                      <span className="rounded-full bg-gold/10 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-gold">
+                        Managed
+                      </span>
+                    </span>
+                    <span className="mt-1 block text-[12px] text-[#928B7D]">
+                      Native Nimiq escrow with managed settlement
+                    </span>
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={isUsdt}
+                  onClick={() => setSelectedRail("USDT")}
+                  className={`group flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all duration-300 ${
+                    isUsdt
+                      ? "border-jade/50 bg-jade/[0.08] shadow-[0_0_34px_rgba(79,209,165,0.09)]"
+                      : "border-white/10 bg-white/[0.025] hover:border-white/20"
+                  }`}
+                >
+                  <span
+                    className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${
+                      isUsdt
+                        ? "bg-jade/15 text-jade ring-1 ring-jade/30"
+                        : "bg-white/[0.04] text-[#746E63] ring-1 ring-white/10"
+                    }`}
+                  >
+                    <FileCode2 className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center justify-between gap-3">
+                      <span className="text-[15px] font-bold text-[#EDE7DA]">
+                        USDT
+                      </span>
+                      <span className="rounded-full bg-jade/10 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-jade">
+                        Non-custodial
+                      </span>
+                    </span>
+                    <span className="mt-1 block text-[12px] text-[#928B7D]">
+                      Verified Polygon smart-contract escrow
+                    </span>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div className="relative overflow-hidden p-5 sm:p-7 md:p-9">
+              <div aria-hidden className="lp-grid absolute inset-0 opacity-40" />
+              <div
+                aria-hidden
+                className={`absolute left-1/2 top-16 h-64 w-64 -translate-x-1/2 rounded-full blur-3xl transition-colors duration-500 ${
+                  isUsdt ? "bg-jade/10" : "bg-gold/10"
+                }`}
+              />
+
+              <div className="relative">
+                <div className="mx-auto flex max-w-[620px] flex-col items-center">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-night/70 px-4 py-2 text-[12px] font-bold text-[#EDE7DA] shadow-lg">
+                    <Wallet className="h-4 w-4 text-[#B9B1A2]" />
+                    Your wallet
+                  </span>
+                  <span className={`rail-beam my-2 h-10 w-px ${isUsdt ? "rail-beam-jade" : "rail-beam-gold"}`} />
+
+                  <div
+                    className={`w-full rounded-3xl border p-5 text-center backdrop-blur transition-all duration-500 sm:p-7 ${
+                      isUsdt
+                        ? "border-jade/30 bg-jade/[0.075] shadow-[0_0_60px_rgba(79,209,165,0.09)]"
+                        : "border-gold/30 bg-gold/[0.07] shadow-[0_0_60px_rgba(232,185,100,0.08)]"
+                    }`}
+                  >
+                    <span
+                      className={`mx-auto grid h-12 w-12 place-items-center rounded-2xl ${
+                        isUsdt
+                          ? "bg-jade/15 text-jade ring-1 ring-jade/30"
+                          : "bg-gold/15 text-gold ring-1 ring-gold/30"
+                      }`}
+                    >
+                      {isUsdt ? (
+                        <FileCode2 className="h-6 w-6" />
+                      ) : (
+                        <Building2 className="h-6 w-6" />
+                      )}
+                    </span>
+                    <p
+                      className={`mt-4 text-[11px] font-extrabold uppercase tracking-[0.2em] ${
+                        isUsdt ? "text-jade" : "text-gold"
+                      }`}
+                    >
+                      {isUsdt ? "Verified smart contract" : "Managed NIM hold"}
+                    </p>
+                    <h4 className="mt-2 text-[22px] font-extrabold text-white sm:text-[26px]">
+                      {isUsdt
+                        ? "Code controls the funds"
+                        : "XcrowHub manages settlement"}
+                    </h4>
+                    <p className="mx-auto mt-2 max-w-md text-[13px] leading-relaxed text-[#B9B1A2]">
+                      {isUsdt
+                        ? "XcrowHub cannot unilaterally withdraw, redirect, or rescue the USDT principal."
+                        : "A hardened custody signer executes the release, refund, or split recorded by the deal workflow."}
+                    </p>
+                  </div>
+
+                  <span className={`rail-beam my-2 h-10 w-px ${isUsdt ? "rail-beam-jade" : "rail-beam-gold"}`} />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {railDetails.map(({ icon: Icon, title, body }) => (
+                    <div
+                      key={title}
+                      className="rounded-2xl border border-white/10 bg-night/70 p-4 backdrop-blur"
+                    >
+                      <Icon className={`h-[18px] w-[18px] ${isUsdt ? "text-jade" : "text-gold"}`} />
+                      <p className="mt-3 text-[13px] font-bold text-[#EDE7DA]">
+                        {title}
+                      </p>
+                      <p className="mt-1 text-[11.5px] leading-relaxed text-[#928B7D]">
+                        {body}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-          <div className="flex items-start gap-3 rounded-2xl bg-white/[0.025] p-4">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-jade/10 text-jade ring-1 ring-jade/20">
-              <FileCode2 className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="text-[14px] font-bold text-[#EDE7DA]">
-                USDT · Smart-contract escrow
-              </p>
-              <p className="mt-1 text-[13px] leading-relaxed text-[#928B7D]">
-                A USDT deal labelled smart-contract escrow locks funds in an
-                immutable Polygon contract that XcrowHub cannot move alone.
-              </p>
+
+          <div className="border-t border-white/10 bg-black/10 p-4 sm:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-start gap-3">
+                <EyeOff className="mt-0.5 h-4 w-4 shrink-0 text-jade" />
+                <p className="max-w-2xl text-[12px] leading-relaxed text-[#928B7D] sm:text-[13px]">
+                  <strong className="text-[#EDE7DA]">Nothing is hidden.</strong>{" "}
+                  The asset, custody model, platform fee, and settlement rules
+                  appear on the deal before you approve payment.
+                </p>
+              </div>
+
+              <div className="flex min-w-0 items-center gap-2 rounded-xl border border-white/10 bg-night/70 p-2">
+                <code className="min-w-0 flex-1 truncate px-2 text-[10.5px] text-[#B9B1A2] sm:text-[11.5px]">
+                  {contractAddress}
+                </code>
+                <button
+                  type="button"
+                  onClick={copyContract}
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/[0.05] text-[#B9B1A2] transition-colors hover:bg-white/10 hover:text-white"
+                  aria-label="Copy verified contract address"
+                >
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5 text-jade" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-        <p className="reveal mt-3 text-center text-[12px] text-[#746E63]">
-          Every deal shows its escrow rail before payment. USDT deals that use
-          managed custody remain labelled accordingly.
-        </p>
       </div>
     </section>
   );

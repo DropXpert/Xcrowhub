@@ -24,10 +24,13 @@ import {
   Bell,
   Send,
   FileCheck2,
+  ExternalLink,
+  BadgeCheck,
 } from "lucide-react";
 
 import { Nav, Footer, useReveal, useParallax } from "@/pages/landing/shared";
 import { APP_URL } from "@/lib/host";
+import { config } from "@/lib/config";
 
 /* ───────────────────────────────────────────────────────────────────────────
    Docs: the public, browser-facing documentation page (xcrowhub.com/docs).
@@ -264,7 +267,8 @@ export default function Docs() {
             <P>
               XcrowHub supports <strong className="text-[#EDE7DA] font-semibold">NIM</strong> and{" "}
               <strong className="text-[#EDE7DA] font-semibold">USDT (Polygon)</strong> through two
-              deliberately different escrow rails:
+              deliberately different escrow rails. The user chooses the asset per deal, and the
+              applicable custody model is shown before payment:
             </P>
             <div className="grid gap-4 sm:grid-cols-2">
               <MiniCard icon={Wallet} title="NIM: managed custody" accent="gold">
@@ -276,6 +280,42 @@ export default function Docs() {
                 contract on Polygon. XcrowHub cannot withdraw or redirect the principal by itself.
               </MiniCard>
             </div>
+            <div className="relative overflow-hidden rounded-2xl border border-jade/25 bg-jade/[0.055] p-5">
+              <div aria-hidden className="lp-grid absolute inset-0 opacity-30" />
+              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-jade/10 text-jade ring-1 ring-jade/25">
+                    <BadgeCheck className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="text-[14px] font-bold text-[#EDE7DA]">
+                      USDT contract source verified
+                    </p>
+                    <p className="mt-1 max-w-xl text-[12.5px] leading-relaxed text-[#928B7D]">
+                      The deployed bytecode and published source match on Polygon
+                      mainnet. Anyone can inspect the immutable settlement rules.
+                    </p>
+                    <code className="mt-2 block break-all text-[10.5px] text-jade/80">
+                      {config.usdt.escrowContractAddress}
+                    </code>
+                  </div>
+                </div>
+                <a
+                  href={`https://polygonscan.com/address/${config.usdt.escrowContractAddress}#code`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-jade/20 bg-jade/[0.07] px-4 py-2.5 text-[12px] font-bold text-jade transition-colors hover:bg-jade/10"
+                >
+                  Inspect the contract
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </div>
+            <Callout kind="info" title="The choice is visible before payment">
+              XcrowHub never silently switches the settlement model. The deal
+              screen identifies the asset, escrow rail, fees, and release rules
+              before the buyer approves the transaction.
+            </Callout>
             <div className="space-y-6">
               <Step n={1} title="Buyer pays into the hold">
                 NIM is sent to managed custody. For USDT, the buyer approves the token and funds

@@ -850,6 +850,36 @@
   50% { opacity: 0.8; transform: translateY(66%) scale(0.65); }
 }
 
+/* A small moving signal makes the selected landing-page settlement rail feel
+   live while keeping the information readable and touch friendly. */
+.rail-beam {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.rail-beam::after {
+  position: absolute;
+  inset: -55% 0 auto;
+  height: 55%;
+  content: "";
+  animation: rail-beam-travel 1.8s linear infinite;
+}
+
+.rail-beam-jade::after {
+  background: linear-gradient(to bottom, transparent, #4fd1a5, transparent);
+  box-shadow: 0 0 12px rgba(79, 209, 165, 0.75);
+}
+
+.rail-beam-gold::after {
+  background: linear-gradient(to bottom, transparent, #e8b964, transparent);
+  box-shadow: 0 0 12px rgba(232, 185, 100, 0.7);
+}
+
+@keyframes rail-beam-travel {
+  to { transform: translateY(290%); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     opacity: 1;
@@ -876,5 +906,10 @@
     opacity: 1;
     filter: none;
     transform: none;
+  }
+  .rail-beam::after {
+    inset: 20% 0;
+    height: 60%;
+    animation: none !important;
   }
 }

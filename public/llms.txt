@@ -9,7 +9,7 @@ XcrowHub protects buyers and sellers during P2P crypto transactions — freelanc
 - Domain: https://www.xcrowhub.com
 - Category: Escrow / P2P payments / Freelance protection
 - Chains: Nimiq (NIM) mainnet, Polygon (USDT ERC-20)
-- Escrow rails: NIM uses XcrowHub managed custody. USDT uses the rail shown before payment: an immutable non-custodial Polygon contract or managed custody.
+- Escrow rails: the user chooses the asset per deal and sees the rail before payment. NIM uses XcrowHub managed custody. New USDT deals use the verified immutable Polygon escrow at `0x639e0fB779e3D796cAC219850a26Ec3bDcE5d93c`; historic managed-custody deals remain labelled.
 - Wallet: Nimiq Pay Mini App (also usable in browser)
 - Private deals: 0% fee
 - Marketplace deals: 1% seller-side fee

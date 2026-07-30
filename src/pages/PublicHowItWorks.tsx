@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Check, FileCheck2, Lock, Scale, ShieldCheck, Wallet } from "lucide-react";
+import { Check, ExternalLink, FileCheck2, Lock, Scale, ShieldCheck, Wallet } from "lucide-react";
 import { Footer, Nav, SectionHeading, FeatureIcon, useParallax, useReveal } from "@/pages/landing/shared";
+import { config } from "@/lib/config";
 
 const STEPS = [
   { icon: FileCheck2, title: "Create the deal", body: "Set the title, price in NIM or USDT, delivery terms and confirmation window. Keep it private or publish a marketplace listing." },
@@ -45,7 +46,7 @@ export default function PublicHowItWorks() {
 
       <section className="relative py-16 sm:py-24">
         <div className="mx-auto max-w-site px-5">
-          <SectionHeading chip="Escrow rails" title="The deal tells you who controls settlement" sub="NIM uses XcrowHub managed custody. A USDT deal labelled smart-contract escrow uses an immutable Polygon contract that XcrowHub cannot move alone. Managed USDT deals remain clearly labelled." />
+          <SectionHeading chip="Your choice" title="The deal tells you who controls settlement" sub="Choose NIM managed escrow or verified non-custodial USDT smart-contract escrow. The exact rail, fees, and settlement rules are visible before payment." />
           <div className="reveal mx-auto mt-10 grid max-w-3xl gap-4 sm:grid-cols-2">
             <div className="glass rounded-2xl p-5">
               <Wallet className="h-5 w-5 text-gold" />
@@ -54,8 +55,16 @@ export default function PublicHowItWorks() {
             </div>
             <div className="glass rounded-2xl p-5">
               <Lock className="h-5 w-5 text-jade" />
-              <h3 className="mt-4 text-[15px] font-bold">USDT · Smart contract</h3>
+              <h3 className="mt-4 text-[15px] font-bold">USDT · Verified smart contract</h3>
               <p className="mt-2 text-[13px] leading-relaxed text-[#B9B1A2]">Buyer release and seller refund are direct. Disputed outcomes require two matching signatures.</p>
+              <a
+                href={`https://polygonscan.com/address/${config.usdt.escrowContractAddress}#code`}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-flex items-center gap-1.5 text-[12px] font-bold text-jade hover:underline"
+              >
+                Inspect verified source <ExternalLink className="h-3.5 w-3.5" />
+              </a>
             </div>
           </div>
         </div>

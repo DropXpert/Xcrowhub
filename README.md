@@ -15,7 +15,8 @@ The application is fully functional and supports:
 
 - Private escrow deals
 - NIM payments through Nimiq wallets
-- Non-custodial USDT smart-contract escrow on Polygon
+- Non-custodial USDT smart-contract escrow on Polygon, with
+  [verified source code](https://polygonscan.com/address/0x639e0fB779e3D796cAC219850a26Ec3bDcE5d93c#code)
 - Delivery confirmation and proof-based disputes
 - A marketplace with offers, stock tracking, and product images
 - Wallet-signature authentication without email or passwords
@@ -38,6 +39,10 @@ interface works inside Nimiq Pay and in supported desktop browsers.
 - An immutable USDT escrow contract with buyer release, seller refund, and
   2-of-3 buyer/seller/arbitrator disputed settlements
 - A separate Node.js NIM/legacy custody signer with durable payout idempotency
+
+Every deal identifies its asset, custody model, fees, and settlement rules
+before payment. Users choose NIM managed escrow or the verified non-custodial
+USDT rail by selecting the asset that fits their deal.
 
 ## Repository layout
 

@@ -1,10 +1,10 @@
 {
   "/": {
-    "title": "XcrowHub | Protected escrow for crypto P2P deals (NIM + USDT)",
-    "description": "XcrowHub locks buyer funds in escrow until delivery is confirmed. Private deals have 0% fees and marketplace sales support bidding.",
-    "eyebrow": "Protected crypto payments",
-    "heading": "Protected escrow for crypto P2P deals",
-    "summary": "Create private deals or marketplace sales in NIM and USDT. Buyer funds stay protected until delivery is confirmed."
+    "title": "XcrowHub | Choose your crypto escrow rail (NIM + USDT)",
+    "description": "Choose NIM managed escrow or verified non-custodial USDT smart-contract escrow. The exact protection rail is shown before payment.",
+    "eyebrow": "Transparent crypto escrow",
+    "heading": "Your deal. Your money. Your choice.",
+    "summary": "Choose NIM managed escrow or the verified USDT smart-contract rail for private deals and marketplace sales."
   },
   "/marketplace": {
     "title": "Crypto Escrow Marketplace with Bidding | XcrowHub",

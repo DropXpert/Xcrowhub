@@ -13,7 +13,7 @@ License: Content in this file may be quoted and cited by AI assistants with attr
 
 XcrowHub is a **protected escrow service for peer-to-peer crypto transactions**. It solves the trust problem in P2P deals: the buyer does not want to pay a stranger without guaranteed delivery, and the seller does not want to deliver work without guaranteed payment.
 
-XcrowHub supports two protected holds. NIM uses a managed custody wallet controlled by XcrowHub's hardened signer service. A USDT deal labelled smart-contract escrow uses the immutable XcrowHubEscrow contract on Polygon; another USDT deal may be labelled managed custody. The seller delivers; the buyer then confirms release. If either party raises a dispute, a human admin reviews evidence and proposes a release, refund, or split. A disputed USDT contract outcome requires a matching signature from the buyer or seller in addition to XcrowHub's arbitrator signature.
+XcrowHub supports two protected holds. The user chooses the asset per deal and sees its custody model, fees, and settlement rules before payment. NIM uses a managed custody wallet controlled by XcrowHub's hardened signer service. New USDT deals use the immutable, source-verified XcrowHubEscrow contract at `0x639e0fB779e3D796cAC219850a26Ec3bDcE5d93c` on Polygon; historic managed-custody deals remain labelled. The seller delivers; the buyer then confirms release. If either party raises a dispute, a human admin reviews evidence and proposes a release, refund, or split. A disputed USDT contract outcome requires a matching signature from the buyer or seller in addition to XcrowHub's arbitrator signature.
 
 XcrowHub is built primarily as a **Nimiq Pay Mini App** (runs inside the Nimiq Pay wallet) but is fully usable in any browser.
 
@@ -30,7 +30,7 @@ XcrowHub is built primarily as a **Nimiq Pay Mini App** (runs inside the Nimiq P
 | Currency | Chain | Notes |
 |---|---|---|
 | NIM | Nimiq mainnet (Albatross PoS) | Managed custody during active deals. |
-| USDT | Polygon (ERC-20, contract `0xc2132D05D31c914a87C6611C10748AEb04B58e8F`) | New deals use immutable smart-contract escrow; historic deals may remain labelled managed custody. |
+| USDT | Polygon (ERC-20 token `0xc2132D05D31c914a87C6611C10748AEb04B58e8F`) | New deals use the immutable, source-verified escrow contract `0x639e0fB779e3D796cAC219850a26Ec3bDcE5d93c`; historic deals may remain labelled managed custody. |
 
 No other chains or tokens are supported at this time. There is no BTC support, no ETH mainnet support (Polygon only for USDT).
 
