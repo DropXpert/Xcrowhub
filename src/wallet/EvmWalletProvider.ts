@@ -5,15 +5,15 @@ import type {
   WalletProvider,
 } from "./WalletProvider";
 import { config } from "@/lib/config";
+import { USDT_ESCROW_ABI, usdtDealReference } from "@/lib/usdtEscrow";
 
 /**
  * EVM wallet provider for USDT (and any ERC-20). Talks to whatever wallet
  * has injected `window.ethereum` — inside Nimiq Pay that's the host's EVM
  * bridge; in a normal browser it's MetaMask/Rabby/etc.
  *
- * Like the Nimiq provider, the recipient on the transfer is the ProofHold
- * custody address — not the seller. Funds release happens on the backend
- * in Milestone B.
+ * Historic deals transfer to managed custody. New USDT deals approve and fund
+ * the immutable Polygon escrow contract.
  */
 export class EvmWalletProvider implements WalletProvider {
   readonly name = "EVM wallet (USDT)";
@@ -50,11 +50,40 @@ export class EvmWalletProvider implements WalletProvider {
 
     const token = new Contract(
       config.usdt.contractAddress,
-      ["function transfer(address to, uint256 value) returns (bool)"],
+      [
+        "function transfer(address to, uint256 value) returns (bool)",
+        "function approve(address spender, uint256 value) returns (bool)",
+      ],
       signer
     );
 
     const amount = parseUnits(params.amount, config.usdt.decimals);
+    if (params.escrowModel === "smart_contract") {
+      if (!params.dealId || !params.seller) {
+        throw new Error("The USDT escrow payment is missing deal details.");
+      }
+      const escrowAddress = params.to || config.usdt.escrowContractAddress;
+      const approval = await token.approve(
+        escrowAddress,
+        amount
+      );
+      // Funding must wait until the allowance is mined. This is a one-time
+      // approval transaction followed by the escrow funding transaction.
+      await approval.wait();
+      const escrow = new Contract(
+        escrowAddress,
+        USDT_ESCROW_ABI,
+        signer
+      );
+      const tx = await escrow.fund(
+        usdtDealReference(params.dealId),
+        params.seller,
+        amount,
+        params.feeBps ?? 0
+      );
+      return { txHash: tx.hash };
+    }
+
     const tx = await token.transfer(config.usdt.custodyAddress, amount);
     // Don't await tx.wait() — Nimiq Pay closes the confirmation modal once
     // the user signs; the tx hash is enough for the receipt. Backend will

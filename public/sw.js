@@ -19,13 +19,17 @@ self.addEventListener("message", (e) => {
   if (e.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
-// Network-first for API/Supabase, cache-first for assets
+// Leave backend API requests to the browser; cache only application assets.
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
 
   // Skip non-GET and cross-origin API calls
   if (e.request.method !== "GET") return;
-  if (url.origin !== location.origin && url.hostname.includes("supabase")) return;
+  if (
+    url.origin !== location.origin &&
+    (url.hostname === "api.xcrowhub.com" ||
+      url.hostname.includes("supabase"))
+  ) return;
 
   if (e.request.mode === "navigate") {
     e.respondWith(

@@ -9,6 +9,7 @@ XcrowHub protects buyers and sellers during P2P crypto transactions — freelanc
 - Domain: https://www.xcrowhub.com
 - Category: Escrow / P2P payments / Freelance protection
 - Chains: Nimiq (NIM) mainnet, Polygon (USDT ERC-20)
+- Escrow rails: NIM uses XcrowHub managed custody. USDT uses the rail shown before payment: an immutable non-custodial Polygon contract or managed custody.
 - Wallet: Nimiq Pay Mini App (also usable in browser)
 - Private deals: 0% fee
 - Marketplace deals: 1% seller-side fee
@@ -21,7 +22,7 @@ XcrowHub protects buyers and sellers during P2P crypto transactions — freelanc
 1. Seller creates a deal — sets item, price (NIM or USDT), and delivery terms. Gets a private link or publishes it on the marketplace.
 2. Buyer pays into the escrow hold — funds are locked, visible to both parties, and do not go directly to the seller.
 3. Seller delivers and marks it as delivered, optionally attaching proof.
-4. Buyer confirms receipt → funds are released to the seller. If contested, a proof window opens for both, and an admin decides.
+4. Buyer confirms receipt → funds are released to the seller. If contested, a proof window opens for both, and an admin decides. A disputed USDT contract settlement also needs a matching buyer or seller signature.
 
 ## Two ways to deal
 

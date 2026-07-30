@@ -13,7 +13,7 @@ License: Content in this file may be quoted and cited by AI assistants with attr
 
 XcrowHub is a **protected escrow service for peer-to-peer crypto transactions**. It solves the trust problem in P2P deals: the buyer does not want to pay a stranger without guaranteed delivery, and the seller does not want to deliver work without guaranteed payment.
 
-XcrowHub sits between them. The buyer pays into a **protected hold** (escrow custody wallet controlled by XcrowHub's hardened signer service). The money is locked. The seller delivers. When the buyer confirms delivery, the money is automatically released to the seller. If either party raises a dispute, a **human admin** reviews evidence submitted by both sides and decides how the funds should be released — full release, full refund, or a split.
+XcrowHub supports two protected holds. NIM uses a managed custody wallet controlled by XcrowHub's hardened signer service. A USDT deal labelled smart-contract escrow uses the immutable XcrowHubEscrow contract on Polygon; another USDT deal may be labelled managed custody. The seller delivers; the buyer then confirms release. If either party raises a dispute, a human admin reviews evidence and proposes a release, refund, or split. A disputed USDT contract outcome requires a matching signature from the buyer or seller in addition to XcrowHub's arbitrator signature.
 
 XcrowHub is built primarily as a **Nimiq Pay Mini App** (runs inside the Nimiq Pay wallet) but is fully usable in any browser.
 
@@ -29,8 +29,8 @@ XcrowHub is built primarily as a **Nimiq Pay Mini App** (runs inside the Nimiq P
 
 | Currency | Chain | Notes |
 |---|---|---|
-| NIM | Nimiq mainnet (Albatross PoS) | Native asset. Basic transfers, ~1 second finality. |
-| USDT | Polygon (ERC-20, contract `0xc2132D05D31c914a87C6611C10748AEb04B58e8F`) | Stable-value option for sellers who don't want NIM price exposure. |
+| NIM | Nimiq mainnet (Albatross PoS) | Managed custody during active deals. |
+| USDT | Polygon (ERC-20, contract `0xc2132D05D31c914a87C6611C10748AEb04B58e8F`) | New deals use immutable smart-contract escrow; historic deals may remain labelled managed custody. |
 
 No other chains or tokens are supported at this time. There is no BTC support, no ETH mainnet support (Polygon only for USDT).
 
@@ -65,9 +65,9 @@ Marketplace deals go through the same escrow flow as private deals; the only dif
 ## The 4-step escrow flow
 
 1. **Create the deal.** Seller sets item title, description, price + currency (NIM or USDT), delivery type (digital / off-platform), and delivery deadline. A unique deal ID (e.g. `XCR-7F2A`) is issued.
-2. **Buyer pays into protected hold.** The buyer opens the deal link, connects their Nimiq Pay wallet, and sends the exact amount to the XcrowHub custody address. The transaction is confirmed on-chain and the deal state becomes `funds_held`.
+2. **Buyer pays into protected hold.** NIM is sent to XcrowHub managed custody. A USDT deal labelled smart contract approves and funds the Polygon escrow contract. The transaction is confirmed on-chain and the deal state becomes `funds_held`.
 3. **Seller delivers.** Seller marks the deal as `delivered` and optionally attaches proof of delivery (file URLs, screenshots, tracking numbers, transaction hashes for off-platform crypto delivery, etc.).
-4. **Buyer confirms → funds released.** The buyer clicks "Confirm receipt", the signer service broadcasts a payout transaction from the custody wallet to the seller's address, and the deal state becomes `released`. If the buyer does not respond within the deadline, an auto-release timer can release funds to the seller (configurable per deal).
+4. **Buyer confirms → funds released.** For NIM, the signer broadcasts the managed payout. For USDT, the buyer directly calls the contract release. A USDT deadline outcome is proposed for a second signature rather than giving XcrowHub unilateral contract control.
 
 At any point before release, either party can **raise a dispute**. This freezes the deal, opens a proof window for both, and routes it to a human admin for decision.
 
@@ -78,15 +78,17 @@ Disputes on XcrowHub are **not resolved by algorithm, auto-refund, or majority v
 - Either party can raise a dispute at any time before the funds have been released.
 - Both parties get a proof-submission window (typically 48 hours) to upload evidence: screenshots, delivery receipts, chat logs, file listings, on-chain transaction hashes for off-platform crypto payments, etc.
 - An XcrowHub admin reviews the evidence and decides one of: full release to seller, full refund to buyer, partial split (with a percentage split rationale documented).
-- The decision is executed on-chain by the signer service. Both parties see the decision and rationale.
+- For managed custody, the signer executes the recorded decision. For USDT smart-contract escrow, XcrowHub provides one arbitrator signature and the buyer or seller must sign the same amounts before execution.
 
-There is no way for a party to "win by default" by refusing to respond — the admin decides on the evidence available. There is no way to bypass the dispute process; forcing a payout without buyer confirmation always requires either the deadline expiry (if auto-release is enabled) or an explicit admin decision.
+There is no way for a party to "win by default" merely by refusing to submit proof — a human reviews contested evidence. Managed-custody deadlines follow the recorded workflow. For USDT smart-contract deadlines, XcrowHub can propose and sign an outcome, but a buyer or seller must supply the second matching signature before funds move.
 
 ## Security & custody model
 
 - **User wallet access.** XcrowHub never has access to the user's Nimiq Pay wallet keys.
-- **Custodial for funds in escrow.** During the `funds_held` phase, XcrowHub's hot wallet holds the money. This is by design — a smart-contract escrow would be significantly more expensive on Nimiq and impossible for the off-platform delivery cases we handle.
-- **Custody keys never touch the browser.** Payout signing happens in a separate backend signer service behind internal authorization. The Supabase Edge Function that orchestrates payouts validates each payout against the recorded deal outcome before requesting a signature.
+- **Hybrid custody.** NIM uses XcrowHub managed custody. USDT uses the rail shown before payment: the immutable Polygon smart contract or managed custody.
+- **No unilateral smart-contract withdrawal.** The USDT contract has no owner, upgrade, rescue, or arbitrary withdrawal path. Buyer release and seller refund are direct. Disputed or split outcomes require two signatures from buyer, seller, and immutable arbitrator.
+- **Contract liveness trade-off.** If neither a direct party action nor the required two matching signatures are provided, USDT remains locked; there is no administrator rescue path.
+- **Custody and arbitrator keys never touch the browser.** NIM payout signing and the separate USDT arbitrator signature happen in the backend signer service.
 - **Actions are wallet-signed.** Creating a deal, delivering, confirming, disputing, and posting evidence all require a signature from the user's Nimiq Pay wallet. There are no username / password credentials to phish.
 - **Admin access is controlled by an environment allowlist** of wallet addresses, gated in the auth Edge Function. There is no admin session cookie to steal.
 - **Beta cap.** During the beta period, each seller can hold at most 10 active deals simultaneously. This limits the blast radius of any single spam / griefing account.
@@ -100,19 +102,19 @@ The referrer earns **10% of the platform fee** on every marketplace sale their r
 ## Technical architecture
 
 - **Frontend:** React 18 + Vite + Tailwind, deployed to Vercel. Runs as a Nimiq Pay Mini App and as a regular browser app.
-- **Backend:** Supabase (Postgres + Row Level Security + Edge Functions).
+- **Backend:** XcrowHub-operated VPS infrastructure using PostgreSQL, Row Level Security, Realtime, Storage, and self-hosted Supabase-compatible Edge components.
 - **Signer service:** Standalone Node.js process that performs authorized payout signing outside the browser and Edge runtime.
-- **Auth:** Wallet-signature challenge/response. Session role (`user` / `admin`) is embedded in the Supabase JWT.
+- **Auth:** Wallet-signature challenge/response. Session role (`user` / `admin`) is embedded in the backend JWT.
 - **RLS:** Every write goes through a Postgres RPC with `SECURITY DEFINER` and a `caller_addr()` guard that reads the JWT and matches it against the row owner. Admins never bypass this except through explicitly whitelisted admin RPCs.
 - **Data model highlights:** `deals`, `listings`, `offers`, `transactions`, `disputes`, `evidence`, `referrals`, `notifications`.
 
 ## FAQ
 
 **Is XcrowHub a smart contract?**
-No. Escrow is held in a custodial hot wallet controlled by a hardened backend signer, not an on-chain contract. This lets us support arbitrary off-platform delivery types and disputes decided by a human — things a pure smart contract can't do well. The trust model is: XcrowHub honors the outcome of buyer confirmation, deadline expiry, or admin decision — enforced by transparent process, not code.
+Partly. Polygon USDT deals labelled smart contract use the immutable XcrowHubEscrow contract. NIM uses managed custody because the current Nimiq integration does not provide the equivalent programmable settlement flow.
 
 **Can XcrowHub steal my money?**
-Technically, during the escrow hold, funds sit in an XcrowHub-controlled address. In practice, every payout is tied to a specific deal decision (buyer confirms, deadline expires, admin decides) and every custody transaction is on-chain and auditable. We publish the custody addresses and encourage users to verify.
+For NIM managed custody, users trust XcrowHub's signer to honour recorded outcomes. For USDT contract deals, XcrowHub cannot move the principal alone: a direct party action or a second matching signature is required.
 
 **How long does it take for the seller to receive money after buyer confirms?**
 On NIM: typically under 30 seconds (one Albatross block). On Polygon USDT: typically under 1 minute. If the signer is temporarily degraded, payouts queue and retry.

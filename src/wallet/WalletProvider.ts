@@ -1,4 +1,4 @@
-import type { Currency } from "@/types/deal";
+import type { Currency, EscrowModel } from "@/types/deal";
 
 export interface SendPaymentParams {
   from?: string;
@@ -6,6 +6,10 @@ export interface SendPaymentParams {
   amount: string;
   currency: Currency;
   memo?: string;
+  dealId?: string;
+  seller?: string;
+  feeBps?: number;
+  escrowModel?: EscrowModel;
 }
 
 export interface PaymentResult {

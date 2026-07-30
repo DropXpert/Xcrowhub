@@ -110,6 +110,12 @@ serve(async (req: Request) => {
       .maybeSingle();
     if (dealErr) throw dealErr;
     if (!deal) return json({ error: "Deal not found" }, 404);
+    if (deal.escrow_model === "smart_contract") {
+      if (!auth.internal && !auth.admin && !isDealParticipant(auth.walletAddr, deal)) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+      return await handleContractSettlementSignature(deal, decision);
+    }
 
     const requiredStatus = decision === "release_to_seller"
       ? "released"
@@ -142,6 +148,104 @@ serve(async (req: Request) => {
     return json({ error: (err as Error).message || "Internal payout error" }, 500);
   }
 });
+
+async function handleContractSettlementSignature(
+  deal: any,
+  requestedDecision: Decision,
+): Promise<Response> {
+  if (deal.price_currency !== "USDT") {
+    return json({ error: "Only USDT uses smart-contract settlement" }, 409);
+  }
+  const { data: proposal, error } = await supabase
+    .from("settlement_proposals")
+    .select("*")
+    .eq("deal_id", deal.id)
+    .maybeSingle();
+  if (error) throw error;
+  if (!proposal) return json({ error: "No on-chain settlement proposal exists" }, 409);
+  if (proposal.decision !== requestedDecision) {
+    return json({ error: "Requested decision does not match the proposal" }, 409);
+  }
+  if (proposal.status === "confirmed") {
+    return json({
+      success: true,
+      txHash: proposal.settlement_tx_hash,
+      idempotent: true,
+    });
+  }
+  if (proposal.arbitrator_signature) {
+    return json({
+      success: true,
+      signature: proposal.arbitrator_signature,
+      status: proposal.status,
+      idempotent: true,
+    });
+  }
+  if (new Date(proposal.deadline).getTime() <= Date.now()) {
+    return json({ error: "Settlement proposal has expired" }, 409);
+  }
+  if (!deal.escrow_contract_address && !Deno.env.get("USDT_ESCROW_CONTRACT_ADDR")) {
+    return json({ error: "Escrow contract address is not configured" }, 503);
+  }
+
+  const contractAddress =
+    deal.escrow_contract_address ||
+    Deno.env.get("USDT_ESCROW_CONTRACT_ADDR");
+  let signerResponse: Response;
+  try {
+    signerResponse = await fetch(`${SIGNER_URL}/sign-escrow-settlement`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${SIGNER_SHARED_SECRET}`,
+      },
+      body: JSON.stringify({
+        dealId: deal.id,
+        buyerAddress: deal.buyer_wallet_address,
+        buyerAmount: String(proposal.buyer_amount),
+        sellerAmount: String(proposal.seller_amount),
+        nonce: Number(proposal.nonce),
+        deadline: Math.floor(new Date(proposal.deadline).getTime() / 1000),
+        contractAddress,
+      }),
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch {
+    return json({ error: "Arbitrator signer is temporarily unavailable" }, 502);
+  }
+  if (!signerResponse.ok) {
+    console.error(
+      `[payout] settlement signer failed for ${deal.id}:`,
+      (await signerResponse.text()).slice(0, 1000),
+    );
+    return json({ error: "Could not prepare the on-chain settlement" }, 502);
+  }
+  const signerBody = await signerResponse.json() as {
+    signature?: unknown;
+    signer?: unknown;
+  };
+  const signature =
+    typeof signerBody.signature === "string" ? signerBody.signature : "";
+  if (!/^0x[0-9a-f]{130}$/i.test(signature)) {
+    return json({ error: "Arbitrator signer returned an invalid signature" }, 502);
+  }
+
+  const { error: updateError } = await supabase
+    .from("settlement_proposals")
+    .update({
+      arbitrator_signature: signature,
+      status: "ready",
+    })
+    .eq("deal_id", deal.id)
+    .is("arbitrator_signature", null);
+  if (updateError) throw updateError;
+  return json({
+    success: true,
+    signature,
+    signer: signerBody.signer,
+    status: "ready",
+  });
+}
 
 async function deriveDealPayout(
   deal: any,

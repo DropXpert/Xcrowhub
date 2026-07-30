@@ -15,7 +15,7 @@ The application is fully functional and supports:
 
 - Private escrow deals
 - NIM payments through Nimiq wallets
-- USDT payments on Polygon
+- Non-custodial USDT smart-contract escrow on Polygon
 - Delivery confirmation and proof-based disputes
 - A marketplace with offers, stock tracking, and product images
 - Wallet-signature authentication without email or passwords
@@ -31,10 +31,13 @@ interface works inside Nimiq Pay and in supported desktop browsers.
 ## Technology
 
 - React, TypeScript, Vite, Tailwind CSS
-- PostgreSQL, Row Level Security, Realtime, and Edge Functions
+- A self-hosted VPS backend with PostgreSQL, Row Level Security, Realtime, and
+  Edge Functions
 - Nimiq wallet and transaction infrastructure
-- ethers.js for optional Polygon USDT support
-- A separate Node.js custody signer with durable payout idempotency
+- ethers.js for Polygon USDT escrow interactions
+- An immutable USDT escrow contract with buyer release, seller refund, and
+  2-of-3 buyer/seller/arbitrator disputed settlements
+- A separate Node.js NIM/legacy custody signer with durable payout idempotency
 
 ## Repository layout
 
@@ -51,7 +54,7 @@ public/              Static assets and web metadata
 Requirements:
 
 - Node.js 20 or newer
-- A PostgreSQL/Supabase-compatible backend
+- A PostgreSQL backend exposing the Supabase-compatible API protocol
 - A Nimiq wallet for end-to-end payment testing
 
 ```bash

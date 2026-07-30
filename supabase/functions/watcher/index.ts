@@ -28,7 +28,7 @@ const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
 const NIM_CUSTODY = NIM_CUSTODY_RAW.replace(/\s+/g, "").toUpperCase();
 
 // EVM (Polygon USDT) config for the EVM backstop watcher.
-const EVM_RPC = Deno.env.get("EVM_RPC") ?? "https://polygon-rpc.com";
+const EVM_RPC = Deno.env.get("EVM_RPC") ?? "https://polygon.drpc.org";
 const EVM_CUSTODY = (Deno.env.get("EVM_CUSTODY_ADDR") ?? "").toLowerCase();
 const USDT_CONTRACT = (Deno.env.get("USDT_CONTRACT") ?? "0xc2132D05D31c914a87C6611C10748AEb04B58e8F").toLowerCase();
 const USDT_DECIMALS = Number(Deno.env.get("USDT_DECIMALS") ?? "6");

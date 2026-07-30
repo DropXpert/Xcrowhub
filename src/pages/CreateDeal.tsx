@@ -10,7 +10,7 @@ import { ConsentCheck } from "@/components/ConsentCheck";
 import { WalletAddressBadge } from "@/components/WalletAddressBadge";
 import { AlertDialog } from "@/components/AlertDialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { isCustodyAddress } from "@/lib/config";
+import { isCustodyAddress, isUsdtEscrowConfigured } from "@/lib/config";
 import {
   ACTIVE_DEAL_LIMIT,
   ACTIVE_DEAL_LIMIT_MESSAGE,
@@ -242,6 +242,13 @@ export default function CreateDeal() {
                 );
               })}
             </RadioGroup>
+            <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
+              {form.priceCurrency === "NIM"
+                ? "NIM deals use XcrowHub managed custody."
+                : isUsdtEscrowConfigured()
+                  ? "USDT is locked in the non-custodial Polygon escrow contract."
+                  : "USDT currently uses XcrowHub managed custody."}
+            </p>
           </Field>
 
           <Field label="Category">

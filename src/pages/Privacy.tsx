@@ -137,12 +137,13 @@ export default function Privacy() {
 
           <Section title="5. Data Storage and Third Parties">
 
-            <SubSection title="5.1 Supabase">
+            <SubSection title="5.1 XcrowHub backend infrastructure">
               <p>
-                Deal data, listing data, dispute evidence, and session tokens are stored in
-                Supabase (supabase.com), a managed database platform. Supabase stores data in
-                secure, encrypted databases. Their privacy policy is available at
-                supabase.com/privacy.
+                Deal data, listing data, dispute evidence, and session records are stored in
+                XcrowHub-operated PostgreSQL infrastructure on our VPS. The backend uses
+                self-hosted, Supabase-compatible open-source components for database access,
+                authentication, storage, realtime updates, and server functions. Production
+                data is not stored in a Supabase-hosted project.
               </p>
             </SubSection>
 
@@ -156,9 +157,10 @@ export default function Privacy() {
 
             <SubSection title="5.3 Polygon / EVM">
               <p>
-                USDT payments are settled on the Polygon network. On-chain transaction data is
-                public and permanent by nature of the blockchain. We do not control or have
-                special access to this data.
+                USDT deals labelled smart-contract escrow are funded and settled through the
+                XcrowHubEscrow contract on Polygon. Other USDT deals use managed custody where
+                the interface says so. Contract calls, wallet addresses, amounts, and transaction
+                data are public and permanent by nature of the blockchain.
               </p>
             </SubSection>
 

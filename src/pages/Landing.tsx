@@ -21,6 +21,8 @@ import {
   Share2,
   UserPlus,
   Copy,
+  Building2,
+  FileCode2,
 } from "lucide-react";
 
 import { SpotlightCard } from "@/components/SpotlightCard";
@@ -51,6 +53,7 @@ export default function Landing() {
       <Hero scrollY={scrollY} />
       <TrustBar />
       <HowItWorks />
+      <EscrowRails />
       <PrivateDeals />
       <MarketplaceTeaser />
       <ReferEarn />
@@ -602,6 +605,49 @@ function Roadmap() {
             ))}
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function EscrowRails() {
+  return (
+    <section className="relative pb-8 sm:pb-12">
+      <div className="mx-auto max-w-site px-5">
+        <div className="reveal grid gap-3 rounded-3xl border border-white/10 bg-white/[0.025] p-4 sm:grid-cols-2 sm:p-5">
+          <div className="flex items-start gap-3 rounded-2xl bg-white/[0.025] p-4">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold/10 text-gold ring-1 ring-gold/20">
+              <Building2 className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-[14px] font-bold text-[#EDE7DA]">
+                NIM · Managed escrow
+              </p>
+              <p className="mt-1 text-[13px] leading-relaxed text-[#928B7D]">
+                NIM deals use XcrowHub's managed custody and hardened payout
+                signer during the protected hold.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-2xl bg-white/[0.025] p-4">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-jade/10 text-jade ring-1 ring-jade/20">
+              <FileCode2 className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-[14px] font-bold text-[#EDE7DA]">
+                USDT · Smart-contract escrow
+              </p>
+              <p className="mt-1 text-[13px] leading-relaxed text-[#928B7D]">
+                A USDT deal labelled smart-contract escrow locks funds in an
+                immutable Polygon contract that XcrowHub cannot move alone.
+              </p>
+            </div>
+          </div>
+        </div>
+        <p className="reveal mt-3 text-center text-[12px] text-[#746E63]">
+          Every deal shows its escrow rail before payment. USDT deals that use
+          managed custody remain labelled accordingly.
+        </p>
       </div>
     </section>
   );

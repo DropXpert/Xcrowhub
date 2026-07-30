@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParallax, useReveal, Nav, Footer } from "@/pages/landing/shared";
 
-const EFFECTIVE = "20 June 2026";
+const EFFECTIVE = "30 July 2026";
 
 export default function Terms() {
   useReveal();
@@ -33,9 +33,10 @@ export default function Terms() {
               If you do not agree, do not use the Service.
             </p>
             <p>
-              XcrowHub is a non-custodial escrow facilitation layer built on the Nimiq Pay
-              infrastructure. We do not hold your funds, act as a financial institution, or
-              provide investment advice.
+              XcrowHub provides two clearly identified escrow rails. NIM deals use XcrowHub
+              managed custody. A Polygon USDT deal may use an immutable smart contract or managed
+              custody, as labelled in the deal interface before payment. XcrowHub is not a bank,
+              licensed escrow company, or investment adviser.
             </p>
           </Section>
 
@@ -62,12 +63,18 @@ export default function Terms() {
             </p>
             <ul>
               <li>
-                The buyer sends funds (NIM or USDT) to a custody address associated with the deal.
+                For NIM and any deal labelled "managed custody", the buyer sends funds to an
+                XcrowHub-controlled custody address for the duration of the deal.
+              </li>
+              <li>
+                For a USDT deal labelled "non-custodial smart contract", the buyer locks USDT
+                in the XcrowHubEscrow contract on Polygon. The contract fixes the buyer, seller,
+                amount, and fee when funded.
               </li>
               <li>The seller delivers the agreed goods or services.</li>
               <li>
                 Funds are released to the seller upon the buyer's confirmation of satisfactory
-                delivery, or following a proof-based dispute resolution process.
+                delivery, or following the applicable deadline and proof-based dispute process.
               </li>
             </ul>
             <p>
@@ -75,6 +82,35 @@ export default function Terms() {
               any goods or services exchanged through the platform. We facilitate the escrow
               mechanism only.
             </p>
+          </Section>
+
+          <Section title="3.1 Custody and Smart-Contract Settlement">
+            <p>
+              The escrow rail shown on the deal screen is part of the transaction terms. You must
+              review it before paying.
+            </p>
+            <ul>
+              <li>
+                <strong>Managed custody (NIM and labelled legacy deals):</strong> XcrowHub controls
+                the escrow address and its signer service broadcasts releases, refunds, or split
+                payouts after the recorded workflow authorises them.
+              </li>
+              <li>
+                <strong>Smart-contract escrow (Polygon USDT deals labelled accordingly):</strong> XcrowHub does not
+                control the contract principal alone. The buyer can release the full amount, the
+                seller can refund the full amount, and a disputed or split settlement requires
+                matching signatures from any two of the buyer, seller, and XcrowHub arbitrator.
+              </li>
+              <li>
+                The smart contract is not upgradeable and has no owner withdrawal or rescue
+                function. Blockchain fees and smart-contract risks still apply.
+              </li>
+              <li>
+                If the required wallet action or second settlement signature is never provided,
+                contract funds can remain locked. XcrowHub cannot bypass the contract or recover
+                funds through an administrator key.
+              </li>
+            </ul>
           </Section>
 
           <Section title="4. Prohibited Items and Activities">
@@ -194,12 +230,13 @@ export default function Terms() {
             <ul>
               <li>Both parties submit evidence (screenshots, files, communications).</li>
               <li>
-                XcrowHub reviews the submitted proof and makes a non-binding recommendation
-                within 5 business days.
+                XcrowHub reviews the submitted proof and records a decision or proposed
+                settlement, normally within 5 business days.
               </li>
               <li>
-                In cases where the smart-contract or custody mechanism permits, the outcome of the
-                review may trigger fund release or refund.
+                On managed custody deals, the recorded decision authorises the custody payout.
+                On USDT smart-contract deals, XcrowHub supplies one arbitrator signature and a
+                buyer or seller must sign the same amounts before the contract can execute.
               </li>
             </ul>
             <p>
@@ -235,8 +272,8 @@ export default function Terms() {
             </ul>
             <p>
               Our total aggregate liability to you for any claim shall not exceed the amount of
-              fees you have paid us in the 12 months preceding the claim (which, given our zero-fee
-              model, is zero).
+              platform fees you paid us in the 12 months preceding the claim, to the fullest extent
+              that such a limitation is permitted by applicable law.
             </p>
           </Section>
 

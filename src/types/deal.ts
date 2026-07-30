@@ -1,4 +1,5 @@
 export type Currency = "NIM" | "USDT";
+export type EscrowModel = "managed_custody" | "smart_contract";
 
 export type DealCategory =
   | "digital_goods"
@@ -130,6 +131,9 @@ export interface Deal {
   description: string;
   priceAmount: string;
   priceCurrency: Currency;
+  escrowModel: EscrowModel;
+  escrowContractAddress?: string;
+  contractSettlementTxHash?: string;
 
   sellerWalletAddress: string;
   buyerWalletAddress?: string;

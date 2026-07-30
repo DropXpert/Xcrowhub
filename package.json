@@ -3,13 +3,16 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "XcrowHub: trustless escrow for crypto deals. Nimiq Pay Mini App.",
+  "description": "XcrowHub: hybrid escrow for NIM and USDT deals. Nimiq Pay Mini App.",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/prerender-public.mjs",
     "preview": "vite preview",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "contracts:compile": "node scripts/compile-usdt-escrow.mjs",
+    "contracts:test": "node scripts/test-usdt-escrow.mjs",
+    "contracts:deploy:polygon": "node scripts/deploy-usdt-escrow.mjs"
   },
   "dependencies": {
     "@base-ui-components/react": "^1.0.0-rc.0",
@@ -27,16 +30,19 @@
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0",
+    "react-router-dom": "^6.30.4",
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@openzeppelin/contracts": "^5.6.1",
     "@types/node": "^25.9.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
+    "hardhat": "^3.11.1",
     "postcss": "^8.4.49",
+    "solc": "^0.8.26",
     "tailwindcss": "^3.4.15",
     "typescript": "^5.6.3",
     "vite": "^5.4.11"

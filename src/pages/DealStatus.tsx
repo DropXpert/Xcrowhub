@@ -34,6 +34,8 @@ import { useDealWithRemoteLoad } from "@/hooks/useDealWithRemoteLoad";
 import { resolveDealRole, type DealRole } from "@/lib/dealRole";
 import { getSupabaseClient, isSupabaseConfiguredForClient } from "@/lib/supabase";
 import type { Deal } from "@/types/deal";
+import { ContractSettlementPanel } from "@/components/ContractSettlementPanel";
+import { isSmartUsdtDeal } from "@/lib/usdtEscrow";
 
 export default function DealStatus() {
   const { id } = useParams<{ id: string }>();
@@ -93,6 +95,18 @@ export default function DealStatus() {
             body: { deal_id: currentDeal.id },
           });
           if (error) console.warn("[XcrowHub] verify-payment refresh failed:", error);
+        }
+        if (
+          currentDeal.escrowModel === "smart_contract" &&
+          currentDeal.contractSettlementTxHash
+        ) {
+          const { error } = await getSupabaseClient().functions.invoke(
+            "verify-settlement",
+            { body: { deal_id: currentDeal.id } }
+          );
+          if (error) {
+            console.warn("[XcrowHub] verify-settlement refresh failed:", error);
+          }
         }
         await loadFromSupabase({ force: true });
       } else {
@@ -172,18 +186,26 @@ export default function DealStatus() {
         <div className="rounded-xl border border-warning/40 bg-warning/8 px-4 py-3.5 space-y-2">
           <CountdownTimer
             deadline={deal.confirmationDeadlineAt}
-            label="Auto-release timer"
+            label={
+              isSmartUsdtDeal(deal)
+                ? "Settlement eligibility"
+                : "Auto-release timer"
+            }
             onExpire={() => autoReleaseDeal(deal.id)}
           />
           <p className="text-[12.5px] text-muted leading-relaxed">
-            {role === "seller"
-              ? "Funds will auto-release to you when this timer expires if the buyer does not respond."
-              : "If the buyer doesn't confirm or raise a query before this timer expires, funds release automatically to the seller."}
+            {isSmartUsdtDeal(deal)
+              ? "If the buyer does not respond, XcrowHub can propose a seller release. The contract still requires a second signature before funds move."
+              : role === "seller"
+                ? "Funds will auto-release to you when this timer expires if the buyer does not respond."
+                : "If the buyer doesn't confirm or raise a query before this timer expires, funds release automatically to the seller."}
           </p>
         </div>
       ) : null}
 
       <RoleActions deal={deal} role={role} youProofSubmitted={youProofSubmitted} />
+
+      <ContractSettlementPanel deal={deal} />
 
       <ReceiptSummary deal={deal} />
 

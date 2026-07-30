@@ -8,6 +8,8 @@ export type NimiqNetwork = "main" | "test";
 
 const PLACEHOLDER_NQ = "NQ00 0000 0000 0000 0000 0000 0000 0000 0000";
 const PLACEHOLDER_EVM = "0x0000000000000000000000000000000000000000";
+const POLYGON_USDT_ESCROW =
+  "0x639e0fB779e3D796cAC219850a26Ec3bDcE5d93c";
 
 function readString(name: string, fallback: string): string {
   const raw = (import.meta.env as Record<string, string | undefined>)[name];
@@ -34,6 +36,10 @@ export const config = {
     ),
     decimals: readNumber("VITE_USDT_DECIMALS", 6),
     custodyAddress: readString("VITE_PROOFHOLD_CUSTODY_EVM_ADDR", PLACEHOLDER_EVM),
+    escrowContractAddress: readString(
+      "VITE_USDT_ESCROW_CONTRACT_ADDR",
+      POLYGON_USDT_ESCROW
+    ),
   },
 } as const;
 
@@ -48,6 +54,29 @@ export function custodyAddressFor(currency: "NIM" | "USDT"): string {
   return currency === "NIM"
     ? config.nimiq.custodyAddress
     : config.usdt.custodyAddress;
+}
+
+export function isUsdtEscrowConfigured(): boolean {
+  return config.usdt.escrowContractAddress.toLowerCase() !== PLACEHOLDER_EVM;
+}
+
+export function paymentTargetFor(
+  currency: "NIM" | "USDT",
+  escrowModel: "managed_custody" | "smart_contract"
+): string {
+  if (currency === "USDT" && escrowModel === "smart_contract") {
+    return config.usdt.escrowContractAddress;
+  }
+  return custodyAddressFor(currency);
+}
+
+export function isPaymentRailConfigured(
+  currency: "NIM" | "USDT",
+  escrowModel: "managed_custody" | "smart_contract"
+): boolean {
+  return currency === "USDT" && escrowModel === "smart_contract"
+    ? isUsdtEscrowConfigured()
+    : isCustodyConfigured(currency);
 }
 
 export function normalizeWalletAddress(address: string): string {

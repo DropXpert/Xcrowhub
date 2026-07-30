@@ -12,18 +12,18 @@ import { HowItWorksCarousel } from "@/components/HowItWorksCarousel";
 const GUARANTEES = [
   {
     icon: <Lock className="h-4 w-4" />,
-    title: "Funds held on-chain",
-    body: "Payment locks in custody the moment the buyer pays — the seller can't take it and the buyer can't claw it back without the flow.",
+    title: "The rail is always visible",
+    body: "NIM uses XcrowHub managed custody. USDT uses the rail shown on the deal; smart-contract deals lock funds on Polygon.",
   },
   {
     icon: <CheckCircle2 className="h-4 w-4" />,
     title: "Released only on confirm",
-    body: "Money moves to the seller when the buyer confirms delivery, or automatically after the confirmation window if there's no dispute.",
+    body: "The buyer confirms delivery. NIM then uses the managed signer; USDT calls the escrow contract directly.",
   },
   {
     icon: <Scale className="h-4 w-4" />,
     title: "Disputes need proof",
-    body: "No he-said-she-said. Both sides submit evidence and an admin decides — release, refund, or a fair split.",
+    body: "Both sides submit evidence. For disputed USDT, XcrowHub and one participant must sign the same release, refund, or split.",
   },
 ];
 
@@ -37,8 +37,9 @@ export default function HowItWorks() {
       />
 
       <p className="text-[14px] leading-relaxed text-muted">
-        XcrowHub holds the buyer's payment safely on-chain until the deal is
-        done. Here's the whole flow, start to finish.
+        XcrowHub protects the buyer's payment until the deal is done. NIM uses
+        managed custody; USDT deals show whether managed custody or the Polygon
+        smart contract applies.
       </p>
 
       {/* Step-by-step carousel */}

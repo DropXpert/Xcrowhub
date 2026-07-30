@@ -24,8 +24,8 @@ export function ConsentCheck({
         onClick={() => onChange(!checked)}
         className="cursor-pointer select-none text-[13px] leading-relaxed text-muted"
       >
-        I understand funds stay in on-chain escrow until the buyer confirms
-        delivery, and I agree to the{" "}
+        I understand the deal will show either managed custody or smart-contract
+        escrow, funds stay protected until settlement, and I agree to the{" "}
         <Link
           to="/terms"
           onClick={(e) => e.stopPropagation()}

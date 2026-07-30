@@ -1,6 +1,7 @@
 import type { Deal } from "@/types/deal";
 import { WalletAddressBadge } from "./WalletAddressBadge";
 import { CategoryTag } from "./CategoryTag";
+import { EscrowModelBadge } from "./EscrowModelBadge";
 
 export function ReceiptSummary({ deal }: { deal: Deal }) {
   return (
@@ -24,6 +25,9 @@ export function ReceiptSummary({ deal }: { deal: Deal }) {
       <div className="perforation mt-5" />
 
       <dl className="grid gap-4 px-5 pb-5">
+        <Row label="Escrow rail">
+          <EscrowModelBadge deal={deal} compact />
+        </Row>
         {deal.description ? (
           <Row label="Notes">{deal.description}</Row>
         ) : null}

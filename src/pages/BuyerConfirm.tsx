@@ -11,12 +11,17 @@ import { DealLoader } from "@/components/PageLoader";
 import { useDealWithRemoteLoad } from "@/hooks/useDealWithRemoteLoad";
 import { AlertDialog } from "@/components/AlertDialog";
 import { isCustodyAddress } from "@/lib/config";
+import { isSmartUsdtDeal, releaseUsdtEscrow } from "@/lib/usdtEscrow";
+import { EscrowModelBadge } from "@/components/EscrowModelBadge";
 
 export default function BuyerConfirm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { deal, loading } = useDealWithRemoteLoad(id);
   const confirmReceipt = useDealStore((s) => s.confirmReceipt);
+  const submitContractSettlement = useDealStore(
+    (s) => s.submitContractSettlement
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -43,10 +48,10 @@ export default function BuyerConfirm() {
   // Fail-closed: a misconfigured deal whose seller wallet is the platform
   // custody address would release funds back into custody instead of to a real
   // seller. Block confirmation entirely rather than lose the buyer's money.
-  const sellerIsCustody = isCustodyAddress(
-    deal.priceCurrency,
-    deal.sellerWalletAddress
-  );
+  const smartUsdt = isSmartUsdtDeal(deal);
+  const sellerIsCustody =
+    !smartUsdt &&
+    isCustodyAddress(deal.priceCurrency, deal.sellerWalletAddress);
 
   async function confirm() {
     if (confirmLock.current) return;
@@ -61,7 +66,15 @@ export default function BuyerConfirm() {
     setBusy(true);
     setError(null);
     try {
-      await Promise.resolve(confirmReceipt(deal!.id));
+      if (smartUsdt) {
+        const txHash = await releaseUsdtEscrow(
+          deal!.id,
+          deal!.escrowContractAddress
+        );
+        await submitContractSettlement(deal!.id, txHash);
+      } else {
+        await Promise.resolve(confirmReceipt(deal!.id));
+      }
       navigate(`/deal/${deal!.id}/status`);
     } catch (err: any) {
       setError(err.message ?? "Could not confirm receipt.");
@@ -81,6 +94,7 @@ export default function BuyerConfirm() {
       />
 
       <ReceiptSummary deal={deal} />
+      <EscrowModelBadge deal={deal} />
 
       {deal.deliveryNote ? (
         <section className="card space-y-2 px-5 py-4">
@@ -94,7 +108,10 @@ export default function BuyerConfirm() {
       {canConfirm ? (
         <section className="card space-y-4 px-5 py-5">
           <p className="text-[14px] leading-relaxed text-ink">
-            Only confirm if you received what was promised. Funds go to the seller immediately.
+            Only confirm if you received what was promised.{" "}
+            {smartUsdt
+              ? "Your wallet will execute the contract release to the seller."
+              : "XcrowHub will release the managed funds to the seller."}
           </p>
           <div className="grid gap-2">
             <button
@@ -151,7 +168,11 @@ export default function BuyerConfirm() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         title="Release funds to seller?"
-        description="Confirm you received what was promised. Funds release immediately and the deal closes."
+        description={
+          smartUsdt
+            ? "Confirm you received what was promised. Your wallet will call the Polygon escrow contract and release USDT to the seller."
+            : "Confirm you received what was promised. XcrowHub will release the managed funds and close the deal."
+        }
         actionLabel="Release funds"
         cancelLabel="Cancel"
         busy={busy}

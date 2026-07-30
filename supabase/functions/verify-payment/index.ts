@@ -18,6 +18,12 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { jwtVerify } from "https://esm.sh/jose@5.2.3";
+import {
+  AbiCoder,
+  Interface,
+  keccak256,
+  toUtf8Bytes,
+} from "https://esm.sh/ethers@6.16.0";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -30,10 +36,16 @@ const JWT_SECRET_RAW = Deno.env.get("JWT_SECRET") ?? "";
 const NIM_RPC = Deno.env.get("NIM_RPC") ?? "https://rpc.nimiqwatch.com";
 const NIM_CUSTODY = (Deno.env.get("NIM_CUSTODY_ADDR") ?? "").replace(/\s+/g, "").toUpperCase();
 
-const EVM_RPC = Deno.env.get("EVM_RPC") ?? "https://polygon-rpc.com";
+const EVM_RPC = Deno.env.get("EVM_RPC") ?? "https://polygon.drpc.org";
 const EVM_CUSTODY = (Deno.env.get("EVM_CUSTODY_ADDR") ?? "").toLowerCase();
 const USDT_CONTRACT = (Deno.env.get("USDT_CONTRACT") ?? "0xc2132D05D31c914a87C6611C10748AEb04B58e8F").toLowerCase();
 const USDT_DECIMALS = Number(Deno.env.get("USDT_DECIMALS") ?? "6");
+const USDT_ESCROW_CONTRACT = (
+  Deno.env.get("USDT_ESCROW_CONTRACT_ADDR") ?? ""
+).toLowerCase();
+const ESCROW_INTERFACE = new Interface([
+  "event EscrowFunded(bytes32 indexed dealId,address indexed buyer,address indexed seller,uint256 amount,uint16 feeBps)",
+]);
 
 // keccak256("Transfer(address,address,uint256)")
 const TRANSFER_SIG = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
@@ -77,7 +89,7 @@ serve(async (req: Request) => {
     const result =
       currency === "NIM"
         ? await verifyNim(txHash, amount, buyer, deal_id)
-        : await verifyUsdt(txHash, amount, buyer);
+        : await verifyUsdt(txHash, amount, buyer, deal);
 
     if (!result.ok) {
       console.log(`[verify-payment] ${deal_id} not confirmed: ${result.reason}`);
@@ -96,12 +108,26 @@ serve(async (req: Request) => {
         p_tx_hash: txHash,
         p_network: currency === "NIM" ? "nimiq" : "evm",
         p_from_addr: chainSender,
-        p_to_addr: currency === "NIM" ? NIM_CUSTODY : EVM_CUSTODY,
+        p_to_addr:
+          currency === "NIM"
+            ? NIM_CUSTODY
+            : result.to ?? EVM_CUSTODY,
         p_block_height: result.blockHeight ?? null,
       },
     );
     if (rpcErr) throw rpcErr;
     if (!confirmed) throw new Error("Payment confirmation was not committed");
+    if (
+      currency === "USDT" &&
+      deal.escrow_model === "smart_contract" &&
+      result.to
+    ) {
+      const { error: contractUpdateError } = await supabase
+        .from("deals")
+        .update({ escrow_contract_address: result.to })
+        .eq("id", deal_id);
+      if (contractUpdateError) throw contractUpdateError;
+    }
 
     console.log(`[verify-payment] ${deal_id} confirmed (${amount} ${currency})`);
     return json({ confirmed: true });
@@ -135,7 +161,14 @@ async function verifyUsdt(
   txHash: string,
   amount: string,
   buyer: string,
-): Promise<{ ok: boolean; reason?: string; from?: string; blockHeight?: number }> {
+  deal: any,
+): Promise<{
+  ok: boolean;
+  reason?: string;
+  from?: string;
+  to?: string;
+  blockHeight?: number;
+}> {
   const receipt = await evmRpc("eth_getTransactionReceipt", [txHash]);
   if (!receipt) return { ok: false, reason: "tx not mined yet" };
   if (receipt.status !== "0x1") return { ok: false, reason: "tx reverted" };
@@ -143,6 +176,61 @@ async function verifyUsdt(
   const expected = decimalToUnits(amount, USDT_DECIMALS);
   if (expected === null) {
     return { ok: false, reason: `deal amount is not representable with ${USDT_DECIMALS} USDT decimals` };
+  }
+
+  if (deal.escrow_model === "smart_contract") {
+    const expectedContract = String(
+      deal.escrow_contract_address || USDT_ESCROW_CONTRACT
+    ).toLowerCase();
+    if (!/^0x[0-9a-f]{40}$/.test(expectedContract)) {
+      return { ok: false, reason: "USDT escrow contract is not configured" };
+    }
+    if (!buyer) {
+      return { ok: false, reason: "buyer wallet is missing" };
+    }
+    const expectedDealKey = buyerBoundEscrowKey(
+      String(deal.id),
+      buyer,
+    ).toLowerCase();
+    const expectedFeeBps = Number(deal.fee_bps ?? 0);
+
+    for (const log of receipt.logs ?? []) {
+      if ((log.address ?? "").toLowerCase() !== expectedContract) continue;
+      let parsed;
+      try {
+        parsed = ESCROW_INTERFACE.parseLog({
+          topics: log.topics,
+          data: log.data,
+        });
+      } catch {
+        continue;
+      }
+      if (!parsed || parsed.name !== "EscrowFunded") continue;
+
+      const from = String(parsed.args.buyer).toLowerCase();
+      if (String(parsed.args.dealId).toLowerCase() !== expectedDealKey) continue;
+      if (BigInt(parsed.args.amount) !== expected) continue;
+      if (Number(parsed.args.feeBps) !== expectedFeeBps) continue;
+      if (
+        !addressesEqual(
+          String(parsed.args.seller),
+          String(deal.seller_wallet_address)
+        )
+      ) continue;
+      if (buyer && !addressesEqual(from, buyer)) {
+        return { ok: false, reason: "sender mismatch" };
+      }
+
+      return {
+        ok: true,
+        from,
+        to: expectedContract,
+        blockHeight: receipt.blockNumber
+          ? parseInt(receipt.blockNumber, 16)
+          : undefined,
+      };
+    }
+    return { ok: false, reason: "no matching EscrowFunded event" };
   }
 
   for (const log of receipt.logs ?? []) {
@@ -161,6 +249,7 @@ async function verifyUsdt(
     return {
       ok: true,
       from,
+      to: EVM_CUSTODY,
       blockHeight: receipt.blockNumber ? parseInt(receipt.blockNumber, 16) : undefined,
     };
   }
@@ -247,6 +336,16 @@ function topicToAddress(topic: string): string {
 
 function addressesEqual(a: string, b: string): boolean {
   return a.replace(/\s+/g, "").toLowerCase() === b.replace(/\s+/g, "").toLowerCase();
+}
+
+function buyerBoundEscrowKey(dealId: string, buyer: string): string {
+  const reference = keccak256(toUtf8Bytes(dealId));
+  return keccak256(
+    AbiCoder.defaultAbiCoder().encode(
+      ["bytes32", "address"],
+      [reference, buyer],
+    ),
+  );
 }
 
 // Nimiq Pay can execute a payment from a different account than the first

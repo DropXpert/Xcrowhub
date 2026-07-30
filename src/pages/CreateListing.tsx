@@ -8,7 +8,7 @@ import { Field } from "@/components/Field";
 import { ConsentCheck } from "@/components/ConsentCheck";
 import { AlertDialog } from "@/components/AlertDialog";
 import { SkeletonDots } from "@/components/LoadingStates";
-import { isCustodyAddress } from "@/lib/config";
+import { isCustodyAddress, isUsdtEscrowConfigured } from "@/lib/config";
 import { getWallet } from "@/wallet";
 import type { Currency, DealCategory } from "@/types/deal";
 import { DEAL_CATEGORIES, CATEGORY_LABELS } from "@/types/deal";
@@ -291,6 +291,13 @@ export default function CreateListing() {
                 <option value="NIM">NIM</option>
                 <option value="USDT">USDT</option>
               </select>
+              <p className="mt-2 text-[12px] leading-relaxed text-muted">
+                {priceCurrency === "NIM"
+                  ? "Managed custody"
+                  : isUsdtEscrowConfigured()
+                    ? "Non-custodial Polygon contract"
+                    : "Managed custody"}
+              </p>
             </Field>
           </div>
 
@@ -352,8 +359,12 @@ export default function CreateListing() {
           </div>
 
           <p className="rounded-lg border border-dashed border-edge bg-bg px-3 py-2 text-[13px] leading-relaxed text-muted">
-            Buyers pay through escrow and funds stay locked until delivery is
-            confirmed. T&C apply.
+            {priceCurrency === "NIM"
+              ? "Buyers pay into XcrowHub managed custody until delivery is confirmed."
+              : isUsdtEscrowConfigured()
+                ? "Buyers lock USDT in the Polygon escrow contract until settlement."
+                : "Buyers pay into XcrowHub managed custody until delivery is confirmed."}{" "}
+            T&amp;C apply.
           </p>
 
           {/* Payout wallet — required whenever the listing currency doesn't

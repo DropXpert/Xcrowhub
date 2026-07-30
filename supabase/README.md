@@ -4,6 +4,12 @@ The backend uses PostgreSQL, Row Level Security, Realtime, scheduled jobs, and
 server-side functions. Database migrations live in `migrations/`, while API
 handlers live in `functions/`.
 
+Production runs on XcrowHub's self-hosted VPS stack. The directory name and
+client library reflect the Supabase-compatible API protocol; they do not mean
+that production data or functions are deployed to Supabase Cloud. Apply
+migrations to the VPS PostgreSQL container and deploy functions to the VPS Edge
+Runtime.
+
 ## Security model
 
 - Wallet signatures establish user identity.

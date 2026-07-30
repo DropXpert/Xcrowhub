@@ -45,6 +45,24 @@ export default function PublicHowItWorks() {
 
       <section className="relative py-16 sm:py-24">
         <div className="mx-auto max-w-site px-5">
+          <SectionHeading chip="Escrow rails" title="The deal tells you who controls settlement" sub="NIM uses XcrowHub managed custody. A USDT deal labelled smart-contract escrow uses an immutable Polygon contract that XcrowHub cannot move alone. Managed USDT deals remain clearly labelled." />
+          <div className="reveal mx-auto mt-10 grid max-w-3xl gap-4 sm:grid-cols-2">
+            <div className="glass rounded-2xl p-5">
+              <Wallet className="h-5 w-5 text-gold" />
+              <h3 className="mt-4 text-[15px] font-bold">NIM · Managed custody</h3>
+              <p className="mt-2 text-[13px] leading-relaxed text-[#B9B1A2]">The hardened XcrowHub signer executes the recorded release, refund or split decision.</p>
+            </div>
+            <div className="glass rounded-2xl p-5">
+              <Lock className="h-5 w-5 text-jade" />
+              <h3 className="mt-4 text-[15px] font-bold">USDT · Smart contract</h3>
+              <p className="mt-2 text-[13px] leading-relaxed text-[#B9B1A2]">Buyer release and seller refund are direct. Disputed outcomes require two matching signatures.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative py-16 sm:py-24">
+        <div className="mx-auto max-w-site px-5">
           <SectionHeading chip="If something goes wrong" title="Proof-based dispute resolution" sub="Either party can raise a dispute. Both sides submit evidence, then a human reviewer decides whether to release, refund or split the protected funds." />
           <div className="reveal mx-auto mt-10 grid max-w-3xl gap-4 sm:grid-cols-3">
             {[

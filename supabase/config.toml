@@ -23,6 +23,10 @@ verify_jwt = false
 [functions.verify-payment]
 verify_jwt = false
 
+# Verifies Polygon escrow settlement receipts before terminal deal updates.
+[functions.verify-settlement]
+verify_jwt = false
+
 # On-chain watcher; called by the pg_cron tick (CRON_SECRET / WATCHER_SECRET).
 [functions.watcher]
 verify_jwt = false

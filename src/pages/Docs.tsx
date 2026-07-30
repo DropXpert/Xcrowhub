@@ -141,8 +141,8 @@ export default function Docs() {
           <DocSection id="concepts" icon={ShieldCheck} chip="Core concepts" title="The ideas behind every deal">
             <div className="grid gap-4 sm:grid-cols-2">
               <MiniCard icon={Lock} title="Protected hold (escrow)">
-                Funds sit in a deal-specific custody address — never with the seller directly — until the
-                buyer confirms delivery. Both sides can see the held amount at all times.
+                NIM uses XcrowHub managed custody. A USDT deal labelled smart contract uses the
+                immutable Polygon contract. The deal screen identifies the rail before payment.
               </MiniCard>
               <MiniCard icon={ShieldCheck} title="On-chain verified">
                 A deal only becomes <State>Funds held</State> after the payment is confirmed on-chain, for
@@ -263,21 +263,33 @@ export default function Docs() {
           <DocSection id="payments" icon={Wallet} chip="Payments" title="Payments & on-chain verification">
             <P>
               XcrowHub supports <strong className="text-[#EDE7DA] font-semibold">NIM</strong> and{" "}
-              <strong className="text-[#EDE7DA] font-semibold">USDT (Polygon)</strong>. Here's exactly how
-              money moves:
+              <strong className="text-[#EDE7DA] font-semibold">USDT (Polygon)</strong> through two
+              deliberately different escrow rails:
             </P>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <MiniCard icon={Wallet} title="NIM: managed custody" accent="gold">
+                NIM is held in XcrowHub's custody wallet while a deal is active. The hardened
+                signer sends the authorised release, refund, or split payout.
+              </MiniCard>
+              <MiniCard icon={Lock} title="USDT: smart contract" accent="jade">
+                A USDT deal labelled smart contract locks funds in the immutable XcrowHubEscrow
+                contract on Polygon. XcrowHub cannot withdraw or redirect the principal by itself.
+              </MiniCard>
+            </div>
             <div className="space-y-6">
               <Step n={1} title="Buyer pays into the hold">
-                The buyer sends the deal amount to the custody address tied to that specific deal.
+                NIM is sent to managed custody. For USDT, the buyer approves the token and funds
+                the deal record inside the Polygon escrow contract.
               </Step>
               <Step n={2} title="The payment is verified on-chain">
                 Before the deal flips to <State>Funds held</State>, the server checks the transaction on
                 the blockchain — confirming the correct recipient and exact amount. A dropped or short
                 payment never marks the deal as paid.
               </Step>
-              <Step n={3} title="Funds are released from custody">
-                On confirmation (or a dispute outcome), the payout is signed and broadcast — to the seller
-                on release, or back to the buyer on refund.
+              <Step n={3} title="The applicable rail settles">
+                On NIM, the custody signer broadcasts the authorised payout. On USDT, the buyer
+                can release, the seller can refund, or any two of buyer, seller, and XcrowHub
+                arbitrator can sign the same disputed settlement.
               </Step>
             </div>
             <Callout kind="tip" title="Why verification matters">
@@ -300,7 +312,8 @@ export default function Docs() {
                 Screenshots, files, transaction hashes — whatever backs your side.
               </OutcomeCard>
               <OutcomeCard icon={ShieldCheck} tone="warn" title="An admin decides">
-                A human reviews and resolves it: release, refund, or a fair split.
+                A human reviews and proposes release, refund, or a fair split.
+                A USDT contract outcome still needs a participant's matching signature.
               </OutcomeCard>
             </div>
             <Callout kind="tip" title="No one wins by default">
@@ -387,7 +400,9 @@ export default function Docs() {
               items={[
                 <><strong className="text-[#EDE7DA] font-semibold">Wallet-signature auth.</strong> No passwords. Every sensitive action is signed by your wallet.</>,
                 <><strong className="text-[#EDE7DA] font-semibold">On-chain verified payments.</strong> A deal is marked held only after the chain confirms the funds arrived.</>,
-                <><strong className="text-[#EDE7DA] font-semibold">Custody keys stay server-side.</strong> Signing keys never touch your browser or the app bundle.</>,
+                <><strong className="text-[#EDE7DA] font-semibold">NIM custody keys stay server-side.</strong> Signing keys never touch your browser or the app bundle.</>,
+                <><strong className="text-[#EDE7DA] font-semibold">No unilateral USDT withdrawal.</strong> The immutable contract has no owner, upgrade, rescue, or arbitrary withdrawal path.</>,
+                <><strong className="text-[#EDE7DA] font-semibold">Two signatures for disputed USDT.</strong> XcrowHub cannot move contract principal unless the buyer or seller signs the same amounts.</>,
                 <><strong className="text-[#EDE7DA] font-semibold">Transparent disputes.</strong> Outcomes are driven by submitted proof inside a fixed window.</>,
               ]}
             />
@@ -396,8 +411,14 @@ export default function Docs() {
           <DocSection id="faq" icon={HelpCircle} chip="FAQ" title="Common questions">
             <div className="space-y-3">
               <Faq q="Does XcrowHub hold my money?">
-                Funds sit in a deal-specific custody hold during a deal and are released to the seller once
-                you confirm delivery — or returned/split through a dispute. They never go straight to the seller.
+                It depends on the rail shown on the deal. NIM uses XcrowHub managed custody.
+                A USDT deal labelled non-custodial uses the Polygon contract; XcrowHub cannot move
+                that principal alone. Other USDT deals remain labelled managed custody.
+              </Faq>
+              <Faq q="Can contract funds become locked?">
+                Yes. The contract has no administrator withdrawal or rescue path. If neither a
+                direct party action nor the required two matching settlement signatures are
+                provided, the USDT remains locked until an authorised action is completed.
               </Faq>
               <Faq q="What if the seller never delivers?">
                 Raise a query. A 24-hour proof window opens; if the seller can't show delivery and you can,

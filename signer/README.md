@@ -62,6 +62,9 @@ Vercel serverless functions have short timeouts and are not designed for persist
    SIGNER_SHARED_SECRET=...
    NIM_CUSTODY_SEED="..."
    EVM_CUSTODY_PRIVATE_KEY=0x...
+   EVM_ARBITRATOR_PRIVATE_KEY=0x...
+   USDT_ESCROW_CONTRACT_ADDR=0x...
+   USDT_ESCROW_CHAIN_ID=137
    NIM_RPC=...
    EVM_RPC=...
    SIGNER_IDEMPOTENCY_FILE=/data/payout-idempotency.jsonl
@@ -77,6 +80,11 @@ Vercel serverless functions have short timeouts and are not designed for persist
 ### Idempotency journal (required for real funds)
 
 `SIGNER_IDEMPOTENCY_FILE` is an append-only record of signed payout transactions.
+
+`EVM_ARBITRATOR_PRIVATE_KEY` must be a separate key whose public address is the
+immutable `arbitrator` configured in `XcrowHubEscrow`. It signs EIP-712
+settlement proposals but cannot move smart-contract principal by itself; a
+buyer or seller signature is also required.
 The signer fsyncs a prepared raw transaction before broadcasting it. If a request
 or process dies after the chain accepts the transaction, the next call returns or
 rebroadcasts those same bytes and hash instead of signing another payment.

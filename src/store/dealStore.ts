@@ -19,7 +19,11 @@ import { getSupabaseClient, isSupabaseConfiguredForClient } from "@/lib/supabase
 import { useListingStore } from "@/store/listingStore";
 import { clampNumber, INPUT_LIMITS, limitText, VALUE_LIMITS } from "@/lib/inputLimits";
 import { validateDealAmount } from "@/lib/dealAmounts";
-import { normalizeWalletAddress } from "@/lib/config";
+import {
+  config,
+  isUsdtEscrowConfigured,
+  normalizeWalletAddress,
+} from "@/lib/config";
 import {
   ACTIVE_DEAL_LIMIT,
   ACTIVE_DEAL_LIMIT_MESSAGE,
@@ -67,6 +71,10 @@ function mapDealRow(row: any): Deal {
     description: row.description || "",
     priceAmount: String(row.price_amount),
     priceCurrency: row.price_currency,
+    escrowModel: row.escrow_model || "managed_custody",
+    escrowContractAddress: row.escrow_contract_address || undefined,
+    contractSettlementTxHash:
+      row.contract_settlement_tx_hash || undefined,
     sellerWalletAddress: row.seller_wallet_address,
     buyerWalletAddress: row.buyer_wallet_address || undefined,
     deliveryDeadlineHours: row.delivery_deadline_hours,
@@ -247,6 +255,7 @@ interface DealStoreState {
   verifyPaymentNow: (dealId: string) => Promise<boolean>;
   markDelivered: (input: DeliverInput) => void;
   confirmReceipt: (dealId: string) => void;
+  submitContractSettlement: (dealId: string, txHash: string) => Promise<void>;
   raiseQuery: (input: RaiseQueryInput) => void;
   submitProof: (input: SubmitProofInput) => void;
   resolveAfterProofDeadline: (dealId: string) => void;
@@ -414,6 +423,14 @@ export const useDealStore = create<DealStoreState>()(
           description: limitText(input.description, INPUT_LIMITS.description),
           priceAmount: String(validatedPriceAmount),
           priceCurrency: input.priceCurrency,
+          escrowModel:
+            input.priceCurrency === "USDT" && isUsdtEscrowConfigured()
+              ? "smart_contract"
+              : "managed_custody",
+          escrowContractAddress:
+            input.priceCurrency === "USDT" && isUsdtEscrowConfigured()
+              ? config.usdt.escrowContractAddress
+              : undefined,
           sellerWalletAddress: input.sellerWalletAddress,
           deliveryDeadlineHours: clampNumber(Math.round(input.deliveryDeadlineHours), 1, VALUE_LIMITS.deadlineHours),
           confirmationWindowHours: clampNumber(Math.round(input.confirmationWindowHours), 1, VALUE_LIMITS.deadlineHours),
@@ -455,7 +472,7 @@ export const useDealStore = create<DealStoreState>()(
         assertSupabaseSuccess(error, "Failed to reserve the deal for payment");
       },
 
-      // Trustless payment: record the tx hash, then verify it on-chain server-side.
+      // Record the payment transaction, then verify the selected escrow rail on-chain.
       // The deal only reaches funds_held once verify-payment confirms it (or the
       // cron/watcher backstop does). No optimistic transition in remote mode.
       submitPayment: async ({ dealId, buyerWalletAddress, paymentTxHash }) => {
@@ -651,6 +668,55 @@ export const useDealStore = create<DealStoreState>()(
           };
         });
         creditOrderOnRelease(deal.status, released);
+      },
+
+      submitContractSettlement: async (dealId, txHash) => {
+        if (!isRemoteMode()) {
+          const deal = get().deals[dealId];
+          if (!deal) return;
+          const status =
+            deal.status === "delivered_by_seller"
+              ? "released"
+              : deal.status;
+          set((state) => ({
+            deals: {
+              ...state.deals,
+              [dealId]: patchDeal(deal, {
+                status,
+                contractSettlementTxHash: txHash,
+                releaseTxHash:
+                  status === "released" ? txHash : deal.releaseTxHash,
+                releasedAt:
+                  status === "released" ? nowIso() : deal.releasedAt,
+              }),
+            },
+          }));
+          return;
+        }
+
+        const supabase = getSupabaseClient();
+        const { error: submitError } = await supabase.rpc(
+          "submit_contract_settlement_tx",
+          {
+            p_deal_id: dealId,
+            p_tx_hash: txHash,
+          }
+        );
+        assertSupabaseSuccess(
+          submitError,
+          "Failed to submit the contract settlement"
+        );
+        const { error: verifyError } = await supabase.functions.invoke(
+          "verify-settlement",
+          { body: { deal_id: dealId } }
+        );
+        if (verifyError) {
+          console.warn(
+            "[XcrowHub] verify-settlement invoke failed (cron will retry):",
+            verifyError
+          );
+        }
+        await (get() as any).loadFromSupabase({ force: true });
       },
 
       raiseQuery: async ({ dealId, raisedBy, reason, details }) => {
@@ -1049,6 +1115,15 @@ export const useDealStore = create<DealStoreState>()(
             await (get() as any).loadFromSupabase({ force: true });
             const released = get().deals[dealId];
             if (released?.status === "released" && !released.releaseTxHash) {
+              await invokeDealPayout(supabase, {
+                deal_id: dealId,
+                decision: "release_to_seller",
+              });
+              await (get() as any).loadFromSupabase({ force: true });
+            } else if (
+              released?.escrowModel === "smart_contract" &&
+              released.status === "under_admin_review"
+            ) {
               await invokeDealPayout(supabase, {
                 deal_id: dealId,
                 decision: "release_to_seller",

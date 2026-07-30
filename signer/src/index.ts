@@ -14,6 +14,8 @@
 import "dotenv/config";
 import express from "express";
 import {
+  AbiCoder,
+  Contract,
   Interface,
   JsonRpcProvider,
   Transaction as EthersTransaction,
@@ -22,6 +24,7 @@ import {
   getAddress,
   keccak256,
   parseUnits,
+  toUtf8Bytes,
 } from "ethers";
 import { MnemonicUtils, KeyPair, TransactionBuilder, Address } from "@nimiq/core";
 import { createHash } from "node:crypto";
@@ -41,10 +44,13 @@ const PORT = Number(process.env.PORT || "8787");
 const SHARED_SECRET = process.env.SIGNER_SHARED_SECRET || "";
 const NIM_SEED = process.env.NIM_CUSTODY_SEED || "";
 const EVM_PRIV = process.env.EVM_CUSTODY_PRIVATE_KEY || "";
+const EVM_ARBITRATOR_PRIV = process.env.EVM_ARBITRATOR_PRIVATE_KEY || "";
 const NIM_RPC = process.env.NIM_RPC || "https://rpc.nimiqwatch.com";
-const EVM_RPC = process.env.EVM_RPC || "https://polygon-rpc.com";
+const EVM_RPC = process.env.EVM_RPC || "https://polygon.drpc.org";
 const USDT_CONTRACT = process.env.USDT_CONTRACT || "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
 const USDT_DECIMALS = Number(process.env.USDT_DECIMALS || "6");
+const USDT_ESCROW_CONTRACT = process.env.USDT_ESCROW_CONTRACT_ADDR || "";
+const USDT_ESCROW_CHAIN_ID = Number(process.env.USDT_ESCROW_CHAIN_ID || "137");
 const IDEMPOTENCY_FILE = resolve(
   process.env.SIGNER_IDEMPOTENCY_FILE || "./data/payout-idempotency.jsonl",
 );
@@ -288,9 +294,123 @@ function enqueue<T>(work: () => Promise<T>): Promise<T> {
 const app = express();
 app.use(express.json({ limit: "32kb" }));
 
+function signerAuthorized(auth: string): boolean {
+  return auth.startsWith("Bearer ") && auth.slice(7) === SHARED_SECRET;
+}
+
+app.post("/sign-escrow-settlement", async (req, res) => {
+  if (!signerAuthorized(req.headers.authorization || "")) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  try {
+    if (!EVM_ARBITRATOR_PRIV) {
+      throw new HttpError(503, "EVM_ARBITRATOR_PRIVATE_KEY is not configured");
+    }
+    if (!USDT_ESCROW_CONTRACT) {
+      throw new HttpError(503, "USDT_ESCROW_CONTRACT_ADDR is not configured");
+    }
+
+    const dealId =
+      typeof req.body?.dealId === "string" ? req.body.dealId.trim() : "";
+    const buyerAddress = getAddress(String(req.body?.buyerAddress || ""));
+    const contractAddress = getAddress(String(req.body?.contractAddress || ""));
+    const configuredContract = getAddress(USDT_ESCROW_CONTRACT);
+    if (!dealId || dealId.length > 128) {
+      throw new HttpError(400, "A valid dealId is required");
+    }
+    if (contractAddress !== configuredContract) {
+      throw new HttpError(400, "Settlement contract does not match configuration");
+    }
+
+    const buyerAmount = parseUnits(
+      String(req.body?.buyerAmount ?? ""),
+      USDT_DECIMALS,
+    );
+    const sellerAmount = parseUnits(
+      String(req.body?.sellerAmount ?? ""),
+      USDT_DECIMALS,
+    );
+    const nonce = BigInt(req.body?.nonce);
+    const deadline = BigInt(req.body?.deadline);
+    if (buyerAmount < 0n || sellerAmount < 0n || buyerAmount + sellerAmount <= 0n) {
+      throw new HttpError(400, "Invalid settlement amounts");
+    }
+    if (nonce < 0n || deadline <= BigInt(Math.floor(Date.now() / 1000))) {
+      throw new HttpError(400, "Invalid or expired settlement authorization");
+    }
+
+    const wallet = new Wallet(EVM_ARBITRATOR_PRIV);
+    const provider = new JsonRpcProvider(EVM_RPC);
+    const reference = keccak256(toUtf8Bytes(dealId));
+    const escrowKey = keccak256(
+      AbiCoder.defaultAbiCoder().encode(
+        ["bytes32", "address"],
+        [reference, buyerAddress],
+      ),
+    );
+    const contract = new Contract(
+      configuredContract,
+      [
+        "function arbitrator() view returns (address)",
+        "function escrows(bytes32 escrowKey) view returns (address buyer,address seller,uint256 amount,uint256 nonce,uint16 feeBps,uint8 state)",
+      ],
+      provider,
+    );
+    const onChainArbitrator = getAddress(await contract.arbitrator());
+    if (onChainArbitrator !== wallet.address) {
+      throw new HttpError(
+        503,
+        "Configured arbitrator key does not match the escrow contract",
+      );
+    }
+    const fundedEscrow = await contract.escrows(escrowKey);
+    if (
+      getAddress(fundedEscrow.buyer) !== buyerAddress
+      || BigInt(fundedEscrow.amount) !== buyerAmount + sellerAmount
+      || BigInt(fundedEscrow.nonce) !== nonce
+      || Number(fundedEscrow.state) !== 1
+    ) {
+      throw new HttpError(
+        409,
+        "Settlement proposal does not match the funded on-chain escrow",
+      );
+    }
+
+    const domain = {
+      name: "XcrowHub Escrow",
+      version: "2",
+      chainId: USDT_ESCROW_CHAIN_ID,
+      verifyingContract: configuredContract,
+    };
+    const types = {
+      Settlement: [
+        { name: "escrowKey", type: "bytes32" },
+        { name: "buyerAmount", type: "uint256" },
+        { name: "sellerAmount", type: "uint256" },
+        { name: "nonce", type: "uint256" },
+        { name: "deadline", type: "uint256" },
+      ],
+    };
+    const signature = await wallet.signTypedData(domain, types, {
+      escrowKey,
+      buyerAmount,
+      sellerAmount,
+      nonce,
+      deadline,
+    });
+    return res.json({ signature, signer: wallet.address });
+  } catch (error: any) {
+    const status = error instanceof HttpError ? error.status : 500;
+    console.error("[signer] escrow signature error", error?.message || error);
+    return res.status(status).json({
+      error: error?.message || "Internal signer error",
+    });
+  }
+});
+
 app.post("/sign-and-broadcast", async (req, res) => {
   const auth = req.headers.authorization || "";
-  if (!auth.startsWith("Bearer ") || auth.slice(7) !== SHARED_SECRET) {
+  if (!signerAuthorized(auth)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 

@@ -5,12 +5,15 @@ import { useDealStore } from "@/store/dealStore";
 import { useAuthStore } from "@/store/authStore";
 import { getNimWallet, getWallet } from "@/wallet";
 import {
-  isCustodyConfigured,
-  custodyAddressFor,
+  isUsdtEscrowConfigured,
+  isPaymentRailConfigured,
+  paymentTargetFor,
   normalizeWalletAddress,
 } from "@/lib/config";
 import { AlertDialog } from "@/components/AlertDialog";
 import { SkeletonBlock, SkeletonDots } from "@/components/LoadingStates";
+import { EscrowModelBadge } from "@/components/EscrowModelBadge";
+import { isSmartUsdtDeal } from "@/lib/usdtEscrow";
 
 const POLL_INTERVAL_MS = 5000;
 const POLL_MAX_TRIES = 30; // ~2.5 min of automatic checking
@@ -29,7 +32,13 @@ export function PaymentBox({ deal }: { deal: Deal }) {
   // between dialog-closes and wallet-opens.
   const [confirmingPay, setConfirmingPay] = useState(false);
   const inFlight = useRef(false);
-  const paymentsReady = isCustodyConfigured(deal.priceCurrency);
+  const smartUsdt = isSmartUsdtDeal(deal);
+  const paymentsReady =
+    smartUsdt && deal.escrowContractAddress
+      ? true
+      : smartUsdt
+        ? isUsdtEscrowConfigured()
+        : isPaymentRailConfigured(deal.priceCurrency, deal.escrowModel);
   const connectedWalletIsSeller = Boolean(
     session?.address &&
       normalizeWalletAddress(session.address) ===
@@ -117,10 +126,17 @@ export function PaymentBox({ deal }: { deal: Deal }) {
         });
         return {
           from: buyer,
-          to: custodyAddressFor(deal.priceCurrency),
+          to:
+            smartUsdt && deal.escrowContractAddress
+              ? deal.escrowContractAddress
+              : paymentTargetFor(deal.priceCurrency, deal.escrowModel),
           amount: deal.priceAmount,
           currency: deal.priceCurrency,
           memo: `XcrowHub ${deal.id}`,
+          dealId: deal.id,
+          seller: deal.sellerWalletAddress,
+          feeBps: deal.feeBps ?? 0,
+          escrowModel: deal.escrowModel,
         };
       })();
       const result = wallet.sendPaymentWhenReady
@@ -298,6 +314,7 @@ export function PaymentBox({ deal }: { deal: Deal }) {
           </p>
         </div>
       </div>
+      <EscrowModelBadge deal={deal} />
 
       <div className="rounded-lg border border-dashed border-edge bg-bg p-3">
         <div className="flex items-baseline justify-between">
@@ -328,7 +345,7 @@ export function PaymentBox({ deal }: { deal: Deal }) {
         ) : (
           <>
             <ShieldCheck className="h-4 w-4" />
-            Pay into XcrowHub
+            {smartUsdt ? "Lock USDT in contract" : "Pay into XcrowHub"}
           </>
         )}
       </button>
@@ -342,9 +359,11 @@ export function PaymentBox({ deal }: { deal: Deal }) {
       <p className="text-[12.5px] leading-relaxed text-muted">
         {!paymentsReady
           ? "Payments are temporarily unavailable."
+          : smartUsdt
+            ? "USDT is locked in the Polygon escrow contract. XcrowHub cannot move the principal alone."
           : deal.priceCurrency === "NIM"
             ? "Pay with Nimiq Pay or your browser wallet. Funds go to XcrowHub custody and release when the deal confirms."
-            : "Pay with USDT via your connected wallet. Funds go to XcrowHub custody and release when the deal confirms."}
+            : "This USDT deal uses XcrowHub managed custody and releases when the deal confirms."}
       </p>
 
       {/* High-attention confirm before we actually open the wallet. The
@@ -359,7 +378,11 @@ export function PaymentBox({ deal }: { deal: Deal }) {
           setConfirmingPay(open);
         }}
         title={`Pay ${deal.priceAmount} ${deal.priceCurrency} into escrow?`}
-        description={`Your wallet will open next. Funds go to XcrowHub custody and stay locked until you confirm delivery. This can't be undone once the transaction is broadcast.`}
+        description={
+          smartUsdt
+            ? "Your wallet will approve USDT and then fund the Polygon escrow contract. The contract releases on buyer confirmation or a valid two-party settlement."
+            : "Your wallet will open next. Funds go to XcrowHub managed custody and stay locked until you confirm delivery. This cannot be undone once broadcast."
+        }
         cancelLabel="Not yet"
         actionLabel={busy ? "Opening wallet…" : `Confirm & pay`}
         onAction={handlePay}
