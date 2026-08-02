@@ -8,6 +8,7 @@ import { isSupabaseConfiguredForClient } from "@/lib/supabase";
 import { useState, useRef, useEffect } from "react";
 import { CopyButton } from "@/components/CopyButton";
 import { ThemeToggleButton } from "@/components/ThemeToggleButton";
+import type { Currency } from "@/types/deal";
 
 function shortenAddr(addr: string) {
   const c = addr.replace(/\s+/g, "");
@@ -109,7 +110,7 @@ function NotificationBell() {
   );
 }
 
-function WalletMenu({ address }: { address: string }) {
+function WalletMenu({ address, currency }: { address: string; currency: Currency }) {
   const { disconnect, switchWallet, loading } = useAuthStore();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -132,7 +133,7 @@ function WalletMenu({ address }: { address: string }) {
   async function handleSwitchWallet() {
     if (loading) return;
     setOpen(false);
-    await switchWallet();
+    await switchWallet(currency === "NIM" ? "USDT" : "NIM");
   }
 
   return (
@@ -177,7 +178,11 @@ function WalletMenu({ address }: { address: string }) {
             ) : (
               <RefreshCw className="h-3.5 w-3.5 shrink-0 text-muted" />
             )}
-            <span>{loading ? "Switching wallet..." : "Switch wallet"}</span>
+            <span>
+              {loading
+                ? "Switching wallet..."
+                : `Switch to ${currency === "NIM" ? "USDT" : "NIM"} wallet`}
+            </span>
           </button>
           <button
             type="button"
@@ -221,7 +226,7 @@ export function AppHeader() {
       <div className="flex shrink-0 items-center gap-2 lg:ml-auto">
         {session ? (
           <>
-            <WalletMenu address={session.address} />
+            <WalletMenu address={session.address} currency={session.currency} />
             <NotificationBell />
             {isAdmin && (
               <Link

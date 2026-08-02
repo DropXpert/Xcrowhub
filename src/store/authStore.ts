@@ -16,7 +16,7 @@ interface AuthState {
   error: string | null;
 
   connect: (currency?: Currency) => Promise<void>;
-  switchWallet: () => Promise<void>;
+  switchWallet: (currency?: Currency) => Promise<void>;
   disconnect: () => void;
   restoreSession: () => void;
 }
@@ -50,15 +50,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  switchWallet: async () => {
+  switchWallet: async (currency) => {
     if (connectInFlight) return;
     const current = get().session;
     if (!current) return;
+    const targetCurrency = currency ?? current.currency;
     connectInFlight = true;
     set({ loading: true, error: null });
     try {
-      await prepareWalletSwitch(current.currency);
-      const session = await loginWithWallet(current.currency);
+      await prepareWalletSwitch(targetCurrency);
+      const session = await loginWithWallet(targetCurrency);
       if (session) {
         set({ session, loading: false });
         if (session.token) void applyPendingReferral();
