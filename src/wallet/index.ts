@@ -65,4 +65,9 @@ export function getNimWallet(): WalletProvider {
   return isNimiqPayHost() ? nimiqPay : nimiqHub;
 }
 
+export async function prepareWalletSwitch(currency: Currency) {
+  const wallet = currency === "NIM" ? getNimWallet() : await getEvmProvider();
+  await wallet.prepareSwitch?.();
+}
+
 export type { WalletProvider } from "./WalletProvider";

@@ -14,6 +14,7 @@ import { AlertDialog } from "@/components/AlertDialog";
 import { SkeletonBlock, SkeletonDots } from "@/components/LoadingStates";
 import { EscrowModelBadge } from "@/components/EscrowModelBadge";
 import { isSmartUsdtDeal } from "@/lib/usdtEscrow";
+import type { PaymentProgressStage } from "@/wallet/WalletProvider";
 
 const POLL_INTERVAL_MS = 5000;
 const POLL_MAX_TRIES = 30; // ~2.5 min of automatic checking
@@ -31,6 +32,9 @@ export function PaymentBox({ deal }: { deal: Deal }) {
   // user sees a single "confirming payment…" state instead of a flicker
   // between dialog-closes and wallet-opens.
   const [confirmingPay, setConfirmingPay] = useState(false);
+  const [paymentStage, setPaymentStage] = useState<
+    PaymentProgressStage | "wallet_prompt" | "recording" | null
+  >(null);
   const inFlight = useRef(false);
   const smartUsdt = isSmartUsdtDeal(deal);
   const paymentsReady =
@@ -85,6 +89,7 @@ export function PaymentBox({ deal }: { deal: Deal }) {
     if (inFlight.current || !paymentsReady) return;
     inFlight.current = true;
     setBusy(true);
+    setPaymentStage(smartUsdt ? "approval_prompt" : "wallet_prompt");
     setError(null);
     try {
       let buyer =
@@ -137,13 +142,15 @@ export function PaymentBox({ deal }: { deal: Deal }) {
           seller: deal.sellerWalletAddress,
           feeBps: deal.feeBps ?? 0,
           escrowModel: deal.escrowModel,
+          onProgress: smartUsdt ? setPaymentStage : undefined,
         };
       })();
       const result = wallet.sendPaymentWhenReady
         ? await wallet.sendPaymentWhenReady(paymentRequest)
         : await wallet.sendPayment(await paymentRequest);
+      setPaymentStage("recording");
       // Records the tx hash; the deal stays awaiting_payment until the chain
-      // confirms. The `verifying` effect above then polls to completion — we do
+      // confirms. The `verifying` effect above then polls to completion. We do
       // NOT navigate away or re-show the Pay button.
       await submitPayment({
         dealId: deal.id,
@@ -160,9 +167,60 @@ export function PaymentBox({ deal }: { deal: Deal }) {
       // state, which unmounts this "Pay" branch entirely; on failure we drop
       // back to the pay CTA with the error line visible.
       setConfirmingPay(false);
+      setPaymentStage(null);
       inFlight.current = false;
     }
   }
+
+  function paymentProgressCopy() {
+    switch (paymentStage) {
+      case "approval_prompt":
+        return {
+          title: "Approve USDT in your wallet",
+          description:
+            "Confirm the USDT approval. This allows the escrow contract to lock only this deal amount.",
+          action: "Waiting for approval",
+        };
+      case "approval_pending":
+        return {
+          title: "Waiting for Polygon confirmation",
+          description:
+            "Your approval was submitted successfully. The contract funding prompt will open automatically after Polygon confirms it.",
+          action: "Confirming approval",
+        };
+      case "funding_prompt":
+        return {
+          title: "Fund the escrow contract",
+          description:
+            "The approval is confirmed. Confirm the second wallet request to lock USDT in the escrow contract.",
+          action: "Waiting for funding",
+        };
+      case "funding_submitted":
+        return {
+          title: "Escrow funding submitted",
+          description:
+            "Your funding transaction was submitted. XcrowHub is recording the transaction now.",
+          action: "Recording payment",
+        };
+      case "recording":
+        return {
+          title: "Recording your payment",
+          description:
+            "The transaction was submitted successfully. XcrowHub is saving the transaction and will verify it on Polygon.",
+          action: "Recording payment",
+        };
+      default:
+        return {
+          title: `Pay ${deal.priceAmount} ${deal.priceCurrency} into escrow?`,
+          description: smartUsdt
+            ? "Your wallet will first approve USDT, then ask you to fund the Polygon escrow contract."
+            : "Your wallet will open next. Funds go to XcrowHub managed custody and stay locked until you confirm delivery. This cannot be undone once broadcast.",
+          action: "Opening wallet",
+        };
+    }
+  }
+
+  const progressCopy = paymentProgressCopy();
 
   function formatPaymentError(err: unknown): string {
     if (isLowBalance(err)) return "Your balance is low for this transaction.";
@@ -230,7 +288,7 @@ export function PaymentBox({ deal }: { deal: Deal }) {
             </h3>
             <p className="text-[13px] leading-relaxed text-muted">
               We received your transaction and we're waiting for the network to
-              confirm it. This usually takes under a minute — you don't need to
+              confirm it. This usually takes under a minute. You don't need to
               pay again. This page updates automatically.
             </p>
           </div>
@@ -270,7 +328,7 @@ export function PaymentBox({ deal }: { deal: Deal }) {
         <p className="text-[12.5px] leading-relaxed text-muted">
           Once confirmed, the seller is notified to deliver. If it hasn't
           updated after a few minutes, your transaction may still be pending on
-          the network — it will confirm automatically.
+          the network. It will confirm automatically.
         </p>
       </section>
     );
@@ -339,8 +397,8 @@ export function PaymentBox({ deal }: { deal: Deal }) {
       >
         {busy ? (
           <>
-            <SkeletonDots label="Opening wallet" />
-            Opening wallet…
+            <SkeletonDots label={progressCopy.action} />
+            {progressCopy.action}...
           </>
         ) : (
           <>
@@ -377,14 +435,10 @@ export function PaymentBox({ deal }: { deal: Deal }) {
           if (!open && busy) return;
           setConfirmingPay(open);
         }}
-        title={`Pay ${deal.priceAmount} ${deal.priceCurrency} into escrow?`}
-        description={
-          smartUsdt
-            ? "Your wallet will approve USDT and then fund the Polygon escrow contract. The contract releases on buyer confirmation or a valid two-party settlement."
-            : "Your wallet will open next. Funds go to XcrowHub managed custody and stay locked until you confirm delivery. This cannot be undone once broadcast."
-        }
+        title={progressCopy.title}
+        description={progressCopy.description}
         cancelLabel="Not yet"
-        actionLabel={busy ? "Opening wallet…" : `Confirm & pay`}
+        actionLabel={busy ? `${progressCopy.action}...` : "Confirm & pay"}
         onAction={handlePay}
         busy={busy}
       />

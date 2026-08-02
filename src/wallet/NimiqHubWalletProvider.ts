@@ -62,6 +62,10 @@ export class NimiqHubWalletProvider implements WalletProvider {
     return typeof window !== "undefined" && navigator.onLine;
   }
 
+  async prepareSwitch() {
+    this.selectedAddress = null;
+  }
+
   async getAddress(): Promise<string> {
     if (this.selectedAddress) return this.selectedAddress;
     try {

@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Wallet, Bell, LogOut, Zap } from "lucide-react";
+import { Wallet, Bell, LogOut, RefreshCw, Zap } from "lucide-react";
 import { SkeletonDots } from "@/components/LoadingStates";
 import { cn } from "@/lib/cn";
 import { useAuthStore, useIsAdmin } from "@/store/authStore";
@@ -110,7 +110,7 @@ function NotificationBell() {
 }
 
 function WalletMenu({ address }: { address: string }) {
-  const { disconnect } = useAuthStore();
+  const { disconnect, switchWallet, loading } = useAuthStore();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -127,6 +127,12 @@ function WalletMenu({ address }: { address: string }) {
     setOpen(false);
     disconnect();
     navigate("/", { replace: true });
+  }
+
+  async function handleSwitchWallet() {
+    if (loading) return;
+    setOpen(false);
+    await switchWallet();
   }
 
   return (
@@ -160,6 +166,19 @@ function WalletMenu({ address }: { address: string }) {
             <CopyButton text={address} size="sm" />
             <span className="text-[13px] text-ink">Copy address</span>
           </div>
+          <button
+            type="button"
+            onClick={handleSwitchWallet}
+            disabled={loading}
+            className="flex w-full items-center gap-2.5 border-b border-edge px-4 py-3 text-[13px] text-ink transition hover:bg-bg disabled:opacity-60"
+          >
+            {loading ? (
+              <SkeletonDots label="Switching wallet" />
+            ) : (
+              <RefreshCw className="h-3.5 w-3.5 shrink-0 text-muted" />
+            )}
+            <span>{loading ? "Switching wallet..." : "Switch wallet"}</span>
+          </button>
           <button
             type="button"
             onClick={handleDisconnect}

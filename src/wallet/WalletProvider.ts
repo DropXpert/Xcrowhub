@@ -1,5 +1,11 @@
 import type { Currency, EscrowModel } from "@/types/deal";
 
+export type PaymentProgressStage =
+  | "approval_prompt"
+  | "approval_pending"
+  | "funding_prompt"
+  | "funding_submitted";
+
 export interface SendPaymentParams {
   from?: string;
   to: string;
@@ -10,6 +16,7 @@ export interface SendPaymentParams {
   seller?: string;
   feeBps?: number;
   escrowModel?: EscrowModel;
+  onProgress?: (stage: PaymentProgressStage) => void;
 }
 
 export interface PaymentResult {
@@ -38,6 +45,7 @@ export interface WalletProvider {
   readonly name: string;
   isAvailable(): Promise<boolean>;
   getAddress(): Promise<string>;
+  prepareSwitch?(): Promise<void>;
   sendPayment(params: SendPaymentParams): Promise<PaymentResult>;
   /**
    * Browser wallets can open their approval UI immediately, while the app

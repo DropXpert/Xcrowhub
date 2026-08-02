@@ -9,7 +9,7 @@ import { USDT_ESCROW_ABI, usdtDealReference } from "@/lib/usdtEscrow";
 
 /**
  * EVM wallet provider for USDT (and any ERC-20). Talks to whatever wallet
- * has injected `window.ethereum` — inside Nimiq Pay that's the host's EVM
+ * has injected `window.ethereum`. Inside Nimiq Pay that is the host's EVM
  * bridge; in a normal browser it's MetaMask/Rabby/etc.
  *
  * Historic deals transfer to managed custody. New USDT deals approve and fund
@@ -33,6 +33,21 @@ export class EvmWalletProvider implements WalletProvider {
       throw new Error("No EVM accounts available.");
     }
     return accounts[0];
+  }
+
+  async prepareSwitch() {
+    const eth = this.#requireEthereum();
+    try {
+      await eth.request({
+        method: "wallet_requestPermissions",
+        params: [{ eth_accounts: {} }],
+      });
+    } catch (error) {
+      const code = (error as { code?: number } | null)?.code;
+      // Some injected wallets do not implement permission requests. Their
+      // normal account request is still used during the new login attempt.
+      if (code !== -32601 && code !== 4200) throw error;
+    }
   }
 
   async sendPayment(params: SendPaymentParams): Promise<PaymentResult> {
@@ -63,13 +78,16 @@ export class EvmWalletProvider implements WalletProvider {
         throw new Error("The USDT escrow payment is missing deal details.");
       }
       const escrowAddress = params.to || config.usdt.escrowContractAddress;
+      params.onProgress?.("approval_prompt");
       const approval = await token.approve(
         escrowAddress,
         amount
       );
-      // Funding must wait until the allowance is mined. This is a one-time
-      // approval transaction followed by the escrow funding transaction.
+      params.onProgress?.("approval_pending");
+      // Funding must wait until the allowance is mined. The contract cannot
+      // transfer the approved USDT before Polygon records this transaction.
       await approval.wait();
+      params.onProgress?.("funding_prompt");
       const escrow = new Contract(
         escrowAddress,
         USDT_ESCROW_ABI,
@@ -81,11 +99,12 @@ export class EvmWalletProvider implements WalletProvider {
         amount,
         params.feeBps ?? 0
       );
+      params.onProgress?.("funding_submitted");
       return { txHash: tx.hash };
     }
 
     const tx = await token.transfer(config.usdt.custodyAddress, amount);
-    // Don't await tx.wait() — Nimiq Pay closes the confirmation modal once
+    // Do not await tx.wait(). Nimiq Pay closes the confirmation modal once
     // the user signs; the tx hash is enough for the receipt. Backend will
     // watch for confirmation in Milestone B.
     return { txHash: tx.hash };
@@ -127,6 +146,6 @@ export class EvmWalletProvider implements WalletProvider {
     const provider = new BrowserProvider(eth);
     const signer = await provider.getSigner();
     const signature = await signer.signMessage(message);
-    return { signature }; // EVM: no publicKey needed — address is recoverable from sig
+    return { signature }; // EVM does not need a public key because the address is recoverable from the signature
   }
 }

@@ -8,6 +8,7 @@ import {
 import { clearSupabaseAccessToken } from "@/lib/supabase";
 import { applyPendingReferral } from "@/lib/referral";
 import type { Currency } from "@/types/deal";
+import { prepareWalletSwitch } from "@/wallet";
 
 interface AuthState {
   session: AuthSession | null;
@@ -15,6 +16,7 @@ interface AuthState {
   error: string | null;
 
   connect: (currency?: Currency) => Promise<void>;
+  switchWallet: () => Promise<void>;
   disconnect: () => void;
   restoreSession: () => void;
 }
@@ -43,6 +45,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (session?.token) void applyPendingReferral();
     } catch (err: any) {
       set({ loading: false, error: err.message || "Connection failed" });
+    } finally {
+      connectInFlight = false;
+    }
+  },
+
+  switchWallet: async () => {
+    if (connectInFlight) return;
+    const current = get().session;
+    if (!current) return;
+    connectInFlight = true;
+    set({ loading: true, error: null });
+    try {
+      await prepareWalletSwitch(current.currency);
+      const session = await loginWithWallet(current.currency);
+      if (session) {
+        set({ session, loading: false });
+        if (session.token) void applyPendingReferral();
+      } else {
+        set({ loading: false });
+      }
+    } catch (err: any) {
+      // Keep the current authenticated session if the wallet selector is
+      // cancelled or the replacement account cannot be authenticated.
+      set({ session: current, loading: false, error: err.message || "Wallet switch failed" });
     } finally {
       connectInFlight = false;
     }
