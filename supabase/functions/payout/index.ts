@@ -36,24 +36,33 @@ type Decision = "release_to_seller" | "refund_to_buyer" | "partial_refund";
 type DealLeg = "seller" | "buyer";
 type Currency = "NIM" | "USDT";
 type Network = "nimiq" | "evm";
-type PayoutKind = "release" | "refund" | "partial_seller" | "partial_buyer" | "referral" | "campaign_coupon";
+type PayoutKind =
+  | "release"
+  | "refund"
+  | "partial_seller"
+  | "partial_buyer"
+  | "referral"
+  | "campaign_coupon"
+  | "cashback";
 
 interface PayoutRequest {
-  kind?: "deal" | "referral_claim" | "campaign_coupon";
+  kind?: "deal" | "referral_claim" | "campaign_coupon" | "deal_cashback";
   deal_id?: string;
   decision?: Decision;
   leg?: DealLeg;
   claim_id?: string;
   campaign_coupon_claim_id?: string;
+  deal_cashback_reward_id?: string;
 }
 
 interface PayoutSpec {
   payoutKey: string;
-  subjectKind: "deal" | "referral_claim" | "campaign_coupon";
+  subjectKind: "deal" | "referral_claim" | "campaign_coupon" | "deal_cashback";
   payoutKind: PayoutKind;
   dealId: string | null;
   referralClaimId: string | null;
   campaignCouponClaimId: string | null;
+  dealCashbackRewardId?: string | null;
   network: Network;
   currency: Currency;
   recipient: string;
@@ -92,6 +101,13 @@ serve(async (req: Request) => {
         return json({ error: "Unauthorized" }, 401);
       }
       return await handleCampaignCoupon(body, auth);
+    }
+
+    if (body.kind === "deal_cashback") {
+      if (!auth.internal && !auth.admin && !auth.walletAddr) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+      return await handleDealCashback(body, auth);
     }
 
     const dealId = body.deal_id;
@@ -448,6 +464,66 @@ async function handleCampaignCoupon(
   });
 }
 
+async function handleDealCashback(
+  body: PayoutRequest,
+  auth: AuthContext,
+): Promise<Response> {
+  const rewardId = body.deal_cashback_reward_id;
+  if (!rewardId) return json({ error: "deal_cashback_reward_id is required" }, 400);
+
+  const { data: reward, error: rewardError } = await supabase
+    .from("deal_cashback_rewards")
+    .select("id, deal_id, wallet_address, amount_nim, payout_status, payout_tx_hash")
+    .eq("id", rewardId)
+    .maybeSingle();
+  if (rewardError) throw rewardError;
+  if (!reward) return json({ error: "Cashback reward not found" }, 404);
+
+  if (
+    !auth.internal &&
+    !auth.admin &&
+    normalizedAddress(auth.walletAddr) !== normalizedAddress(reward.wallet_address)
+  ) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+  if (reward.payout_status === "paid" && reward.payout_tx_hash) {
+    return json({ success: true, txHash: reward.payout_tx_hash, idempotent: true });
+  }
+  if (reward.payout_status !== "pending") {
+    return json({ error: `Cashback payout is not pending (current: ${reward.payout_status})` }, 409);
+  }
+
+  const recipient = String(reward.wallet_address ?? "").replace(/\s+/g, "").toUpperCase();
+  if (!recipient) return json({ error: "Cashback reward has no recipient address" }, 409);
+  if (isCustodyRecipient("NIM", recipient)) {
+    return json({ error: "Cashback recipient cannot be the custody address" }, 409);
+  }
+
+  let units: bigint;
+  try {
+    units = decimalToUnits(String(reward.amount_nim), 5);
+  } catch (parseError) {
+    return json({ error: (parseError as Error).message }, 409);
+  }
+  if (units <= 0n) return json({ error: "Cashback amount is not positive" }, 409);
+
+  return await executePayout({
+    payoutKey: `deal-cashback:${rewardId}`,
+    subjectKind: "deal_cashback",
+    payoutKind: "cashback",
+    dealId: null,
+    referralClaimId: null,
+    campaignCouponClaimId: null,
+    dealCashbackRewardId: rewardId,
+    network: "nimiq",
+    currency: "NIM",
+    recipient,
+    amount: unitsToDecimal(units, 5),
+    feeAmount: "0",
+    feeBps: 0,
+  });
+}
+
 async function executePayout(spec: PayoutSpec): Promise<Response> {
   const leaseToken = crypto.randomUUID();
   const { data: claimResult, error: claimError } = await supabase.rpc("claim_payout_intent", {
@@ -457,6 +533,7 @@ async function executePayout(spec: PayoutSpec): Promise<Response> {
     p_deal_id: spec.dealId,
     p_referral_claim_id: spec.referralClaimId,
     p_campaign_coupon_claim_id: spec.campaignCouponClaimId,
+    p_deal_cashback_reward_id: spec.dealCashbackRewardId ?? null,
     p_network: spec.network,
     p_currency: spec.currency,
     p_recipient: spec.recipient,

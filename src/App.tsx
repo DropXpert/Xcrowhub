@@ -44,6 +44,7 @@ const AdminReview = lazy(() => import("@/pages/AdminReview"));
 const AdminSupport = lazy(() => import("@/pages/AdminSupport"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Referral = lazy(() => import("@/pages/Referral"));
+const Rewards = lazy(() => import("@/pages/Rewards"));
 const LeaveFeedback = lazy(() => import("@/pages/LeaveFeedback"));
 const Support = lazy(() => import("@/pages/Support"));
 const BugReport = lazy(() => import("@/pages/BugReport"));
@@ -256,6 +257,7 @@ function MiniAppShell() {
               <Route path="/deal/:id/feedback" element={<AuthGuard><LeaveFeedback /></AuthGuard>} />
               <Route path="/support" element={<AuthGuard><Support /></AuthGuard>} />
               <Route path="/referral" element={<AuthGuard><Referral /></AuthGuard>} />
+              <Route path="/rewards" element={<AuthGuard><Rewards /></AuthGuard>} />
               <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
               <Route path="/profile/:address" element={<AuthGuard><Profile /></AuthGuard>} />
 

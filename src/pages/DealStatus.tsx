@@ -36,6 +36,7 @@ import { getSupabaseClient, isSupabaseConfiguredForClient } from "@/lib/supabase
 import type { Deal } from "@/types/deal";
 import { ContractSettlementPanel } from "@/components/ContractSettlementPanel";
 import { isSmartUsdtDeal } from "@/lib/usdtEscrow";
+import { CashbackScratchCard } from "@/components/CashbackScratchCard";
 
 export default function DealStatus() {
   const { id } = useParams<{ id: string }>();
@@ -325,6 +326,9 @@ function RoleActions({
             {deal.status === "expired" && "This deal expired."}
           </p>
         </section>
+        {deal.status === "released" && role === "buyer" ? (
+          <CashbackScratchCard dealId={deal.id} />
+        ) : null}
         {deal.status === "released" && deal.feeAmount && Number(deal.feeAmount) > 0 && (
           <section className="card space-y-2.5 px-5 py-4">
             <p className="field-label">Payout breakdown</p>

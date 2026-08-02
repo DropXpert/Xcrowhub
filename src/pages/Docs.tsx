@@ -225,6 +225,12 @@ export default function Docs() {
               Unlike private deals, marketplace sales include a small platform fee taken from the seller's
               side. See <a href="#fees" className="text-gold hover:underline">Fees</a> for the exact split.
             </Callout>
+            <Callout kind="info" title="Cashback scratch cards">
+              During an active reward campaign, the buyer of a successfully released NIM marketplace
+              purchase receives one scratch card. The result is generated once on the server, cannot be
+              rerolled, and any positive reward is sent to the buyer's connected Nimiq wallet. Campaign
+              budgets and per-wallet limits apply.
+            </Callout>
           </DocSection>
 
           <DocSection id="lifecycle" icon={GitBranch} chip="Lifecycle" title="The journey of a deal">

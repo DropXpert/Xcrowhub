@@ -220,6 +220,13 @@ export default function Terms() {
               Network transaction fees (gas, on-chain fees) are determined by the respective
               blockchain and are outside our control.
             </p>
+            <p>
+              <strong>Cashback promotions:</strong> Eligible completed NIM marketplace purchases may
+              receive a single cashback scratch card while a promotion is active. Rewards are subject
+              to campaign budgets, per-wallet limits, eligibility checks, and availability. Results are
+              generated once and cannot be rerolled. XcrowHub may pause or end a promotion when its
+              reward pool is exhausted or abuse is detected.
+            </p>
           </Section>
 
           <Section title="7. Dispute Resolution">

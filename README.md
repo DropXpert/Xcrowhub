@@ -129,6 +129,8 @@ deployment details, and local contract verification.
 - Buy-now and buyer-offer flows
 - Quantity and remaining-stock tracking
 - Automatic removal from availability when stock reaches zero
+- Server-generated NIM cashback scratch cards for eligible completed purchases
+- Persistent reward history with exactly-once wallet payouts
 
 ### Identity and communication
 

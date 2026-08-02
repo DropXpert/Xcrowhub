@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useParams, Link } from "react-router-dom";
-import { Pencil, X, Camera, Package, ShieldCheck, Gift, ChevronRight, Ticket } from "lucide-react";
+import { Pencil, X, Camera, Package, ShieldCheck, Gift, ChevronRight, Ticket, Sparkles } from "lucide-react";
 import { CopyButton } from "@/components/CopyButton";
 import { Progress, ProgressTrack } from "@/components/ui/progress";
 import { useDealStore } from "@/store/dealStore";
@@ -15,6 +15,7 @@ import { FeedbackCard } from "@/components/FeedbackCard";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { TelegramConnectCard } from "@/components/TelegramConnectCard";
 import { useCampaignStore } from "@/store/campaignStore";
+import { useCashbackStore } from "@/store/cashbackStore";
 
 type HistoryTab = "seller" | "buyer" | "listings";
 
@@ -69,10 +70,17 @@ export default function Profile() {
   const couponResult = useCampaignStore((s) => s.couponResult);
   const couponError = useCampaignStore((s) => s.couponError);
   const claimCoupon = useCampaignStore((s) => s.claimCoupon);
+  const cashbackEarned = useCashbackStore((s) => s.totalEarnedNim);
+  const unclaimedCashback = useCashbackStore((s) => s.unclaimed.length);
+  const loadCashbackHistory = useCashbackStore((s) => s.loadHistory);
 
   useEffect(() => {
     if (addr) fetchMine(addr);
   }, [addr, fetchMine]);
+
+  useEffect(() => {
+    if (isOwn) void loadCashbackHistory();
+  }, [isOwn, loadCashbackHistory]);
 
   const [tab, setTab] = useState<HistoryTab>("seller");
   const [editing, setEditing] = useState(false);
@@ -344,6 +352,26 @@ export default function Profile() {
             </p>
           </div>
           <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
+        </Link>
+      )}
+
+      {isOwn && (
+        <Link
+          to="/rewards"
+          className="cashback-card group flex items-center gap-3 px-5 py-4"
+        >
+          <span className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/10 text-[#f3c969]">
+            <Sparkles className="h-[18px] w-[18px]" />
+          </span>
+          <div className="relative z-10 min-w-0 flex-1">
+            <p className="text-[14px] font-semibold text-white">Rewards &amp; cashback</p>
+            <p className="mt-0.5 text-[12.5px] text-white/60">
+              {unclaimedCashback > 0
+                ? `${unclaimedCashback} scratch ${unclaimedCashback === 1 ? "card" : "cards"} ready`
+                : `${cashbackEarned.toLocaleString()} NIM earned`}
+            </p>
+          </div>
+          <ChevronRight className="relative z-10 h-4 w-4 shrink-0 text-white/45 transition group-hover:translate-x-0.5 group-hover:text-white" />
         </Link>
       )}
 

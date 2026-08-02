@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Store, ArrowRight, Bug, FilePlus2, Lock, CheckCircle2 } from "lucide-react";
+import { Search, Store, ArrowRight, Bug, FilePlus2, Lock, CheckCircle2, Gift } from "lucide-react";
 import { useDealStore } from "@/store/dealStore";
 import { useAuthStore } from "@/store/authStore";
 import { useProfileStore } from "@/store/profileStore";
@@ -12,6 +12,7 @@ import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { EscrowHero } from "@/components/home/EscrowHero";
 import { NeedsActionRail, type ActionItem } from "@/components/home/NeedsActionRail";
 import { PopularServices } from "@/components/home/PopularServices";
+import { useCashbackStore } from "@/store/cashbackStore";
 
 function greeting() {
   const h = new Date().getHours();
@@ -41,6 +42,12 @@ export default function Home() {
   // starts `loading: true` during session restore, which would otherwise flash
   // the disconnected hero CTA as busy on cold load.
   const [connectClicked, setConnectClicked] = useState(false);
+  const unclaimedCashback = useCashbackStore((state) => state.unclaimed);
+  const loadCashbackHistory = useCashbackStore((state) => state.loadHistory);
+
+  useEffect(() => {
+    if (session) void loadCashbackHistory();
+  }, [session, loadCashbackHistory]);
 
   const myDeals = useMemo(
     () =>
@@ -116,6 +123,27 @@ export default function Home() {
           actionCount={actionItems.length}
         />
       </div>
+
+      {session && unclaimedCashback.length > 0 ? (
+        <Link
+          to={`/deal/${unclaimedCashback[0].dealId}/status`}
+          className="cashback-card group flex items-center gap-3 px-4 py-3.5 sm:px-5"
+        >
+          <span className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/10 text-[#f3c969]">
+            <Gift className="h-[18px] w-[18px]" />
+          </span>
+          <div className="relative z-10 min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.17em] text-[#91d9bd]">Cashback ready</p>
+            <p className="mt-0.5 truncate text-[13.5px] font-semibold text-white">
+              Scratch your reward from {unclaimedCashback[0].dealTitle}
+            </p>
+          </div>
+          <span className="relative z-10 inline-flex shrink-0 items-center gap-1 text-[11.5px] font-semibold text-[#f3c969]">
+            Reveal
+            <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+          </span>
+        </Link>
+      ) : null}
 
       <Link
         to="/how-it-works"
