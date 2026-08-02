@@ -171,6 +171,7 @@ export default function App() {
 function MiniAppShell() {
   const restoreSession = useAuthStore((s) => s.restoreSession);
   const session = useAuthStore((s) => s.session);
+  const linkedUsdtWallet = useAuthStore((s) => s.linkedWallets.USDT);
   const theme = useThemeStore((s) => s.theme);
   const myTickets = useSupportStore((s) => s.myTickets);
   const loadMyTickets = useSupportStore((s) => s.loadMyTickets);
@@ -201,6 +202,12 @@ function MiniAppShell() {
   }, []);
 
   useEffect(() => {
+    if (!session?.address || !linkedUsdtWallet) return;
+    const store = useDealStore.getState();
+    void store.loadFromSupabase({ force: true }).catch(() => {});
+  }, [linkedUsdtWallet, session?.address]);
+
+  useEffect(() => {
     if (!session?.address) return;
     loadMyTickets(session.address);
   }, [session?.address, loadMyTickets]);
@@ -223,7 +230,7 @@ function MiniAppShell() {
     if (!session?.address) return;
     const unsub = startNotificationFeed(session.address);
     return unsub;
-  }, [session?.address, startNotificationFeed]);
+  }, [linkedUsdtWallet, session?.address, startNotificationFeed]);
 
   return (
     <div className="min-h-full">

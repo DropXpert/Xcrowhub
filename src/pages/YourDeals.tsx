@@ -16,6 +16,7 @@ export default function YourDeals() {
   const dealsMap = useDealStore((s) => s.deals);
 
   const session = useAuthStore((s) => s.session);
+  const linkedWallets = useAuthStore((s) => s.linkedWallets);
   const myOffers = useOfferStore((s) => s.myOffers);
   const fetchAsBuyer = useOfferStore((s) => s.fetchAsBuyer);
 
@@ -40,14 +41,16 @@ export default function YourDeals() {
   const myDeals = useMemo(
     () =>
       Object.values(dealsMap)
-        .filter((d) => isParticipant(d, session?.address))
+        .filter((d) => isParticipant(d, session?.address, Object.values(linkedWallets)))
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-    [dealsMap, session?.address]
+    [dealsMap, linkedWallets, session?.address]
   );
 
   const actionDeals = useMemo(
-    () => myDeals.filter((d) => dealNeedsAction(d, resolveDealRole(d, session))),
-    [myDeals, session]
+    () => myDeals.filter((d) =>
+      dealNeedsAction(d, resolveDealRole(d, session, Object.values(linkedWallets)))
+    ),
+    [linkedWallets, myDeals, session]
   );
 
   const filteredDeals = useMemo(() => {

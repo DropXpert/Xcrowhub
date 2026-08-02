@@ -51,6 +51,7 @@ export default function DealStatus() {
   const reconcileDeadlines = useDealStore((s) => s.reconcileDeadlines);
   const loadFromSupabase = useDealStore((s) => s.loadFromSupabase);
   const session = useAuthStore((s) => s.session);
+  const linkedWallets = useAuthStore((s) => s.linkedWallets);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
   const refreshLock = useRef(false);
@@ -73,7 +74,7 @@ export default function DealStatus() {
     );
   }
 
-  const role = resolveDealRole(deal, session);
+  const role = resolveDealRole(deal, session, Object.values(linkedWallets));
   const youProofSubmitted =
     role === "seller"
       ? deal.sellerProofStatus === "submitted"

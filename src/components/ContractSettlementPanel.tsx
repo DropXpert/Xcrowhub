@@ -29,6 +29,7 @@ function mapProposal(row: any): SettlementProposal {
 
 export function ContractSettlementPanel({ deal }: { deal: Deal }) {
   const session = useAuthStore((state) => state.session);
+  const linkedWallets = useAuthStore((state) => state.linkedWallets);
   const submitContractSettlement = useDealStore(
     (state) => state.submitContractSettlement
   );
@@ -57,11 +58,15 @@ export function ContractSettlementPanel({ deal }: { deal: Deal }) {
     void load();
   }, [load]);
 
-  const address = normalizeWalletAddress(session?.address ?? "");
+  const accountAddresses = new Set(
+    [session?.address, ...Object.values(linkedWallets)]
+      .map((value) => normalizeWalletAddress(value ?? ""))
+      .filter(Boolean)
+  );
   const seller =
-    address === normalizeWalletAddress(deal.sellerWalletAddress);
+    accountAddresses.has(normalizeWalletAddress(deal.sellerWalletAddress));
   const participant =
-    address === normalizeWalletAddress(deal.buyerWalletAddress ?? "") ||
+    accountAddresses.has(normalizeWalletAddress(deal.buyerWalletAddress ?? "")) ||
     seller;
 
   if (!isSmartUsdtDeal(deal)) return null;

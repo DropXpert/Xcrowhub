@@ -19,7 +19,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { SignJWT } from "https://esm.sh/jose@5.2.3";
+import { jwtVerify, SignJWT } from "https://esm.sh/jose@5.2.3";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -75,13 +75,14 @@ serve(async (req: Request) => {
     if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
 
     const body = await req.json();
-    const { address, signature, publicKey, message, nonce, network } = body as {
+    const { address, signature, publicKey, message, nonce, network, linkWallet } = body as {
       address: string;
       signature: string;
       publicKey?: string;
       message: string;
       nonce?: string;
       network?: string;
+      linkWallet?: boolean;
     };
 
     if (!address || !signature || !message) {
@@ -181,6 +182,51 @@ serve(async (req: Request) => {
     }
 
     // 3. Determine role — compare without spaces
+    // A secondary payment wallet is linked only after both sides are proven.
+    // The bearer token proves the existing NIM identity and the signature
+    // verified above proves control of the EVM address being linked.
+    if (linkWallet) {
+      if (!isEvm) {
+        return json({ error: "Only EVM payment wallets can be linked" }, 400, corsHeaders);
+      }
+      const bearer = req.headers.get("Authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
+      if (!bearer) {
+        return json({ error: "An authenticated XcrowHub identity is required" }, 401, corsHeaders);
+      }
+
+      const secret = new TextEncoder().encode(JWT_SECRET_RAW);
+      let primaryAddress = "";
+      try {
+        const verifiedPrimary = await jwtVerify(bearer, secret, {
+          audience: "authenticated",
+        });
+        primaryAddress = String(verifiedPrimary.payload.wallet_addr ?? "").trim();
+      } catch {
+        return json({ error: "The XcrowHub identity session is invalid or expired" }, 401, corsHeaders);
+      }
+
+      const primaryCompact = primaryAddress.replace(/\s+/g, "").toUpperCase();
+      if (!/^NQ[0-9]{2}[A-Z0-9]{32}$/.test(primaryCompact)) {
+        return json({ error: "Connect your NIM identity before linking USDT" }, 409, corsHeaders);
+      }
+
+      const { error: linkError } = await supabase.rpc("link_wallet_addresses", {
+        p_primary: primaryAddress,
+        p_linked: normalizedAddr,
+        p_network: "evm",
+      });
+      if (linkError) {
+        return json({ error: linkError.message }, 409, corsHeaders);
+      }
+
+      console.log(`[auth] Linked EVM payment wallet ${normalizedAddr} to ${primaryAddress}`);
+      return json(
+        { linked: true, address: normalizedAddr, network: "evm" },
+        200,
+        corsHeaders,
+      );
+    }
+
     const addrCompact = lowerAddr.replace(/\s+/g, "");
     const isAdmin = ADMIN_ADDRESSES.some(
       (a) => a.replace(/\s+/g, "") === addrCompact

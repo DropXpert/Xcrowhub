@@ -53,6 +53,8 @@ export default function CreateDeal() {
   const loadFromSupabase = useDealStore((s) => s.loadFromSupabase);
   const session = useAuthStore((s) => s.session);
   const connect = useAuthStore((s) => s.connect);
+  const switchWallet = useAuthStore((s) => s.switchWallet);
+  const linkedWallets = useAuthStore((s) => s.linkedWallets);
   const authLoading = useAuthStore((s) => s.loading);
   const [form, setForm] = useState<FormState>(initialState);
   const [sellerAddress, setSellerAddress] = useState<string>("");
@@ -74,8 +76,13 @@ export default function CreateDeal() {
       setSellerAddress(session.address);
       return;
     }
+    const linked = linkedWallets[form.priceCurrency];
+    if (linked) {
+      setSellerAddress(linked);
+      return;
+    }
     setSellerAddress("");
-  }, [form.priceCurrency, session?.address, session?.currency]);
+  }, [form.priceCurrency, linkedWallets, session?.address, session?.currency]);
 
   const activeDealCount = useMemo(
     () => countActiveSellerDeals(Object.values(dealsMap), sellerAddress),
@@ -120,10 +127,18 @@ export default function CreateDeal() {
     try {
       let nextSellerAddress = sellerAddress;
       if (!nextSellerAddress) {
-        await connect(form.priceCurrency);
-        const nextSession = useAuthStore.getState().session;
+        if (!session) {
+          await connect("NIM");
+        } else {
+          await switchWallet(form.priceCurrency);
+        }
+        const authState = useAuthStore.getState();
+        const nextSession = authState.session;
         if (nextSession?.currency === form.priceCurrency) {
           nextSellerAddress = nextSession.address;
+          setSellerAddress(nextSellerAddress);
+        } else if (authState.linkedWallets[form.priceCurrency]) {
+          nextSellerAddress = authState.linkedWallets[form.priceCurrency]!;
           setSellerAddress(nextSellerAddress);
         }
       }
@@ -359,7 +374,11 @@ export default function CreateDeal() {
             <button
               type="button"
               className="btn-secondary shrink-0 px-3 py-2 text-[12.5px]"
-              onClick={() => connect(form.priceCurrency)}
+              onClick={() =>
+                session
+                  ? switchWallet(form.priceCurrency)
+                  : connect("NIM")
+              }
             >
               Connect {form.priceCurrency}
             </button>

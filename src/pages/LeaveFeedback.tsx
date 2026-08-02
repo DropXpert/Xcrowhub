@@ -17,6 +17,7 @@ export default function LeaveFeedback() {
   const { id } = useParams<{ id: string }>();
   const { deal, loading } = useDealWithRemoteLoad(id);
   const session = useAuthStore((s) => s.session);
+  const linkedWallets = useAuthStore((s) => s.linkedWallets);
   const submitFeedback = useDealStore((s) => s.submitFeedback);
   const feedbacks = useDealStore((s) => (id ? s.getFeedbacks(id) : []));
 
@@ -56,7 +57,7 @@ export default function LeaveFeedback() {
     );
   }
 
-  const role = resolveDealRole(deal, session);
+  const role = resolveDealRole(deal, session, Object.values(linkedWallets));
   if (role !== "buyer" && role !== "seller") {
     return (
       <div className="space-y-5">

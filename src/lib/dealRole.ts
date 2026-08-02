@@ -15,16 +15,31 @@ function norm(addr: string | undefined | null): string {
  * Before payment the buyer isn't recorded yet, so any connected non-seller
  * holding the link is treated as the prospective buyer (so they can pay).
  */
-export function resolveDealRole(deal: Deal, session: AuthSession | null): DealRole {
+function accountAddresses(
+  session: AuthSession | null,
+  linkedAddresses: Array<string | undefined> = []
+): Set<string> {
+  return new Set(
+    [session?.address, ...linkedAddresses]
+      .map(norm)
+      .filter(Boolean)
+  );
+}
+
+export function resolveDealRole(
+  deal: Deal,
+  session: AuthSession | null,
+  linkedAddresses: Array<string | undefined> = []
+): DealRole {
   if (session?.role === "admin") return "admin";
 
-  const me = norm(session?.address);
-  if (!me) return "observer";
+  const mine = accountAddresses(session, linkedAddresses);
+  if (!mine.size) return "observer";
 
-  if (norm(deal.sellerWalletAddress) === me) return "seller";
+  if (mine.has(norm(deal.sellerWalletAddress))) return "seller";
 
   if (deal.buyerWalletAddress) {
-    return norm(deal.buyerWalletAddress) === me ? "buyer" : "observer";
+    return mine.has(norm(deal.buyerWalletAddress)) ? "buyer" : "observer";
   }
 
   // No buyer recorded yet (awaiting payment): the connected non-seller is the
@@ -33,10 +48,17 @@ export function resolveDealRole(deal: Deal, session: AuthSession | null): DealRo
 }
 
 /** True when the address is the buyer or seller on this deal. */
-export function isParticipant(deal: Deal, addr: string | undefined): boolean {
-  const me = norm(addr);
-  if (!me) return false;
-  return norm(deal.sellerWalletAddress) === me || norm(deal.buyerWalletAddress) === me;
+export function isParticipant(
+  deal: Deal,
+  addr: string | undefined,
+  linkedAddresses: Array<string | undefined> = []
+): boolean {
+  const mine = new Set([addr, ...linkedAddresses].map(norm).filter(Boolean));
+  if (!mine.size) return false;
+  return (
+    mine.has(norm(deal.sellerWalletAddress)) ||
+    mine.has(norm(deal.buyerWalletAddress))
+  );
 }
 
 /** Whether the deal is currently waiting on an action from this role. */

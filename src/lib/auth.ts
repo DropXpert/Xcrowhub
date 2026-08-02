@@ -1,4 +1,4 @@
-import { getNimWallet, getWallet } from "@/wallet";
+import { getNimWallet, getWallet, prepareWalletSwitch } from "@/wallet";
 import type { AuthChallenge } from "@/wallet/WalletProvider";
 import type { Currency } from "@/types/deal";
 import { setSupabaseAccessToken, isSupabaseConfiguredForClient } from "./supabase";
@@ -177,6 +177,47 @@ export async function loginWithWallet(currency: Currency = "NIM"): Promise<AuthS
     saveSession(session);
     return session;
   }
+}
+
+export async function linkPaymentWallet(
+  session: AuthSession,
+  currency: Currency,
+): Promise<string> {
+  if (currency === session.currency) return session.address;
+  if (session.currency !== "NIM" || currency !== "USDT") {
+    throw new Error("Connect your NIM identity before linking a USDT wallet.");
+  }
+
+  await prepareWalletSwitch(currency);
+  const wallet = await getWallet(currency);
+  const address = await wallet.getAddress();
+  const edgeBase = `${supabaseConfig.url}/functions/v1/auth`;
+  const challenge = await requestChallenge(edgeBase, address);
+  const signed = await wallet.signMessage(challenge.message);
+  const response = await fetch(edgeBase, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.token}`,
+    },
+    body: JSON.stringify({
+      address,
+      signature: signed.signature,
+      publicKey: signed.publicKey,
+      message: challenge.message,
+      nonce: challenge.nonce,
+      network: "evm",
+      linkWallet: true,
+    }),
+  });
+  const payload = await response.json().catch(() => ({})) as {
+    address?: string;
+    error?: string;
+  };
+  if (!response.ok || !payload.address) {
+    throw new Error(payload.error || "Could not link the USDT wallet.");
+  }
+  return payload.address;
 }
 
 async function requestChallenge(

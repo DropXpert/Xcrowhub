@@ -9,7 +9,6 @@ import { ConsentCheck } from "@/components/ConsentCheck";
 import { AlertDialog } from "@/components/AlertDialog";
 import { SkeletonDots } from "@/components/LoadingStates";
 import { isCustodyAddress, isUsdtEscrowConfigured } from "@/lib/config";
-import { getWallet } from "@/wallet";
 import type { Currency, DealCategory } from "@/types/deal";
 import { DEAL_CATEGORIES, CATEGORY_LABELS } from "@/types/deal";
 import { LISTING_IMAGE_MAX_SOURCE_BYTES, validateListingImage } from "@/lib/listingImages";
@@ -26,6 +25,8 @@ export default function CreateListing() {
   const createListing = useListingStore((s) => s.createListing);
   const session = useAuthStore((s) => s.session);
   const connect = useAuthStore((s) => s.connect);
+  const switchWallet = useAuthStore((s) => s.switchWallet);
+  const linkedWallets = useAuthStore((s) => s.linkedWallets);
   const authLoading = useAuthStore((s) => s.loading);
 
   const [title, setTitle] = useState("");
@@ -76,20 +77,24 @@ export default function CreateListing() {
       setPayoutAddr(session.address);
       return;
     }
+    const linked = linkedWallets[priceCurrency];
+    if (linked) {
+      setPayoutAddr(linked);
+      return;
+    }
     setPayoutAddr("");
-  }, [session?.address, session?.currency, priceCurrency]);
+  }, [linkedWallets, session?.address, session?.currency, priceCurrency]);
 
   async function linkPayoutWallet() {
     if (linking) return;
     setError(null);
     setLinking(true);
     try {
-      // Read the address from the currency-specific provider WITHOUT going
-      // through authStore.connect() -- that would sign a new JWT and reset
-      // the session's address, effectively making the user look like a
-      // different account for everything else in the app.
-      const wallet = await getWallet(priceCurrency);
-      const addr = await wallet.getAddress();
+      await switchWallet(priceCurrency);
+      const authState = useAuthStore.getState();
+      const addr = authState.session?.currency === priceCurrency
+        ? authState.session.address
+        : authState.linkedWallets[priceCurrency];
       if (!addr) throw new Error(`Could not read ${priceCurrency} wallet address.`);
       if (isCustodyAddress(priceCurrency, addr)) {
         throw new Error("Use your seller wallet, not the XcrowHub custody address.");

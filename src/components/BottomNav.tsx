@@ -20,10 +20,13 @@ import { ProfileAvatar } from "./ProfileAvatar";
 function useActionCount() {
   const deals = useDealStore((s) => s.deals);
   const session = useAuthStore((s) => s.session);
+  const linkedWallets = useAuthStore((s) => s.linkedWallets);
   const addr = session?.address;
   if (!addr) return 0;
   return Object.values(deals).filter(
-    (d) => isParticipant(d, addr) && dealNeedsAction(d, resolveDealRole(d, session))
+    (d) =>
+      isParticipant(d, addr, Object.values(linkedWallets)) &&
+      dealNeedsAction(d, resolveDealRole(d, session, Object.values(linkedWallets)))
   ).length;
 }
 

@@ -25,6 +25,8 @@ export function PaymentBox({ deal }: { deal: Deal }) {
   const verifyPaymentNow = useDealStore((s) => s.verifyPaymentNow);
   const session = useAuthStore((s) => s.session);
   const connect = useAuthStore((s) => s.connect);
+  const switchWallet = useAuthStore((s) => s.switchWallet);
+  const linkedWallets = useAuthStore((s) => s.linkedWallets);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
@@ -44,9 +46,12 @@ export function PaymentBox({ deal }: { deal: Deal }) {
         ? isUsdtEscrowConfigured()
         : isPaymentRailConfigured(deal.priceCurrency, deal.escrowModel);
   const connectedWalletIsSeller = Boolean(
-    session?.address &&
-      normalizeWalletAddress(session.address) ===
-        normalizeWalletAddress(deal.sellerWalletAddress)
+    [session?.address, ...Object.values(linkedWallets)].some(
+      (address) =>
+        address &&
+        normalizeWalletAddress(address) ===
+          normalizeWalletAddress(deal.sellerWalletAddress)
+    )
   );
 
   // A payment has been sent + recorded once the deal carries a tx hash while
@@ -93,14 +98,20 @@ export function PaymentBox({ deal }: { deal: Deal }) {
     setError(null);
     try {
       let buyer =
-        session?.currency === deal.priceCurrency ? session.address : "";
+        session?.currency === deal.priceCurrency
+          ? session.address
+          : linkedWallets[deal.priceCurrency] ?? "";
       if (!buyer) {
-        await connect(deal.priceCurrency);
-        const nextSession = useAuthStore.getState().session;
-        buyer =
-          nextSession?.currency === deal.priceCurrency
-            ? nextSession.address
-            : "";
+        if (!session) {
+          await connect("NIM");
+        } else {
+          await switchWallet(deal.priceCurrency);
+        }
+        const authState = useAuthStore.getState();
+        const nextSession = authState.session;
+        buyer = nextSession?.currency === deal.priceCurrency
+          ? nextSession.address
+          : authState.linkedWallets[deal.priceCurrency] ?? "";
         if (buyer) {
           setError(`${deal.priceCurrency} wallet connected. Tap Pay again to approve the escrow payment.`);
           return;

@@ -29,6 +29,7 @@ function shortAddr(addr: string) {
 export default function Home() {
   const dealsMap = useDealStore((s) => s.deals);
   const session = useAuthStore((s) => s.session);
+  const linkedWallets = useAuthStore((s) => s.linkedWallets);
   const connect = useAuthStore((s) => s.connect);
   const connecting = useAuthStore((s) => s.loading);
   const getProfile = useProfileStore((s) => s.getProfile);
@@ -52,19 +53,22 @@ export default function Home() {
   const myDeals = useMemo(
     () =>
       Object.values(dealsMap)
-        .filter((d) => isParticipant(d, addr))
+        .filter((d) => isParticipant(d, addr, Object.values(linkedWallets)))
         .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
-    [dealsMap, addr]
+    [dealsMap, addr, linkedWallets]
   );
 
   const actionItems = useMemo<ActionItem[]>(() => {
     const out: ActionItem[] = [];
     for (const deal of myDeals) {
-      const hint = dealActionHint(deal, resolveDealRole(deal, session));
+      const hint = dealActionHint(
+        deal,
+        resolveDealRole(deal, session, Object.values(linkedWallets))
+      );
       if (hint) out.push({ deal, ...hint });
     }
     return out;
-  }, [myDeals, session]);
+  }, [linkedWallets, myDeals, session]);
 
   const activeCount = useMemo(
     () => myDeals.filter((d) => !isTerminal(d.status)).length,

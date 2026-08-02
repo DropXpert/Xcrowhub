@@ -127,7 +127,7 @@ serve(async (req: Request) => {
     if (dealErr) throw dealErr;
     if (!deal) return json({ error: "Deal not found" }, 404);
     if (deal.escrow_model === "smart_contract") {
-      if (!auth.internal && !auth.admin && !isDealParticipant(auth.walletAddr, deal)) {
+      if (!auth.internal && !auth.admin && !(await isDealParticipant(auth.walletAddr, deal))) {
         return json({ error: "Unauthorized" }, 401);
       }
       return await handleContractSettlementSignature(deal, decision);
@@ -141,7 +141,7 @@ serve(async (req: Request) => {
     if (deal.status !== requiredStatus) {
       return json({ error: `Deal is not ${requiredStatus} (current: ${deal.status})` }, 409);
     }
-    if (!auth.internal && !auth.admin && !isDealParticipant(auth.walletAddr, deal)) {
+    if (!auth.internal && !auth.admin && !(await isDealParticipant(auth.walletAddr, deal))) {
       return json({ error: "Unauthorized" }, 401);
     }
 
@@ -706,12 +706,15 @@ function normalizedAddress(address: unknown): string {
   return typeof address === "string" ? address.replace(/\s+/g, "").toLowerCase() : "";
 }
 
-function isDealParticipant(walletAddr: string | undefined, deal: any): boolean {
-  const wallet = normalizedAddress(walletAddr);
-  return Boolean(wallet) && (
-    wallet === normalizedAddress(deal.seller_wallet_address) ||
-    wallet === normalizedAddress(deal.buyer_wallet_address)
-  );
+async function isDealParticipant(walletAddr: string | undefined, deal: any): Promise<boolean> {
+  if (!normalizedAddress(walletAddr)) return false;
+  const [sellerMatch, buyerMatch] = await Promise.all([
+    supabase.rpc("addr_eq", { a: walletAddr, b: deal.seller_wallet_address }),
+    supabase.rpc("addr_eq", { a: walletAddr, b: deal.buyer_wallet_address }),
+  ]);
+  if (sellerMatch.error) throw sellerMatch.error;
+  if (buyerMatch.error) throw buyerMatch.error;
+  return sellerMatch.data === true || buyerMatch.data === true;
 }
 
 function isCustodyRecipient(currency: Currency, address: string): boolean {

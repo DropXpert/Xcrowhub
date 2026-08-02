@@ -149,7 +149,7 @@ export const useNotificationStore = create<NotificationState>()(
           .channel(`notif-feed:${norm}`)
           .on(
             "postgres_changes",
-            { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_addr=eq.${norm}` },
+            { event: "INSERT", schema: "public", table: "notifications" },
             (payload) => ingest(payload.new)
           )
           .subscribe();

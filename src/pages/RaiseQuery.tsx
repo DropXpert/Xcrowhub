@@ -34,6 +34,7 @@ export default function RaiseQuery() {
   const navigate = useNavigate();
   const { deal, loading } = useDealWithRemoteLoad(id);
   const session = useAuthStore((s) => s.session);
+  const linkedWallets = useAuthStore((s) => s.linkedWallets);
   const raiseQuery = useDealStore((s) => s.raiseQuery);
 
   // "other" exists in both reason lists, so it's a safe role-independent default.
@@ -61,7 +62,7 @@ export default function RaiseQuery() {
     );
   }
 
-  const role = resolveDealRole(deal, session);
+  const role = resolveDealRole(deal, session, Object.values(linkedWallets));
   if (role !== "buyer" && role !== "seller") {
     return (
       <div className="space-y-5">

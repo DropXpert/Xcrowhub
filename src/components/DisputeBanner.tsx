@@ -20,9 +20,10 @@ function timeLeft(iso?: string): string {
  */
 export function DisputeBanner({ deal }: { deal: Deal }) {
   const session = useAuthStore((s) => s.session);
+  const linkedWallets = useAuthStore((s) => s.linkedWallets);
   if (deal.status !== "proof_window" && deal.status !== "under_admin_review") return null;
 
-  const role = resolveDealRole(deal, session);
+  const role = resolveDealRole(deal, session, Object.values(linkedWallets));
   const isParty = role === "buyer" || role === "seller";
 
   // Already with an admin → calm, informational.

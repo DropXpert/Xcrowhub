@@ -111,7 +111,7 @@ function NotificationBell() {
 }
 
 function WalletMenu({ address, currency }: { address: string; currency: Currency }) {
-  const { disconnect, switchWallet, loading } = useAuthStore();
+  const { disconnect, switchWallet, loading, linkedWallets } = useAuthStore();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -151,7 +151,7 @@ function WalletMenu({ address, currency }: { address: string; currency: Currency
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 z-50 w-52 rounded-xl border border-edge bg-surface shadow-lift overflow-hidden">
+        <div className="absolute right-0 top-10 z-50 w-60 overflow-hidden rounded-xl border border-edge bg-surface shadow-lift">
           <button
             type="button"
             onClick={() => {
@@ -160,13 +160,33 @@ function WalletMenu({ address, currency }: { address: string; currency: Currency
             }}
             className="flex w-full items-center gap-2.5 px-4 py-3 text-[13px] text-ink hover:bg-bg transition border-b border-edge"
           >
-            <Wallet className="h-3.5 w-3.5 text-muted shrink-0" />
-            <span className="truncate font-mono text-[12px] text-muted">{shortenAddr(address)}</span>
+            <Wallet className="h-3.5 w-3.5 shrink-0 text-muted" />
+            <span className="min-w-0 text-left">
+              <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted">
+                {currency === "NIM" ? "XcrowHub identity" : "USDT wallet session"}
+              </span>
+              <span className="block truncate font-mono text-[12px] text-ink">
+                {shortenAddr(address)}
+              </span>
+            </span>
           </button>
           <div className="flex w-full items-center gap-2.5 px-4 py-3 border-b border-edge">
             <CopyButton text={address} size="sm" />
             <span className="text-[13px] text-ink">Copy address</span>
           </div>
+          {currency === "NIM" && linkedWallets.USDT ? (
+            <div className="flex w-full items-center gap-2.5 border-b border-edge px-4 py-3">
+              <span className="min-w-0 flex-1">
+                <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted">
+                  USDT payment wallet
+                </span>
+                <span className="block truncate font-mono text-[12px] text-ink">
+                  {shortenAddr(linkedWallets.USDT)}
+                </span>
+              </span>
+              <CopyButton text={linkedWallets.USDT} size="sm" />
+            </div>
+          ) : null}
           <button
             type="button"
             onClick={handleSwitchWallet}
@@ -181,7 +201,11 @@ function WalletMenu({ address, currency }: { address: string; currency: Currency
             <span>
               {loading
                 ? "Switching wallet..."
-                : `Switch to ${currency === "NIM" ? "USDT" : "NIM"} wallet`}
+                : currency === "NIM"
+                  ? linkedWallets.USDT
+                    ? "Change USDT wallet"
+                    : "Connect USDT wallet"
+                  : "Return to NIM identity"}
             </span>
           </button>
           <button
