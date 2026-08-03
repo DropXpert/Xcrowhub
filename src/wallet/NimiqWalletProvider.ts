@@ -58,10 +58,11 @@ export class NimiqWalletProvider implements WalletProvider {
         result = await (nimiq as any).sendBasicTransactionWithData({
           recipient,
           value,
+          fee: 0,
           data: dataHex,
         });
       } else {
-        result = await nimiq.sendBasicTransaction({ recipient, value });
+        result = await nimiq.sendBasicTransaction({ recipient, value, fee: 0 });
       }
     } catch (err) {
       console.error("[XcrowHub] sendBasicTransaction threw:", err);

@@ -7,6 +7,7 @@ import { getNimWallet, getWallet } from "@/wallet";
 import {
   isUsdtEscrowConfigured,
   isPaymentRailConfigured,
+  isCustodyAddress,
   paymentTargetFor,
   normalizeWalletAddress,
 } from "@/lib/config";
@@ -119,6 +120,14 @@ export function PaymentBox({ deal }: { deal: Deal }) {
       }
       if (!buyer) {
         throw new Error(`Connect a ${deal.priceCurrency} wallet first.`);
+      }
+      if (
+        deal.priceCurrency === "NIM" &&
+        isCustodyAddress("NIM", buyer)
+      ) {
+        throw new Error(
+          "The XcrowHub custody wallet cannot pay into itself. Use a different NIM wallet."
+        );
       }
       if (
         normalizeWalletAddress(buyer) ===
@@ -234,13 +243,16 @@ export function PaymentBox({ deal }: { deal: Deal }) {
   const progressCopy = paymentProgressCopy();
 
   function formatPaymentError(err: unknown): string {
+    const text = errorText(err);
+    if (/custody wallet cannot pay|pay into itself|send (?:funds )?to (?:yourself|itself)|sender equals recipient/i.test(text)) {
+      return "The XcrowHub custody wallet cannot pay into itself. Use a different NIM wallet.";
+    }
     if (isLowBalance(err)) return "Your balance is low for this transaction.";
     if (isRejected(err)) return "Transaction cancelled.";
     if (isAlreadyProcessing(err)) {
       return "A wallet request is already open. Finish it, then try again.";
     }
 
-    const text = errorText(err);
     if (/own deal|seller.*buyer|same wallet/i.test(text)) return text;
     if (/network|chain|switch/i.test(text)) {
       return "Switch to the required network and try again.";
@@ -263,7 +275,7 @@ export function PaymentBox({ deal }: { deal: Deal }) {
   }
 
   function isLowBalance(err: unknown): boolean {
-    return /insufficient|not enough|low balance|balance is too low|exceeds balance|transfer amount exceeds balance|funds/i.test(
+    return /insufficient(?: balance| funds)?|not enough(?: balance| funds)?|low balance|balance is too low|exceeds (?:your )?balance|transfer amount exceeds balance/i.test(
       errorText(err)
     );
   }

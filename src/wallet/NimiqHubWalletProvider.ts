@@ -144,6 +144,7 @@ export class NimiqHubWalletProvider implements WalletProvider {
             forceSender: Boolean(params.from ?? this.selectedAddress),
             recipient: normalizeNimAddress(config.nimiq.custodyAddress),
             value: nimToLunas(params.amount),
+            fee: 0,
             extraData: params.memo,
           };
         }),
